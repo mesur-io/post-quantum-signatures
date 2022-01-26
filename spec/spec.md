@@ -1,6 +1,6 @@
 %%%
-title = "CRYSTALS-Dilithium JSON Encoding"
-abbrev = "dilithium-jose"
+title = "JSON Encoding for Post Quantum Signatures"
+abbrev = "post-quantum-jose"
 ipr= "none"
 area = "Internet"
 workgroup = "none"
@@ -9,7 +9,7 @@ keyword = [""]
 
 [seriesInfo]
 name = "Individual-Draft"
-value = "dilithium-jose-00"
+value = "post-quantum-jose-00"
 status = "informational"
 
 [[author]]
@@ -34,16 +34,21 @@ email = "orie@transmute.industries"
 
 .# Abstract
 
-This document describes the lattice signature scheme CRYSTALS-Dilithium (CRYDI).  
+This document describes several post quantum cryptography (PQC) based 
+digital signature schemes and how those signature schemes may be
+exchanged in JSON.
+
+
+{mainmatter}
+
+# CRYSYALS-Dilithium
+
+This section of the document describes the lattice signature scheme CRYSTALS-Dilithium (CRYDI).  
 The scheme is based on "Fiat-Shamir with Aborts"[Lyu09, Lyu12] utlizing a matrix
 of polynomials for key material, and a vector of polynomials for signatures.  
 The parameter set is strategically chosen such that the signing algorithm is large
 enough to maintain zero-knowledge properties but small enough to prevent forgery of
 signatures. An example implementation and test vectors are provided.
-
-{mainmatter}
-
-# Introduction
 
 CRYSTALS-Dilithium is a Post Quantum approach to digital signatures that is
 an algorithmic apprach that seeks to ensure key pair and signing properties
@@ -420,9 +425,13 @@ The same example decoded for readability:
 
 # Security Considerations
 
+The following considerations SHOULD apply to all signature schemes described
+in this specification, unless otherwise noted.
+
+
 ## Validating public keys
 
-All algorithms in Section 2 that operate on public keys require first validating those keys.
+All algorithms in that operate on public keys require first validating those keys.
 For the sign, verify and proof schemes, the use of KeyValidate is REQUIRED.
 
 ## Side channel attacks
@@ -441,11 +450,20 @@ at a minimum:
   sampling in implementation.
 - Secrecy of S1 - utmost care must be given to protection of S1 and to prevent information or
   power leakage. As is the case with most proposed lattice based approaches to date, fogery and
-  other attacks may succeed through [leakage of S1](https://eprint.iacr.org/2018/821.pdf) through side channel mechanisms.
+  other attacks may succeed, for example, with Dilithium through [leakage of S1](https://eprint.iacr.org/2018/821.pdf) 
+  through side channel mechanisms.
 
 ## Randomness considerations
 
 It is recommended that the all nonces are from a trusted source of randomness.
+
+# Falcon
+
+TODO
+
+# SPHINCS+
+
+TODO
 
 # IANA Considerations
 
