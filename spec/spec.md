@@ -1,6 +1,6 @@
 %%%
 title = "CRYSTALS-Dilithium JSON Encoding"
-abbrev = "dilithium-jose"
+abbrev = "draft-post-quantum-signatures"
 ipr= "none"
 area = "Internet"
 workgroup = "none"
@@ -9,7 +9,7 @@ keyword = [""]
 
 [seriesInfo]
 name = "Individual-Draft"
-value = "dilithium-jose-00"
+value = "draft-post-quantum-signatures-00"
 status = "informational"
 
 [[author]]
