@@ -30,6 +30,51 @@ organization = "Transmute"
 [author.address]
 email = "orie@transmute.industries"
 
+[[author]]
+initials = "R."
+surname = "Misoczki"
+fullname = "Rafael Misoczki"
+role = "author"
+organization = "Google"
+[author.address]
+email = "rafaelmisoczki@google.com"
+
+[[author]]
+initials = "M"
+surname = "Osborne"
+fullname = "Michael Osborne"
+role = "author"
+organization = "IBM"
+[author.address]
+email = "osb@zurich.ibm.com"
+
+[[author]]
+initials = "C"
+surname = "Cloostermans"
+fullname = "Christine Cloostermans"
+role = "author"
+organization = "NXP"
+[author.address]
+email = "christine.cloostermans@nxp.com"
+
+[[author]]
+initials = "J"
+surname = "Bos"
+fullname = "Joppe Bos"
+role = "author"
+organization = "NXP"
+[author.address]
+email = "joppe.bos@nxp.com"
+
+[[author]]
+initials = "D"
+surname = "Bong"
+fullname = "Dieter Bong"
+role = "author"
+organization = "Utimaco"
+[author.address]
+email = "Dieter.Bong@utimaco.com"
+
 %%%
 
 .# Abstract
