@@ -1,33 +1,30 @@
 # JSON Encoding for Post Quantum Signatures
 
-Specification for use of Post Quantum Cryptography (PQC) for digital signatures with JSON Encodings
+This is the working area for the individual Internet-Draft, "JSON Encoding for Post Quantum Signatures".
 
-## Signatures Supported
+* [Editor's Copy](https://mesur-io.github.io/post-quantum-signatures/#go.draft-post-quantum-jose.html)
+* [Datatracker Page](https://datatracker.ietf.org/doc/draft-post-quantum-jose)
+* [Individual Draft](https://datatracker.ietf.org/doc/html/draft-post-quantum-jose)
+* [Compare Editor's Copy to Individual Draft](https://mesur-io.github.io/post-quantum-signatures/#go.draft-post-quantum-jose.diff)
 
-### Lattice Based
 
-- [CRYSTALS-Dilithium]()
-- [Falcon](https://falcon-sign.info/)
+## Contributing
 
-### Hash Based
+See the
+[guidelines for contributions](https://github.com/mesur-io/post-quantum-signatures/blob/main/CONTRIBUTING.md).
 
-- [SPHINCS+](https://sphincs.org/)
+Contributions can be made by creating pull requests.
+The GitHub interface supports creating pull requests using the Edit (✏) button.
 
-## Contribution
 
-We welcome contributions from those looking to advance interoperability with PQC, especially in the realm of signing and verification of data
+## Command Line Usage
 
-## Development
+Formatted text and HTML versions of the draft can be built using `make`.
 
+```sh
+$ make
 ```
-./spec/build-html.sh
-npx serve ./docs
-```
 
-## Project Leads
+Command line usage requires that you have the necessary software installed.  See
+[the instructions](https://github.com/martinthomson/i-d-template/blob/main/doc/SETUP.md).
 
-For additional information on this project please reach out to
-
-Michael Prorock <mprorock@mesur.io>
-
-Orie Steele <orie@transmute.industries>

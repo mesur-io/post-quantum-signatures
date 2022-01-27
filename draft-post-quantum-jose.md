@@ -1,6 +1,6 @@
 %%%
 title = "JSON Encoding for Post Quantum Signatures"
-abbrev = "draft-post-quantum-signatures"
+abbrev = "draft-post-quantum-jose"
 ipr= "none"
 area = "Internet"
 workgroup = "none"
@@ -9,7 +9,7 @@ keyword = [""]
 
 [seriesInfo]
 name = "Individual-Draft"
-value = "draft-post-quantum-signatures-00"
+value = "draft-post-quantum-jose-latest"
 status = "informational"
 
 [[author]]
@@ -79,7 +79,7 @@ email = "Dieter.Bong@utimaco.com"
 
 .# Abstract
 
-This document describes several post quantum cryptography (PQC) based 
+This document describes several post quantum cryptography (PQC) based
 digital signature schemes and how those signature schemes may be
 exchanged in JSON.
 
@@ -118,9 +118,9 @@ shake256
 
 ## Overview
 
-This section of the document describes the lattice signature scheme CRYSTALS-Dilithium (CRYDI).  
+This section of the document describes the lattice signature scheme CRYSTALS-Dilithium (CRYDI).
 The scheme is based on "Fiat-Shamir with Aborts"[Lyu09, Lyu12] utlizing a matrix
-of polynomials for key material, and a vector of polynomials for signatures.  
+of polynomials for key material, and a vector of polynomials for signatures.
 The parameter set is strategically chosen such that the signing algorithm is large
 enough to maintain zero-knowledge properties but small enough to prevent forgery of
 signatures. An example implementation and test vectors are provided.
@@ -214,7 +214,7 @@ This section defines core operations used by the signature scheme, as proposed i
  -->
 
 !---
-![svg](key-gen.svg "key generation")
+![svg](spec/key-gen.svg "key generation")
 !---
 
 ### Sign
@@ -238,7 +238,7 @@ This section defines core operations used by the signature scheme, as proposed i
  -->
 
 !---
-![svg](sign.svg "sign")
+![svg](spec/sign.svg "sign")
 !---
 
 ### Verify
@@ -256,7 +256,7 @@ This section defines core operations used by the signature scheme, as proposed i
  -->
 
 !---
-![svg](verify.svg "verify")
+![svg](spec/verify.svg "verify")
 !---
 
 ## Using CRYDI with JOSE
@@ -283,14 +283,14 @@ It has the following parameters:
   requiring at least 128bits of security against both quantum and classical attacks
 
 - The parameter "x" MUST be present and contain the public key
-  encoded using the base64url [@!RFC4648] encoding.  
+  encoded using the base64url [@!RFC4648] encoding.
 
 - The parameter "xs" MAY be present and contain the shake256 of the public key
   encoded using the base64url [@!RFC4648] encoding.
 
 - The parameter "d" MUST be present for private keys and contain the
   private key encoded using the base64url encoding. This parameter
-  MUST NOT be present for public keys.  
+  MUST NOT be present for public keys.
 
 - The parameter "ds" MAY be present for private keys and contain the
   shake256 of the private key encoded using the base64url encoding. This parameter
@@ -505,7 +505,7 @@ at a minimum:
   sampling in implementation.
 - Secrecy of S1 - utmost care must be given to protection of S1 and to prevent information or
   power leakage. As is the case with most proposed lattice based approaches to date, fogery and
-  other attacks may succeed, for example, with Dilithium through [leakage of S1](https://eprint.iacr.org/2018/821.pdf) 
+  other attacks may succeed, for example, with Dilithium through [leakage of S1](https://eprint.iacr.org/2018/821.pdf)
   through side channel mechanisms.
 
 ## Randomness considerations
