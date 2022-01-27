@@ -2,16 +2,16 @@
 
 This is the working area for the individual Internet-Draft, "JSON Encoding for Post Quantum Signatures".
 
-* [Editor's Copy](https://brownoxford.github.io/post-quantum-signatures/#go.draft-post-quantum-jose.html)
+* [Editor's Copy](https://mesur-io.github.io/post-quantum-signatures/#go.draft-post-quantum-jose.html)
 * [Datatracker Page](https://datatracker.ietf.org/doc/draft-post-quantum-jose)
 * [Individual Draft](https://datatracker.ietf.org/doc/html/draft-post-quantum-jose)
-* [Compare Editor's Copy to Individual Draft](https://brownoxford.github.io/post-quantum-signatures/#go.draft-post-quantum-jose.diff)
+* [Compare Editor's Copy to Individual Draft](https://mesur-io.github.io/post-quantum-signatures/#go.draft-post-quantum-jose.diff)
 
 
 ## Contributing
 
 See the
-[guidelines for contributions](https://github.com/brownoxford/post-quantum-signatures/blob/main/CONTRIBUTING.md).
+[guidelines for contributions](https://github.com/mesur-io/post-quantum-signatures/blob/main/CONTRIBUTING.md).
 
 Contributions can be made by creating pull requests.
 The GitHub interface supports creating pull requests using the Edit (✏) button.
