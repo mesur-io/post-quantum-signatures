@@ -1,5 +1,5 @@
 %%%
-title = "CRYSTALS-Dilithium JSON Encoding"
+title = "JSON Encoding for Post Quantum Signatures"
 abbrev = "draft-post-quantum-signatures"
 ipr= "none"
 area = "Internet"
@@ -34,16 +34,51 @@ email = "orie@transmute.industries"
 
 .# Abstract
 
-This document describes the lattice signature scheme CRYSTALS-Dilithium (CRYDI).
+This document describes several post quantum cryptography (PQC) based
+digital signature schemes and how those signature schemes may be
+exchanged in JSON.
+
+
+{mainmatter}
+
+# Notational Conventions
+
+The keywords **MUST**, **MUST NOT**, **REQUIRED**, **SHALL**, **SHALL NOT**, **SHOULD**,
+**SHOULD NOT**, **RECOMMENDED**, **MAY**, and **OPTIONAL**, when they appear in this
+document, are to be interpreted as described in [@!RFC2119].
+
+# Terminology
+
+The following terminology is used throughout this document:
+
+PK
+: The public key for the signature scheme.
+
+SK
+: The secret key for the signature scheme.
+
+signature
+: The digital signature output.
+
+message
+: The input to be signed by the signature scheme.
+
+sha256
+: The SHA-256 hash function defined in [@!RFC6234].
+
+shake256
+: The SHAKE256 hash function defined in [@!RFC8702].
+
+# CRYSYALS-Dilithium
+
+## Overview
+
+This section of the document describes the lattice signature scheme CRYSTALS-Dilithium (CRYDI).
 The scheme is based on "Fiat-Shamir with Aborts"[Lyu09, Lyu12] utlizing a matrix
 of polynomials for key material, and a vector of polynomials for signatures.
 The parameter set is strategically chosen such that the signing algorithm is large
 enough to maintain zero-knowledge properties but small enough to prevent forgery of
 signatures. An example implementation and test vectors are provided.
-
-{mainmatter}
-
-# Introduction
 
 CRYSTALS-Dilithium is a Post Quantum approach to digital signatures that is
 an algorithmic apprach that seeks to ensure key pair and signing properties
@@ -86,35 +121,7 @@ signature suites:
 The primary known disadvantage to CRYSTALS-Dilithium is the size of keys and
 signatures, especially as compared to classical approaches for digital signing.
 
-## Notational Conventions
-
-The keywords **MUST**, **MUST NOT**, **REQUIRED**, **SHALL**, **SHALL NOT**, **SHOULD**,
-**SHOULD NOT**, **RECOMMENDED**, **MAY**, and **OPTIONAL**, when they appear in this
-document, are to be interpreted as described in [@!RFC2119].
-
-## Terminology
-
-The following terminology is used throughout this document:
-
-PK
-: The public key for the signature scheme.
-
-SK
-: The secret key for the signature scheme.
-
-signature
-: The digital signature output.
-
-message
-: The input to be signed by the signature scheme.
-
-sha256
-: The SHA-256 hash function defined in [@!RFC6234].
-
-shake256
-: The SHAKE256 hash function defined in [@!RFC8702].
-
-# Parameters
+## Parameters
 
 Unlike certain other approaches such as Ed25519 that have a large set of
 parameters, CRYSTALS-Dilithium uses distinct numbers of paramters to
@@ -127,7 +134,7 @@ which should be sufficient to maintain 128bits of security for all known
 classical and quantum attacks. Under a parameter set at NIST level 3, a
 6x5 matrix is utilized that thereby consists of 30 polynomials.
 
-## Parameter sets
+### Parameter sets
 
 Parameter sets are identified by the corresponding NIST level per the
 table below
@@ -140,11 +147,11 @@ table below
 | 3          | 6x5         | 138.7          |
 | 5          | 8x7         | 187.4          |
 
-# Core Operations
+## Core Operations
 
 This section defines core operations used by the signature scheme, as proposed in [@!CRYSTALS-Dilithium].
 
-## Generate
+### Generate
 
 <!-- In order for svg figures to show, they must be bundled into the build -->
 <!-- https://viereck.ch/latex-to-svg/ -->
@@ -165,7 +172,7 @@ This section defines core operations used by the signature scheme, as proposed i
 ![svg](spec/key-gen.svg "key generation")
 !---
 
-## Sign
+### Sign
 
 <!--
 
@@ -189,7 +196,7 @@ This section defines core operations used by the signature scheme, as proposed i
 ![svg](spec/sign.svg "sign")
 !---
 
-## Verify
+### Verify
 
 <!--
 
@@ -207,11 +214,11 @@ This section defines core operations used by the signature scheme, as proposed i
 ![svg](spec/verify.svg "verify")
 !---
 
-# Using CRYDI with JOSE
+## Using CRYDI with JOSE
 
 Basing off of [this](https://datatracker.ietf.org/doc/html/rfc8812#section-3)
 
-## CRYDI Key Representations
+### CRYDI Key Representations
 
 A new key type (kty) value "PQK" (Post Quantum Key Pair) is defined for
 public key algorithms that use base 64 encoded strings of the underlying binary materia
@@ -256,7 +263,7 @@ When calculating JWK Thumbprints [@!RFC7638], the four public key
 fields are included in the hash input in lexicographic order:
 "kty", "pset", and "x".
 
-### Public Key
+#### Public Key
 
 Per section 5.1 of [@!CRYSTALS-Dilithium]:
 
@@ -293,7 +300,7 @@ Example public key including optional fields:
 }
 ```
 
-### Private Key
+#### Private Key
 
 Per section 5.1 of [@!CRYSTALS-Dilithium]:
 
@@ -335,7 +342,7 @@ Example private key using optional fields:
 }
 ```
 
-## CRYDI Signature Representation
+### CRYDI Signature Representation
 
 For the purpose of using the CRYSTALS-Dilithium Signature
 Algorithm (CRYDI) for signing data using "JSON Web Signature (JWS)"
@@ -418,11 +425,23 @@ The same example decoded for readability:
 }
 ```
 
+# Falcon
+
+TODO
+
+# SPHINCS+
+
+TODO
+
 # Security Considerations
+
+The following considerations SHOULD apply to all signature schemes described
+in this specification, unless otherwise noted.
+
 
 ## Validating public keys
 
-All algorithms in Section 2 that operate on public keys require first validating those keys.
+All algorithms in that operate on public keys require first validating those keys.
 For the sign, verify and proof schemes, the use of KeyValidate is REQUIRED.
 
 ## Side channel attacks
@@ -441,7 +460,8 @@ at a minimum:
   sampling in implementation.
 - Secrecy of S1 - utmost care must be given to protection of S1 and to prevent information or
   power leakage. As is the case with most proposed lattice based approaches to date, fogery and
-  other attacks may succeed through [leakage of S1](https://eprint.iacr.org/2018/821.pdf) through side channel mechanisms.
+  other attacks may succeed, for example, with Dilithium through [leakage of S1](https://eprint.iacr.org/2018/821.pdf)
+  through side channel mechanisms.
 
 ## Randomness considerations
 
