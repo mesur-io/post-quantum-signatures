@@ -14,3 +14,5 @@ draft-post-quantum-signatures.xml
 lib
 report.xml
 venv/
+
+.vscode
