@@ -85,9 +85,9 @@ post quantum cryptography (PQC) based suites.
 This document does not define any new cryptography,
 only seralizations of existing cryptographic systems.
 
-This document registers key types for JOSE and COSE.
+This document registers key types for JOSE and COSE, specifically `PQK`, `CRYDI`, `pset`.
 
-This document registers signature algorithms types for JOSE and COSE.
+This document registers signature algorithms types for JOSE and COSE, specifically `CRYDI3`.
 
 
 {mainmatter}
