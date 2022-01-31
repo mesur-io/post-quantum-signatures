@@ -8,8 +8,9 @@ submissiontype = "IETF"
 keyword = [""]
 
 [seriesInfo]
-name = "Individual-Draft"
+name = "Internet-Draft"
 value = "draft-post-quantum-jose-latest"
+stream = "IETF"
 status = "informational"
 
 [[author]]
