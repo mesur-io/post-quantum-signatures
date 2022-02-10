@@ -1,6 +1,6 @@
 %%%
 title = "JSON Encoding for Post Quantum Signatures"
-abbrev = "draft-post-quantum-jose"
+abbrev = "draft-post-quantum-signatures"
 ipr= "none"
 area = "Internet"
 workgroup = "none"
@@ -9,7 +9,7 @@ keyword = [""]
 
 [seriesInfo]
 name = "Internet-Draft"
-value = "draft-post-quantum-jose-latest"
+value = "draft-post-quantum-signatures-latest"
 stream = "IETF"
 status = "informational"
 
