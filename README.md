@@ -16,6 +16,19 @@ See the
 Contributions can be made by creating pull requests.
 The GitHub interface supports creating pull requests using the Edit (✏) button.
 
+### Meetings and Collaboration
+
+Participants to this work item are invited to a weekly meeting to discuss 
+[Pull Requests](https://github.com/mesur-io/post-quantum-signatures/pulls?q=is%3Apr+is%3Aopen+sort%3Aupdated-asc), 
+[Issues](https://github.com/mesur-io/post-quantum-signatures/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-asc),
+and [content on the spec](https://github.com/mesur-io/post-quantum-signatures/blob/main/draft-post-quantum-signatures.md), 
+along with progress towards standardization.
+
+Meetings are held weekly on Mondays at 10:00 ET / 15:00 GMT on Google Meet.  
+Video call link: [https://meet.google.com/bqb-omio-dtx](https://meet.google.com/bqb-omio-dtx)  
+Or dial: ‪(US) +1 863-703-4902‬ PIN: ‪924 526 334‬#  
+
+More phone numbers are available for international callers [here](https://tel.meet/bqb-omio-dtx?pin=6212109710970)  
 
 ## Setup
 
