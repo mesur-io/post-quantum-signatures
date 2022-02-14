@@ -279,8 +279,8 @@ It has the following parameters:
 
 - The parameter "kty" MUST be "PQK".
 
-- The patameter "alg" MAY be specified, and at this time MAY only be "CRYDI" until
-  other algorithms are specified
+- The parameter "alg" MUST be specified, and its value MUST be one of the values
+  specified in table __TBD__.
 
 - The parameter "pset" MUST be specfied to indicate the not only paramter set
   in use for the algorithm, but SHOULD also reflect the targeted NIST level for the
@@ -315,6 +315,19 @@ When calculating JWK Thumbprints [@!RFC7638], the four public key
 fields are included in the hash input in lexicographic order:
 "kty", "pset", and "x".
 
+
+### CRYDI Algorithms
+
+In order to reduce the complexity of the key representation and signature representations we register a unique algorithm name per pset.
+This allows us to omit registering the `pset` term, and reduced the likelyhood that it will be misused.
+These `alg` values are used in both key representations and signatures.
+
+| kty         | alg           | Paramter Set |
+| ----------- | ------------- | ------------ |
+| PQK         | CRYDI5        | 5            |
+| PQK         | CRYDI3        | 3            |
+| PQK         | CRYDI2        | 2            |
+
 #### Public Key
 
 Per section 5.1 of [@!CRYSTALS-Dilithium]:
@@ -330,7 +343,7 @@ Example public key using only required fields:
 
 {
   "kty": "PQK",
-  "pset": "3",
+  "alg": "CRYDI3",
   "x": "z7u7GwhsjjnfHH3Nkrs2xvvw020Rcw5ymdlTnhRenjDdrOO+nfXRVUZVy9q1\
 5zDn77zTgrIskM3WX8bqslc+B1fq12iA/wxD2jc1d6j+YjKCtkGH26OR7vc0YC2ZiMzW\
 zGl7yebt7JkmjRbN1N+u/2fAKFLuziMcLNP6WLoWbMqxoC2XOOVNAWX3QjXrCcGU23Nr\
@@ -381,8 +394,7 @@ Example public key including optional fields:
 {
   "kid": "key-0",
   "kty": "PQK",
-  "alg": "CRYDI",
-  "pset": "3",
+  "alg": "CRYDI3",
   "key_ops": ["verify"],
   "xs": "z3uZQVjflnRZDSZn1e8g4oKH4YUU6TnpvkU4WrrGdXw=",
   "ds": "5DuZ8XoJQirc/5TE23tBcoGoHo+JTj1+9ULLXtCiySU=",
@@ -443,8 +455,7 @@ Example private key using only required fields:
 
 {
   "kty": "PQK",
-  "alg": "CRYDI",
-  "pset": "3",
+  "alg": "CRYDI3",
   "x": "z7u7GwhsjjnfHH3Nkrs2xvvw020Rcw5ymdlTnhRenjDdrOO+nfXRVUZVy9q1\
 5zDn77zTgrIskM3WX8bqslc+B1fq12iA/wxD2jc1d6j+YjKCtkGH26OR7vc0YC2ZiMzW\
 zGl7yebt7JkmjRbN1N+u/2fAKFLuziMcLNP6WLoWbMqxoC2XOOVNAWX3QjXrCcGU23Nr\
@@ -574,8 +585,7 @@ Example private key using optional fields:
 {
   "kid": "key-0",
   "kty": "PQK",
-  "alg": "CRYDI",
-  "pset": "3",
+  "alg": "CRYDI3",
   "key_ops": ["sign"],
   "xs": "z3uZQVjflnRZDSZn1e8g4oKH4YUU6TnpvkU4WrrGdXw=",
   "ds": "5DuZ8XoJQirc/5TE23tBcoGoHo+JTj1+9ULLXtCiySU=",
@@ -740,11 +750,8 @@ are made:
 
 - The "kty" field MUST be present, and it MUST be "PQK" for JOSE.
 
-- The "pset" field MUST be present, and it MUST represent the
+- The "alg" field MUST be present, and it MUST represent the
   pset subtype.
-
-- If the "alg" field is present, it MUST represent the "CRYDI"
-  algorithm.
 
 - If the "key_ops" field is present, it MUST include "sign" when
   creating an CRYDI signature.
