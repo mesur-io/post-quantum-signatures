@@ -121,7 +121,7 @@ sha256
 shake256
 : The SHAKE256 hash function defined in [@!RFC8702].
 
-# CRYSYALS-Dilithium
+# CRYSTALS-Dilithium
 
 ## Overview
 
