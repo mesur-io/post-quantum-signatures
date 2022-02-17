@@ -865,6 +865,110 @@ TODO
 
 # SPHINCS+
 
+## Overview
+
+This section of the document describes the hash-based signature scheme SPHINCS+.
+The scheme is based on the concept of authenticating a large number or few-time 
+signatures keypair using a combination of Markle-tree signatures, a so-called 
+hypertree. For each message to be signed a (pseudo-)random FTS keypair is 
+selected with which the message can be signed. Combining this signature along 
+with an authentication path through the hyper-tree consisting of hash-based 
+many-time signatures then gives the SPHINC+ signature.
+The parameter set is strategically chosen such that the probability of signing 
+too many messages with a specific FTS keypair to impact security is small 
+enough to prevent forgery attacks. A trade-off in parameter set can be made 
+on security guarantees, performance and signature size.
+
+SPHINCS+ is a post-quantum approach to digital signatures that is
+promises Post-Quantum Existential Unforgeability under
+Chosen Message Attack (PQ-EU-CMA), while ensuring that the security
+levels reached meet security needs for resistance to both classical and quantum
+attacks. The algoritm itself is based on the hardness assumptions of its 
+underlying hash functions, which can be chosen from the set Haraka, 
+SHA-256 or SHAKE256.
+For all security levels the only operations required are calls to these 
+hash functions on various combinations of parameters and internal states.
+
+Contrary to CRYSTALS-Dilithium and Falcon, SPHINCS+ is not based on any 
+algebraic structure. This reduces the possible attack surface of the 
+algorithm. 
+
+SPHINCS+ brings several advantages over other approaches to
+signature suites:
+
+- Post Quantum in nature - use of cryptographically secure hash functions and 
+  other approaches that should remain hard problems even when under an attack 
+  utilizing quantum approaches
+- Minimal security assumptions - compared to other schemes does not base its 
+  security on a new paradigm. The security is solely based on the security of 
+  the assumptions of the underlying hash function.
+- Performance and Optimization - based on combining a great many hash function 
+  calls of SHA-256, SHAKE256 or Haraka means existing (secure) SW and HW 
+  implementations of those hash functions can be re-used for increased 
+  performance
+- Private and Public Key Size - compared to other post quantum approaches
+  a very small key size is the form of hash inputs-outputs. This then has the 
+  drawback that either a large signature or low signing speed has to be 
+  accepted
+- Cryptanalysis assuarance - attacks (both pre-quantum and quantum) are easy 
+  to relate to existing attacks on hash functions. This allows for precise 
+  quantification of the security levels
+- Overlap with stateful hash-based algorithms - means there are possibilities 
+  to combine implementions with those of XMSS and LMS (TODO refs)
+- Inherent resistance against side-channel attacks - since its core primitive 
+  is a hash function, it thereby is hard to attack with side-channels.
+
+The primary known disadvantage to SPHINCS+ is the size signatures, or the 
+speed of signing, depending on the chosen parameter set. Especially in IoT 
+applications this might pose a problem. Additionally hash-based schemes are 
+also vulnerable to differential and fault attacks.
+
+## Parameters
+
+TODO
+
+### Parameter sets
+
+TODO
+
+## Core Operations
+
+TODO
+
+### Generate
+
+TODO
+
+### Sign
+
+TODO
+
+### Verify
+
+TODO
+
+## Using SPHINCS+ with JOSE
+
+Basing off of [this](https://datatracker.ietf.org/doc/html/rfc8812#section-3)
+
+### SPHINCS+ Key Representations
+
+TODO
+
+### SPHINCS+ Algorithms
+
+TODO
+
+#### Public Key
+
+TODO
+
+#### Private Key
+
+TODO
+
+### SPHINCS+ Signature Representation
+
 TODO
 
 # Security Considerations
