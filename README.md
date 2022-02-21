@@ -32,8 +32,8 @@ More phone numbers are available for international callers [here](https://tel.me
 
 ## Setup
 
-Command line usage requires that you have the necessary software installed. For detailed instructions, please see
-[the instructions](https://github.com/martinthomson/i-d-template/blob/main/doc/SETUP.md) or follow the quick-start instructions below.
+Command line usage requires that you have the necessary software installed. Please review
+[the detailed instructions](https://github.com/martinthomson/i-d-template/blob/main/doc/SETUP.md) or follow the quick-start instructions below.
 
 The `Makefile` in this repository can be used to produce the following formatted `.txt` and `.html` versions of this draft for local review during development.
 
