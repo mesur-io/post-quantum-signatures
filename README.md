@@ -40,7 +40,7 @@ The `Makefile` in this repository can be used to produce the following formatted
 - draft-post-quantum-signatures.html
 - draft-post-quantum-signatures.txt
 
-_NOTE: With the exception of the recommended Docker build instructions, it is assumed that Python3 and `pip` is installed on the local system. Instructions for installing Python are out of scope for this guide, but can be found on the [main Python website](https://www.python.org/)._
+_NOTE: With the exception of the recommended Docker build instructions, it is assumed that Python3 and `pip` are installed on the local system. Instructions for installing Python are out of scope for this guide, but can be found on the [main Python website](https://www.python.org/)._
 
 ### Build using Docker (Recommended)
 
@@ -82,7 +82,7 @@ make
 
 In order to build the project from the command-line on OSX, you will need to ensure that you have all of the necessary supporting software installed.
 
-_Example: install make and mmark using [Homebrew](https://brew.sh):_
+_Example: install `make` and `mmark` using [Homebrew](https://brew.sh):_
 ```bash
 brew install make mmark
 ```
