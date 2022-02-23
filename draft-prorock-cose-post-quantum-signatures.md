@@ -3,7 +3,7 @@ title = "JSON Encoding for Post Quantum Signatures"
 abbrev = "post-quantum-signatures"
 ipr= "trust200902"
 area = "Internet"
-workgroup = ""
+workgroup = "COSE"
 submissiontype = "IETF"
 keyword = ["jose","cose","pqc"]
 
