@@ -2,9 +2,9 @@
 
 This is the working area for the individual Internet-Draft, "JSON Encoding for Post Quantum Signatures".
 
-* [Editor's Copy](https://mesur-io.github.io/post-quantum-signatures/#go.draft-post-quantum-signatures.html)
-* [Datatracker Page](https://datatracker.ietf.org/doc/draft-post-quantum-signatures)
-* [Individual Draft](https://datatracker.ietf.org/doc/html/draft-post-quantum-signatures)
+* [Editor's Copy](https://mesur-io.github.io/post-quantum-signatures/#go.draft-prorock-cose-post-quantum-signatures.html)
+* [Datatracker Page](https://datatracker.ietf.org/doc/draft-prorock-cose-post-quantum-signatures)
+* [Individual Draft](https://datatracker.ietf.org/doc/html/draft-prorock-cose-post-quantum-signatures)
 * [Compare Editor's Copy to Individual Draft](https://mesur-io.github.io/post-quantum-signatures/#go.draft-post-quantum-signatures.diff)
 
 
@@ -21,7 +21,7 @@ The GitHub interface supports creating pull requests using the Edit (✏) button
 Participants to this work item are invited to a weekly meeting to discuss
 [Pull Requests](https://github.com/mesur-io/post-quantum-signatures/pulls?q=is%3Apr+is%3Aopen+sort%3Aupdated-asc),
 [Issues](https://github.com/mesur-io/post-quantum-signatures/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-asc),
-and [content on the spec](https://github.com/mesur-io/post-quantum-signatures/blob/main/draft-post-quantum-signatures.md),
+and [content on the spec](https://github.com/mesur-io/post-quantum-signatures/blob/main/draft-prorock-cose-post-quantum-signatures.md),
 along with progress towards standardization.
 
 Meetings are held weekly on Mondays at 10:00 ET / 15:00 GMT on Google Meet.
@@ -37,8 +37,8 @@ Command line usage requires that you have the necessary software installed. Plea
 
 The `Makefile` in this repository can be used to produce the following formatted `.txt` and `.html` versions of this draft for local review during development.
 
-- draft-post-quantum-signatures.html
-- draft-post-quantum-signatures.txt
+- draft-prorock-cose-post-quantum-signatures.html
+- draft-prorock-cose-post-quantum-signatures.txt
 
 _NOTE: With the exception of the recommended Docker build instructions, it is assumed that Python3 and `pip` are installed on the local system. Instructions for installing Python are out of scope for this guide, but can be found on the [main Python website](https://www.python.org/)._
 
