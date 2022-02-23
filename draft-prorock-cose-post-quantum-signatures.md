@@ -1,11 +1,11 @@
 %%%
 title = "JSON Encoding for Post Quantum Signatures"
-abbrev = "draft-prorock-cose-post-quantum-signatures"
-ipr= "none"
+abbrev = "post-quantum-signatures"
+ipr= "trust200902"
 area = "Internet"
 workgroup = "none"
 submissiontype = "IETF"
-keyword = [""]
+keyword = ["jose","cose","pqc"]
 
 [seriesInfo]
 name = "Internet-Draft"
