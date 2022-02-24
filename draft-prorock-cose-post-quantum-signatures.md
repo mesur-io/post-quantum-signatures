@@ -88,7 +88,8 @@ only seralizations of existing cryptographic systems.
 
 This document registers key types for JOSE and COSE, specifically `PQK`, `CRYDI`, `pset`.
 
-This document registers signature algorithms types for JOSE and COSE, specifically `CRYDI3`.
+This document registers signature algorithms types for JOSE and COSE, specifically `CRYDI3`
+and others as required for various post quantum signature schemes.
 
 
 {mainmatter}
