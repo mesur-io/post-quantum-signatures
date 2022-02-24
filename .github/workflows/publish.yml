@@ -40,10 +40,11 @@ jobs:
       with:
         token: ${{ github.token }}
 
-    - name: "Upload to Datatracker"
-      uses: martinthomson/i-d-template@v1
-      with:
-        make: upload
+    # Do not upload to datatracker yet
+    # - name: "Upload to Datatracker"
+    #  uses: martinthomson/i-d-template@v1
+    #  with:
+    #    make: upload
 
     - name: "Archive Submitted Drafts"
       uses: actions/upload-artifact@v2
