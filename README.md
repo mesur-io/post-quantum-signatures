@@ -26,7 +26,7 @@ along with progress towards standardization.
 
 Meetings are held weekly on Mondays at 10:00 ET / 15:00 GMT on Google Meet.
 Video call link: [https://meet.google.com/bqb-omio-dtx](https://meet.google.com/bqb-omio-dtx)
-Or dial: ‪(US) +1 863-703-4902‬ PIN: ‪924 526 334‬#
+Or dial: (US) +1 863-703-4902 PIN: 924 526 334#
 
 More phone numbers are available for international callers [here](https://tel.meet/bqb-omio-dtx?pin=6212109710970)
 
