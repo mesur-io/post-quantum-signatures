@@ -10,7 +10,9 @@
 .targets.mk
 /*-[0-9][0-9].xml
 archive.json
-draft-post-quantum-signatures.xml
+draft-prorock-cose-post-quantum-signatures.xml
+!draft-prorock-cose-post-quantum-signatures-00.html
+!draft-prorock-cose-post-quantum-signatures-00.txt
 lib
 report.xml
 venv/
