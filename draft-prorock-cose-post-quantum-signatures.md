@@ -860,6 +860,24 @@ The same example decoded for readability:
 }
 ```
 
+## Using CRYDI with COSE
+
+The approach taken here matches the work done to support secp256k1 in JOSE and COSE in [@!RFC8812].
+
+The following tables map terms between JOSE and COSE for signatures.
+
+| Name   | Value | Description | Recommended |
+| ------ | ----- | ----------- | ----------- |
+| CRYDI5 | TBD   | TBD         | No          |
+| CRYDI3 | TBD   | TBD         | No          |
+| CRYDI2 | TBD   | TBD         | No          |
+
+The following tables map terms between JOSE and COSE for key types.
+
+| Name   | Value | Description | Recommended |
+| ------ | ----- | ----------- | ----------- |
+| PQK    | TBD   | TBD         | No          |
+
 # Falcon
 
 TODO
