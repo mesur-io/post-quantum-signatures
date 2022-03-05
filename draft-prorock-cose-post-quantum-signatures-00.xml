@@ -1,119 +1,81 @@
-%%%
-title = "JSON Encoding for Post Quantum Signatures"
-abbrev = "post-quantum-signatures"
-ipr= "trust200902"
-area = "Internet"
-workgroup = "None"
-submissiontype = "IETF"
-keyword = ["JOSE","COSE","PQC"]
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE rfc [
+  <!ENTITY nbsp    "&#160;">
+  <!ENTITY zwsp   "&#8203;">
+  <!ENTITY nbhy   "&#8209;">
+  <!ENTITY wj     "&#8288;">
+]>
+<!-- name="GENERATOR" content="github.com/mmarkdown/mmark Mmark Markdown Processor - mmark.miek.nl" -->
+<rfc xmlns:xi="http://www.w3.org/2001/XInclude" version="3" ipr="trust200902" docName="draft-prorock-cose-post-quantum-signatures-00" submissionType="IETF" category="std" xml:lang="en" indexInclude="true" consensus="true">
 
-[seriesInfo]
-name = "Internet-Draft"
-value = "draft-prorock-cose-post-quantum-signatures-latest"
-stream = "IETF"
-status = "standard"
+<front>
+<title abbrev="post-quantum-signatures">JSON Encoding for Post Quantum Signatures</title><seriesInfo value="draft-prorock-cose-post-quantum-signatures-00" stream="IETF" status="standard" name="Internet-Draft"/>
+<author initials="M." surname="Prorock" fullname="Michael Prorock"><organization>mesur.io</organization><address><postal><street/>
+</postal><email>mprorock@mesur.io</email>
+</address></author><author initials="O." surname="Steele" fullname="Orie Steele"><organization>Transmute</organization><address><postal><street/>
+</postal><email>orie@transmute.industries</email>
+</address></author><author initials="R." surname="Misoczki" fullname="Rafael Misoczki"><organization>Google</organization><address><postal><street/>
+</postal><email>rafaelmisoczki@google.com</email>
+</address></author><author initials="M" surname="Osborne" fullname="Michael Osborne"><organization>IBM</organization><address><postal><street/>
+</postal><email>osb@zurich.ibm.com</email>
+</address></author><author initials="C" surname="Cloostermans" fullname="Christine Cloostermans"><organization>NXP</organization><address><postal><street/>
+</postal><email>christine.cloostermans@nxp.com</email>
+</address></author><date/>
+<area>Internet</area>
+<workgroup>None</workgroup>
+<keyword>JOSE</keyword>
+<keyword>COSE</keyword>
+<keyword>PQC</keyword>
 
-[pi]
-toc = "yes"
+<abstract>
+<t>This document describes JSON and CBOR serializations for several
+post quantum cryptography (PQC) based suites.</t>
+<t>This document does not define any new cryptography,
+only seralizations of existing cryptographic systems.</t>
+<t>This document registers key types for JOSE and COSE, specifically <tt>PQK</tt>, <tt>CRYDI</tt>, <tt>pset</tt>.</t>
+<t>This document registers signature algorithms types for JOSE and COSE, specifically <tt>CRYDI3</tt>
+and others as required for various post quantum signature schemes.</t>
+</abstract>
 
-[[author]]
-initials = "M."
-surname = "Prorock"
-fullname = "Michael Prorock"
-organization = "mesur.io"
-  [author.address]
-  email = "mprorock@mesur.io"
+</front>
 
-[[author]]
-initials = "O."
-surname = "Steele"
-fullname = "Orie Steele"
-organization = "Transmute"
-  [author.address]
-  email = "orie@transmute.industries"
+<middle>
 
-[[author]]
-initials = "R."
-surname = "Misoczki"
-fullname = "Rafael Misoczki"
-organization = "Google"
-  [author.address]
-  email = "rafaelmisoczki@google.com"
+<section anchor="notational-conventions"><name>Notational Conventions</name>
+<t>The key words "<bcp14>MUST</bcp14>", "<bcp14>MUST NOT</bcp14>", "<bcp14>REQUIRED</bcp14>", "<bcp14>SHALL</bcp14>", "<bcp14>SHALL NOT</bcp14>", "<bcp14>SHOULD</bcp14>",
+"<bcp14>SHOULD NOT</bcp14>", "<bcp14>RECOMMENDED</bcp14>", "<bcp14>MAY</bcp14>", and "<bcp14>OPTIONAL</bcp14>" in this
+document are to be interpreted as described in <xref target="RFC2119"/>.</t>
+</section>
 
-[[author]]
-initials = "M"
-surname = "Osborne"
-fullname = "Michael Osborne"
-organization = "IBM"
-  [author.address]
-  email = "osb@zurich.ibm.com"
+<section anchor="terminology"><name>Terminology</name>
+<t>The following terminology is used throughout this document:</t>
 
-[[author]]
-initials = "C"
-surname = "Cloostermans"
-fullname = "Christine Cloostermans"
-organization = "NXP"
-  [author.address]
-  email = "christine.cloostermans@nxp.com"
+<dl spacing="compact">
+<dt>PK</dt>
+<dd>The public key for the signature scheme.</dd>
+<dt>SK</dt>
+<dd>The secret key for the signature scheme.</dd>
+<dt>signature</dt>
+<dd>The digital signature output.</dd>
+<dt>message</dt>
+<dd>The input to be signed by the signature scheme.</dd>
+<dt>sha256</dt>
+<dd>The SHA-256 hash function defined in <xref target="RFC6234"/>.</dd>
+<dt>shake256</dt>
+<dd>The SHAKE256 hash function defined in <xref target="RFC8702"/>.</dd>
+</dl>
+</section>
 
-%%%
+<section anchor="crystals-dilithium"><name>CRYSTALS-Dilithium</name>
 
-.# Abstract
-
-This document describes JSON and CBOR serializations for several
-post quantum cryptography (PQC) based suites.
-
-This document does not define any new cryptography,
-only seralizations of existing cryptographic systems.
-
-This document registers key types for JOSE and COSE, specifically `PQK`, `CRYDI`, `pset`.
-
-This document registers signature algorithms types for JOSE and COSE, specifically `CRYDI3`
-and others as required for various post quantum signature schemes.
-
-
-{mainmatter}
-
-# Notational Conventions
-
-The key words "**MUST**", "**MUST NOT**", "**REQUIRED**", "**SHALL**", "**SHALL NOT**", "**SHOULD**",
-"**SHOULD NOT**", "**RECOMMENDED**", "**MAY**", and "**OPTIONAL**" in this
-document are to be interpreted as described in [@!RFC2119].
-
-# Terminology
-
-The following terminology is used throughout this document:
-
-PK
-: The public key for the signature scheme.
-
-SK
-: The secret key for the signature scheme.
-
-signature
-: The digital signature output.
-
-message
-: The input to be signed by the signature scheme.
-
-sha256
-: The SHA-256 hash function defined in [@RFC6234].
-
-shake256
-: The SHAKE256 hash function defined in [@!RFC8702].
-
-# CRYSTALS-Dilithium
-
-## Overview
-
-This section of the document describes the lattice signature scheme CRYSTALS-Dilithium (CRYDI).
+<section anchor="overview"><name>Overview</name>
+<t>This section of the document describes the lattice signature scheme CRYSTALS-Dilithium (CRYDI).
 The scheme is based on "Fiat-Shamir with Aborts"[Lyu09, Lyu12] utlizing a matrix
 of polynomials for key material, and a vector of polynomials for signatures.
 The parameter set is strategically chosen such that the signing algorithm is large
 enough to maintain zero-knowledge properties but small enough to prevent forgery of
-signatures. An example implementation and test vectors are provided.
-
-CRYSTALS-Dilithium is a Post Quantum approach to digital signatures that is
+signatures. An example implementation and test vectors are provided.</t>
+<t>CRYSTALS-Dilithium is a Post Quantum approach to digital signatures that is
 an algorithmic apprach that seeks to ensure key pair and signing properties
 that is a strong implementation meeting Existential Unforgeability under
 Chosen Message Attack (EUF-CMA) properties, while ensuring that the security
@@ -123,40 +85,39 @@ specifically Ring Learning with Errors (Ring-LWE). For all security levels
 the only operations required are variants of Keccak and number theoretic
 transforms (NTT) for the ring Zq[X]/(X256+1). This ensures that to increase
 or decrease the security level invovles only the change of parameters rather
-than re-implementation of a related algorithm.
-
-While based on Ring-LWE, CRYSTALS-Dilithium has less algebraic structure than
+than re-implementation of a related algorithm.</t>
+<t>While based on Ring-LWE, CRYSTALS-Dilithium has less algebraic structure than
 direct Ring-LWE implementations and more closely resembles the unstructured
 lattices used in Learning with Errors (LWE). This brings a theorectical
-protection against future algebraic attacks on Ring-LWE that may be developed.
+protection against future algebraic attacks on Ring-LWE that may be developed.</t>
+<t>CRYSTALS-Dilithium, brings several advantages over other approaches to
+signature suites:</t>
 
-CRYSTALS-Dilithium, brings several advantages over other approaches to
-signature suites:
+<ul spacing="compact">
+<li>Post Quantum in nature - use of lattices and other approaches that should
+remain hard problems even when under attack utilizing quantum approaches</li>
+<li>Simple implementation while maintaing security - a danger in many possible
+approaches to cryptography is that it may be possible inadvertantly introduce
+errors in code that lead to weakness or decreases in security level</li>
+<li>Signature and Public Key Size - compared to other post quantum approaches
+a reasonable key size has been achieved that also preserves desired security
+properties</li>
+<li>Conservative parameter space - parameterization is utilized for the purposes
+of defining the sizes of marices in use, and thereby the number of polynomials
+described by the key material.</li>
+<li>Parameter set adjustment for greater security - increasing this matrix size
+increases the number of polynomials, and thereby the security level</li>
+<li>Performance and optimization - the approach makes use of well known
+transforms that can be highly optimized, especially with use of hardware
+optimizations without being so large that it cannot be deployed in embedded
+or IoT environments without some degree of optimization.</li>
+</ul>
+<t>The primary known disadvantage to CRYSTALS-Dilithium is the size of keys and
+signatures, especially as compared to classical approaches for digital signing.</t>
+</section>
 
-- Post Quantum in nature - use of lattices and other approaches that should
-  remain hard problems even when under attack utilizing quantum approaches
-- Simple implementation while maintaing security - a danger in many possible
-  approaches to cryptography is that it may be possible inadvertantly introduce
-  errors in code that lead to weakness or decreases in security level
-- Signature and Public Key Size - compared to other post quantum approaches
-  a reasonable key size has been achieved that also preserves desired security
-  properties
-- Conservative parameter space - parameterization is utilized for the purposes
-  of defining the sizes of marices in use, and thereby the number of polynomials
-  described by the key material.
-- Parameter set adjustment for greater security - increasing this matrix size
-  increases the number of polynomials, and thereby the security level
-- Performance and optimization - the approach makes use of well known
-  transforms that can be highly optimized, especially with use of hardware
-  optimizations without being so large that it cannot be deployed in embedded
-  or IoT environments without some degree of optimization.
-
-The primary known disadvantage to CRYSTALS-Dilithium is the size of keys and
-signatures, especially as compared to classical approaches for digital signing.
-
-## Parameters
-
-Unlike certain other approaches such as Ed25519 that have a large set of
+<section anchor="parameters"><name>Parameters</name>
+<t>Unlike certain other approaches such as Ed25519 that have a large set of
 parameters, CRYSTALS-Dilithium uses distinct numbers of paramters to
 increase or decrease the security level according to the required
 level for a particular scenario. Under DILITHIUM-Crustals, the key
@@ -165,111 +126,177 @@ the number of polynomials that describe he lattice. For use according to
 this specification we do not recommend a parameter set of less than 3,
 which should be sufficient to maintain 128bits of security for all known
 classical and quantum attacks. Under a parameter set at NIST level 3, a
-6x5 matrix is utilized that thereby consists of 30 polynomials.
+6x5 matrix is utilized that thereby consists of 30 polynomials.</t>
 
-### Parameter sets
+<section anchor="parameter-sets"><name>Parameter sets</name>
+<t>Parameter sets are identified by the corresponding NIST level per the
+table below</t>
+<table align="left">
+<thead>
+<tr>
+<th>NIST Level</th>
+<th>Matrix Size</th>
+<th>memory in bits</th>
+</tr>
+</thead>
 
-Parameter sets are identified by the corresponding NIST level per the
-table below
+<tbody>
+<tr>
+<td>2</td>
+<td>4x4</td>
+<td>97.8</td>
+</tr>
 
-{align="left"}
+<tr>
+<td>3</td>
+<td>6x5</td>
+<td>138.7</td>
+</tr>
 
-| NIST Level | Matrix Size | memory in bits |
-| ---------- | ----------- | -------------- |
-| 2          | 4x4         | 97.8           |
-| 3          | 6x5         | 138.7          |
-| 5          | 8x7         | 187.4          |
+<tr>
+<td>5</td>
+<td>8x7</td>
+<td>187.4</td>
+</tr>
+</tbody>
+</table></section>
+</section>
 
-## Core Operations
+<section anchor="core-operations"><name>Core Operations</name>
+<t>This section defines core operations used by the signature scheme, as proposed in <xref target="CRYSTALS-Dilithium"/>.</t>
 
-This section defines core operations used by the signature scheme, as proposed in [@!CRYSTALS-Dilithium].
+<section anchor="generate"><name>Generate</name>
+<t>See <xref target="CRYSTALS-Dilithium"/></t>
+</section>
 
-### Generate
+<section anchor="sign"><name>Sign</name>
+<t>See <xref target="CRYSTALS-Dilithium"/></t>
+</section>
 
-See [@!CRYSTALS-Dilithium]
+<section anchor="verify"><name>Verify</name>
+<t>See <xref target="CRYSTALS-Dilithium"/></t>
+</section>
+</section>
 
-### Sign
+<section anchor="using-crydi-with-jose"><name>Using CRYDI with JOSE</name>
+<t>Basing off of <eref target="https://datatracker.ietf.org/doc/html/rfc8812#section-3">this</eref></t>
 
-See [@!CRYSTALS-Dilithium]
-
-### Verify
-
-See [@!CRYSTALS-Dilithium]
-
-## Using CRYDI with JOSE
-
-Basing off of [this](https://datatracker.ietf.org/doc/html/rfc8812#section-3)
-
-### CRYDI Key Representations
-
-A new key type (kty) value "PQK" (Post Quantum Key Pair) is defined for
+<section anchor="crydi-key-representations"><name>CRYDI Key Representations</name>
+<t>A new key type (kty) value "PQK" (Post Quantum Key Pair) is defined for
 public key algorithms that use base 64 encoded strings of the underlying binary materia
 as private and public keys and that support cryptographic sponge functions.
-It has the following parameters:
+It has the following parameters:</t>
 
-- The parameter "kty" MUST be "PQK".
+<ul>
+<li><t>The parameter "kty" MUST be "PQK".</t>
+</li>
+<li><t>The parameter "alg" MUST be specified, and its value MUST be one of the values
+specified in table <strong>TBD</strong>.</t>
+</li>
+<li><t>The parameter "pset" MUST be specfied to indicate the not only paramter set
+in use for the algorithm, but SHOULD also reflect the targeted NIST level for the
+algorithm in combination with the specified paramter set.
+For "alg" "CRYDI" one of the described parameter sets "2", "3", or "5" MUST be
+specified. Parameter set "3" or above SHOULD be used with "CRYDI" for any situation
+requiring at least 128bits of security against both quantum and classical attacks</t>
+</li>
+<li><t>The parameter "x" MUST be present and contain the public key
+encoded using the base64url <xref target="RFC4648"/> encoding.</t>
+</li>
+<li><t>The parameter "xs" MAY be present and contain the shake256 of the public key
+encoded using the base64url <xref target="RFC4648"/> encoding.</t>
+</li>
+<li><t>The parameter "d" MUST be present for private keys and contain the
+private key encoded using the base64url encoding. This parameter
+MUST NOT be present for public keys.</t>
+</li>
+<li><t>The parameter "ds" MAY be present for private keys and contain the
+shake256 of the private key encoded using the base64url encoding. This parameter
+MUST NOT be present for public keys.</t>
+</li>
+</ul>
+<t>Sizes of various key and signature material is as follows (for "pset" value "2")</t>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Paramter Name</th>
+<th>Paramter Set</th>
+<th>Size</th>
+<th>base64url encoded size</th>
+</tr>
+</thead>
 
-- The parameter "alg" MUST be specified, and its value MUST be one of the values
-  specified in table __TBD__.
+<tbody>
+<tr>
+<td>Signature</td>
+<td>sig</td>
+<td>2</td>
+<td>3293</td>
+<td>4393</td>
+</tr>
 
-- The parameter "pset" MUST be specfied to indicate the not only paramter set
-  in use for the algorithm, but SHOULD also reflect the targeted NIST level for the
-  algorithm in combination with the specified paramter set.
-  For "alg" "CRYDI" one of the described parameter sets "2", "3", or "5" MUST be
-  specified. Parameter set "3" or above SHOULD be used with "CRYDI" for any situation
-  requiring at least 128bits of security against both quantum and classical attacks
+<tr>
+<td>Public Key</td>
+<td>x</td>
+<td>2</td>
+<td>1952</td>
+<td>2605</td>
+</tr>
 
-- The parameter "x" MUST be present and contain the public key
-  encoded using the base64url [@!RFC4648] encoding.
-
-- The parameter "xs" MAY be present and contain the shake256 of the public key
-  encoded using the base64url [@!RFC4648] encoding.
-
-- The parameter "d" MUST be present for private keys and contain the
-  private key encoded using the base64url encoding. This parameter
-  MUST NOT be present for public keys.
-
-- The parameter "ds" MAY be present for private keys and contain the
-  shake256 of the private key encoded using the base64url encoding. This parameter
-  MUST NOT be present for public keys.
-
-Sizes of various key and signature material is as follows (for "pset" value "2")
-
-| Variable    | Paramter Name | Paramter Set | Size | base64url encoded size |
-| ----------- | ------------- | ------------ | ---- | ---------------------- |
-| Signature   | sig           | 2            | 3293 | 4393                   |
-| Public Key  | x             | 2            | 1952 | 2605                   |
-| Private Key | d             | 2            | 4000 | 5337                   |
-
-When calculating JWK Thumbprints [@!RFC7638], the four public key
+<tr>
+<td>Private Key</td>
+<td>d</td>
+<td>2</td>
+<td>4000</td>
+<td>5337</td>
+</tr>
+</tbody>
+</table><t>When calculating JWK Thumbprints <xref target="RFC7638"/>, the four public key
 fields are included in the hash input in lexicographic order:
-"kty", "pset", and "x".
+"kty", "pset", and "x".</t>
+</section>
 
+<section anchor="crydi-algorithms"><name>CRYDI Algorithms</name>
+<t>In order to reduce the complexity of the key representation and signature representations we register a unique algorithm name per pset.
+This allows us to omit registering the <tt>pset</tt> term, and reduced the likelyhood that it will be misused.
+These <tt>alg</tt> values are used in both key representations and signatures.</t>
+<table>
+<thead>
+<tr>
+<th>kty</th>
+<th>alg</th>
+<th>Paramter Set</th>
+</tr>
+</thead>
 
-### CRYDI Algorithms
+<tbody>
+<tr>
+<td>PQK</td>
+<td>CRYDI5</td>
+<td>5</td>
+</tr>
 
-In order to reduce the complexity of the key representation and signature representations we register a unique algorithm name per pset.
-This allows us to omit registering the `pset` term, and reduced the likelyhood that it will be misused.
-These `alg` values are used in both key representations and signatures.
+<tr>
+<td>PQK</td>
+<td>CRYDI3</td>
+<td>3</td>
+</tr>
 
-| kty         | alg           | Paramter Set |
-| ----------- | ------------- | ------------ |
-| PQK         | CRYDI5        | 5            |
-| PQK         | CRYDI3        | 3            |
-| PQK         | CRYDI2        | 2            |
+<tr>
+<td>PQK</td>
+<td>CRYDI2</td>
+<td>2</td>
+</tr>
+</tbody>
+</table>
+<section anchor="public-key"><name>Public Key</name>
+<t>Per section 5.1 of <xref target="CRYSTALS-Dilithium"/>:</t>
+<blockquote><t>The public key, containing p and t1, is stored as the concatenation of the bit-packed representations of p and t1 in this order. Therefore, it has a size of 32 + 288 kbytes.</t>
+</blockquote><t>The public key is represented as <tt>x</tt> and encoded using base64url encoding as described in <xref target="RFC7517"/>.</t>
+<t>Example public key using only required fields:</t>
 
-#### Public Key
-
-Per section 5.1 of [@!CRYSTALS-Dilithium]:
-
-> The public key, containing p and t1, is stored as the concatenation of the bit-packed representations of p and t1 in this order. Therefore, it has a size of 32 + 288 kbytes.
-
-The public key is represented as `x` and encoded using base64url encoding as described in [@!RFC7517].
-
-Example public key using only required fields:
-
-```json
-=============== NOTE: '\' line wrapping per RFC 8792 ================
+<sourcecode type="json">=============== NOTE: '\' line wrapping per RFC 8792 ================
 
 {
   "kty": "PQK",
@@ -314,12 +341,10 @@ xsOXMUbDC3VcitFFHsGK1svtcERDFxk1HA8pGa59jT0do6n3wEbnBDU1soKNFtpmcVkE\
 Ul3XpvuoW3BgCwJzBUCWvPs47DJRgGxO11bSaEYYlhTVaaShcvzgz46AkqO+Q7TjckDP\
 /8uzsSQk0AbuhxWFQpSiBP8OZ/U="
 }
-```
+</sourcecode>
+<t>Example public key including optional fields:</t>
 
-Example public key including optional fields:
-
-```json
-=============== NOTE: '\' line wrapping per RFC 8792 ================
+<sourcecode type="json">=============== NOTE: '\' line wrapping per RFC 8792 ================
 
 {
   "kid": "key-0",
@@ -368,20 +393,16 @@ xsOXMUbDC3VcitFFHsGK1svtcERDFxk1HA8pGa59jT0do6n3wEbnBDU1soKNFtpmcVkE\
 Ul3XpvuoW3BgCwJzBUCWvPs47DJRgGxO11bSaEYYlhTVaaShcvzgz46AkqO+Q7TjckDP\
 /8uzsSQk0AbuhxWFQpSiBP8OZ/U="
 }
-```
+</sourcecode>
+</section>
 
-#### Private Key
+<section anchor="private-key"><name>Private Key</name>
+<t>Per section 5.1 of <xref target="CRYSTALS-Dilithium"/>:</t>
+<blockquote><t>The secret key contains p,K,tr,s1,s2 and t0 and is also stored as a bit-packed representation of these quantities in the given order. Consequently, a secret key requires 64 + 48 + 32((k+l) * dlog (2n+ 1)e + 14k) bytes. For the weak, medium and high security level this is equal to 112 + 576k+ 128l bytes. With the very high security parameters one needs 112 + 544k + 96l = 3856 bytes.</t>
+</blockquote><t>The private key is represented as <tt>d</tt> and encoded using base64url encoding as described in <xref target="RFC7517"/>.</t>
+<t>Example private key using only required fields:</t>
 
-Per section 5.1 of [@!CRYSTALS-Dilithium]:
-
-> The secret key contains p,K,tr,s1,s2 and t0 and is also stored as a bit-packed representation of these quantities in the given order. Consequently, a secret key requires 64 + 48 + 32((k+l) * dlog (2n+ 1)e + 14k) bytes. For the weak, medium and high security level this is equal to 112 + 576k+ 128l bytes. With the very high security parameters one needs 112 + 544k + 96l = 3856 bytes.
-
-The private key is represented as `d` and encoded using base64url encoding as described in [@!RFC7517].
-
-Example private key using only required fields:
-
-```json
-=============== NOTE: '\' line wrapping per RFC 8792 ================
+<sourcecode type="json">=============== NOTE: '\' line wrapping per RFC 8792 ================
 
 {
   "kty": "PQK",
@@ -505,12 +526,10 @@ glErCNKDYe1+T+Ldyr9rfOKm9LKNyTBsodgF4KI/hFh9Iv/i55DTWtqjpN0eQnPTB3/6\
 TBp9m049Nh9oDZvI4HKsY8auiyENk0ys67F9GTHhOYM0FgHyP5qk4/IR5YC3lnq7xx6i\
 owebEJAy63htMytq+xd3cJyZR0lWBUOqvSpd/A=="
 }
-```
+</sourcecode>
+<t>Example private key using optional fields:</t>
 
-Example private key using optional fields:
-
-```json
-=============== NOTE: '\' line wrapping per RFC 8792 ================
+<sourcecode type="json">=============== NOTE: '\' line wrapping per RFC 8792 ================
 
 {
   "kid": "key-0",
@@ -638,63 +657,80 @@ glErCNKDYe1+T+Ldyr9rfOKm9LKNyTBsodgF4KI/hFh9Iv/i55DTWtqjpN0eQnPTB3/6\
 TBp9m049Nh9oDZvI4HKsY8auiyENk0ys67F9GTHhOYM0FgHyP5qk4/IR5YC3lnq7xx6i\
 owebEJAy63htMytq+xd3cJyZR0lWBUOqvSpd/A=="
 }
-```
+</sourcecode>
+</section>
+</section>
 
-### CRYDI Signature Representation
-
-For the purpose of using the CRYSTALS-Dilithium Signature
+<section anchor="crydi-signature-representation"><name>CRYDI Signature Representation</name>
+<t>For the purpose of using the CRYSTALS-Dilithium Signature
 Algorithm (CRYDI) for signing data using "JSON Web Signature (JWS)"
-[@!RFC7515], algorithm "CRYDI" is defined here, to be applied as the
-value of the "alg" parameter.
+<xref target="RFC7515"/>, algorithm "CRYDI" is defined here, to be applied as the
+value of the "alg" parameter.</t>
+<t>The following key subtypes are defined here for use with CRYDI:</t>
+<table>
+<thead>
+<tr>
+<th>"pset"</th>
+<th>CRYDI Paramter Set</th>
+</tr>
+</thead>
 
-The following key subtypes are defined here for use with CRYDI:
+<tbody>
+<tr>
+<td>5</td>
+<td>CRYDI5</td>
+</tr>
 
-| "pset" | CRYDI Paramter Set |
-| ------ | ------------------ |
-| 5      | CRYDI5             |
-| 3      | CRYDI3             |
-| 2      | CRYDI2             |
+<tr>
+<td>3</td>
+<td>CRYDI3</td>
+</tr>
 
-The key type used with these keys is "PQK" and the algorithm used for
-signing is "CRYDI". These subtypes MUST NOT be used for key agreement.
-
-The CRYDI variant used is determined by the subtype of the key
-(CRYDI3 for "pset 3" and CRYDI2 for "pset 2").
-
-Implementations need to check that the key type is "PQK" for JOSE and
+<tr>
+<td>2</td>
+<td>CRYDI2</td>
+</tr>
+</tbody>
+</table><t>The key type used with these keys is "PQK" and the algorithm used for
+signing is "CRYDI". These subtypes MUST NOT be used for key agreement.</t>
+<t>The CRYDI variant used is determined by the subtype of the key
+(CRYDI3 for "pset 3" and CRYDI2 for "pset 2").</t>
+<t>Implementations need to check that the key type is "PQK" for JOSE and
 that the pset of the key is a valid subtype when creating a
-signature.
+signature.</t>
+<t>The CRYDI digital signature is generated as
+follows:</t>
 
-The CRYDI digital signature is generated as
-follows:
+<ol>
+<li><t>Generate a digital signature of the JWS Signing Input
+using CRYDI with the desired private key, as described in <eref target="#name-sign">Section 3.2</eref>.
+The signature bit string is the concatenation of a bit packed
+representation of z and encodings of h and c in this order.</t>
+</li>
+<li><t>The resulting octet sequence is the JWS Signature.</t>
+</li>
+</ol>
+<t>When using a JWK for this algorithm, the following checks
+are made:</t>
 
-1.  Generate a digital signature of the JWS Signing Input
-    using CRYDI with the desired private key, as described in [Section 3.2](#name-sign).
-    The signature bit string is the concatenation of a bit packed
-    representation of z and encodings of h and c in this order.
+<ul>
+<li><t>The "kty" field MUST be present, and it MUST be "PQK" for JOSE.</t>
+</li>
+<li><t>The "alg" field MUST be present, and it MUST represent the
+pset subtype.</t>
+</li>
+<li><t>If the "key_ops" field is present, it MUST include "sign" when
+creating an CRYDI signature.</t>
+</li>
+<li><t>If the "key_ops" field is present, it MUST include "verify" when
+verifying an CRYDI signature.</t>
+</li>
+<li><t>If the JWK "use" field is present, its value MUST be "sig".</t>
+</li>
+</ul>
+<t>Example signature using only required fields, represented in compact form:</t>
 
-2.  The resulting octet sequence is the JWS Signature.
-
-When using a JWK for this algorithm, the following checks
-are made:
-
-- The "kty" field MUST be present, and it MUST be "PQK" for JOSE.
-
-- The "alg" field MUST be present, and it MUST represent the
-  pset subtype.
-
-- If the "key_ops" field is present, it MUST include "sign" when
-  creating an CRYDI signature.
-
-- If the "key_ops" field is present, it MUST include "verify" when
-  verifying an CRYDI signature.
-
-- If the JWK "use" field is present, its value MUST be "sig".
-
-Example signature using only required fields, represented in compact form:
-
-```json
-eyJhbGciOiJQUzM4NCIsImtpZCI6ImJpbGJvLmJhZ2dpbnNAaG9iYml0b24uZX
+<sourcecode type="json">eyJhbGciOiJQUzM4NCIsImtpZCI6ImJpbGJvLmJhZ2dpbnNAaG9iYml0b24uZX
 hhbXBsZSJ9
 .
 SXTigJlzIGEgZGFuZ2Vyb3VzIGJ1c2luZXNzLCBGcm9kbywgZ29pbmcgb3V0IH
@@ -708,12 +744,10 @@ vdvWXzg-UD8biiReQFlfz28zGWVsdiNAUf8ZnyPEgVFn442ZdNqiVJRmBqrYRX
 e8P_ijQ7p8Vdz0TTrxUeT3lm8d9shnr2lfJT8ImUjvAA2Xez2Mlp8cBE5awDzT
 0qI0n6uiP1aCN_2_jLAeQTlqRHtfa64QQSUmFAAjVKPbByi7xho0uTOcbH510a
 6GYmJUAfmWjwZ6oD4ifKo8DYM-X72Eaw
-```
+</sourcecode>
+<t>The same example decoded for readability:</t>
 
-The same example decoded for readability:
-
-```json
-=============== NOTE: '\\' line wrapping per RFC 8792 ===============
+<sourcecode type="json">=============== NOTE: '\\' line wrapping per RFC 8792 ===============
 
 {
   "header": { "alg": "CRYDI3", "kid": "did:example:123#key-0" },
@@ -787,17 +821,19 @@ The same example decoded for readability:
 \oW/leFs1fdP6SH+E24pOOJARU/f/ZajcMMXAwQdIVeOo7jvDhMydne90/18fcwpNVN0\
 \tswhRsnW4uMCSAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIEBMZHyE="
 }
-```
+</sourcecode>
+</section>
+</section>
+</section>
 
-# Falcon
+<section anchor="falcon"><name>Falcon</name>
+<t>TODO</t>
+</section>
 
-TODO
+<section anchor="sphincs"><name>SPHINCS+</name>
 
-# SPHINCS+
-
-## Overview
-
-This section of the document describes the hash-based signature scheme SPHINCS+.
+<section anchor="overview-1"><name>Overview</name>
+<t>This section of the document describes the hash-based signature scheme SPHINCS+.
 The scheme is based on the concept of authenticating a large number or few-time
 signatures keypair using a combination of Markle-tree signatures, a so-called
 hypertree. For each message to be signed a (pseudo-)random FTS keypair is
@@ -807,9 +843,8 @@ many-time signatures then gives the SPHINC+ signature.
 The parameter set is strategically chosen such that the probability of signing
 too many messages with a specific FTS keypair to impact security is small
 enough to prevent forgery attacks. A trade-off in parameter set can be made
-on security guarantees, performance and signature size.
-
-SPHINCS+ is a post-quantum approach to digital signatures that is
+on security guarantees, performance and signature size.</t>
+<t>SPHINCS+ is a post-quantum approach to digital signatures that is
 promises Post-Quantum Existential Unforgeability under
 Chosen Message Attack (PQ-EU-CMA), while ensuring that the security
 levels reached meet security needs for resistance to both classical and quantum
@@ -817,259 +852,278 @@ attacks. The algoritm itself is based on the hardness assumptions of its
 underlying hash functions, which can be chosen from the set Haraka,
 SHA-256 or SHAKE256.
 For all security levels the only operations required are calls to these
-hash functions on various combinations of parameters and internal states.
-
-Contrary to CRYSTALS-Dilithium and Falcon, SPHINCS+ is not based on any
+hash functions on various combinations of parameters and internal states.</t>
+<t>Contrary to CRYSTALS-Dilithium and Falcon, SPHINCS+ is not based on any
 algebraic structure. This reduces the possible attack surface of the
-algorithm.
+algorithm.</t>
+<t>SPHINCS+ brings several advantages over other approaches to
+signature suites:</t>
 
-SPHINCS+ brings several advantages over other approaches to
-signature suites:
-
-- Post Quantum in nature - use of cryptographically secure hash functions and
-  other approaches that should remain hard problems even when under an attack
-  utilizing quantum approaches
-- Minimal security assumptions - compared to other schemes does not base its
-  security on a new paradigm. The security is solely based on the security of
-  the assumptions of the underlying hash function.
-- Performance and Optimization - based on combining a great many hash function
-  calls of SHA-256, SHAKE256 or Haraka means existing (secure) SW and HW
-  implementations of those hash functions can be re-used for increased
-  performance
-- Private and Public Key Size - compared to other post quantum approaches
-  a very small key size is the form of hash inputs-outputs. This then has the
-  drawback that either a large signature or low signing speed has to be
-  accepted
-- Cryptanalysis assuarance - attacks (both pre-quantum and quantum) are easy
-  to relate to existing attacks on hash functions. This allows for precise
-  quantification of the security levels
-- Overlap with stateful hash-based algorithms - means there are possibilities
-  to combine implementions with those of XMSS and LMS (TODO refs)
-- Inherent resistance against side-channel attacks - since its core primitive
-  is a hash function, it thereby is hard to attack with side-channels.
-
-The primary known disadvantage to SPHINCS+ is the size signatures, or the
+<ul spacing="compact">
+<li>Post Quantum in nature - use of cryptographically secure hash functions and
+other approaches that should remain hard problems even when under an attack
+utilizing quantum approaches</li>
+<li>Minimal security assumptions - compared to other schemes does not base its
+security on a new paradigm. The security is solely based on the security of
+the assumptions of the underlying hash function.</li>
+<li>Performance and Optimization - based on combining a great many hash function
+calls of SHA-256, SHAKE256 or Haraka means existing (secure) SW and HW
+implementations of those hash functions can be re-used for increased
+performance</li>
+<li>Private and Public Key Size - compared to other post quantum approaches
+a very small key size is the form of hash inputs-outputs. This then has the
+drawback that either a large signature or low signing speed has to be
+accepted</li>
+<li>Cryptanalysis assuarance - attacks (both pre-quantum and quantum) are easy
+to relate to existing attacks on hash functions. This allows for precise
+quantification of the security levels</li>
+<li>Overlap with stateful hash-based algorithms - means there are possibilities
+to combine implementions with those of XMSS and LMS (TODO refs)</li>
+<li>Inherent resistance against side-channel attacks - since its core primitive
+is a hash function, it thereby is hard to attack with side-channels.</li>
+</ul>
+<t>The primary known disadvantage to SPHINCS+ is the size signatures, or the
 speed of signing, depending on the chosen parameter set. Especially in IoT
 applications this might pose a problem. Additionally hash-based schemes are
-also vulnerable to differential and fault attacks.
+also vulnerable to differential and fault attacks.</t>
+</section>
 
-## Parameters
+<section anchor="parameters-1"><name>Parameters</name>
+<t>TODO</t>
 
-TODO
+<section anchor="parameter-sets-1"><name>Parameter sets</name>
+<t>TODO</t>
+</section>
+</section>
 
-### Parameter sets
+<section anchor="core-operations-1"><name>Core Operations</name>
+<t>TODO</t>
 
-TODO
+<section anchor="generate-1"><name>Generate</name>
+<t>TODO</t>
+</section>
 
-## Core Operations
+<section anchor="sign-1"><name>Sign</name>
+<t>TODO</t>
+</section>
 
-TODO
+<section anchor="verify-1"><name>Verify</name>
+<t>TODO</t>
+</section>
+</section>
 
-### Generate
+<section anchor="using-sphincs-with-jose"><name>Using SPHINCS+ with JOSE</name>
+<t>Basing off of <eref target="https://datatracker.ietf.org/doc/html/rfc8812#section-3">this</eref></t>
 
-TODO
+<section anchor="sphincs-key-representations"><name>SPHINCS+ Key Representations</name>
+<t>TODO</t>
+</section>
 
-### Sign
+<section anchor="sphincs-algorithms"><name>SPHINCS+ Algorithms</name>
+<t>TODO</t>
 
-TODO
+<section anchor="public-key-1"><name>Public Key</name>
+<t>TODO</t>
+</section>
 
-### Verify
+<section anchor="private-key-1"><name>Private Key</name>
+<t>TODO</t>
+</section>
+</section>
 
-TODO
+<section anchor="sphincs-signature-representation"><name>SPHINCS+ Signature Representation</name>
+<t>TODO</t>
+</section>
+</section>
+</section>
 
-## Using SPHINCS+ with JOSE
+<section anchor="security-considerations"><name>Security Considerations</name>
+<t>The following considerations SHOULD apply to all signature schemes described
+in this specification, unless otherwise noted.</t>
 
-Basing off of [this](https://datatracker.ietf.org/doc/html/rfc8812#section-3)
+<section anchor="validating-public-keys"><name>Validating public keys</name>
+<t>All algorithms in that operate on public keys require first validating those keys.
+For the sign, verify and proof schemes, the use of KeyValidate is REQUIRED.</t>
+</section>
 
-### SPHINCS+ Key Representations
-
-TODO
-
-### SPHINCS+ Algorithms
-
-TODO
-
-#### Public Key
-
-TODO
-
-#### Private Key
-
-TODO
-
-### SPHINCS+ Signature Representation
-
-TODO
-
-# Security Considerations
-
-The following considerations SHOULD apply to all signature schemes described
-in this specification, unless otherwise noted.
-
-
-## Validating public keys
-
-All algorithms in that operate on public keys require first validating those keys.
-For the sign, verify and proof schemes, the use of KeyValidate is REQUIRED.
-
-## Side channel attacks
-
-Implementations of the signing algorithm SHOULD protect the secret key from side-channel attacks.
+<section anchor="side-channel-attacks"><name>Side channel attacks</name>
+<t>Implementations of the signing algorithm SHOULD protect the secret key from side-channel attacks.
 Multiple best practices exist to protect against side-channel attacks. Any implementation
 of the the CRYSTALS-Dilithium signing algorithm SHOULD utilize the following best practices
-at a minimum:
+at a minimum:</t>
 
-- Constant timing - the implementation should ensure that constant time is utilized in operations
-- Sequence and memory access persistance - the implemention SHOULD execute the exact same
-  sequence of instructions (at a machine level) with the exact same memory access independent
-  of which polynomial is being operated on.
-- Uniform sampling - uniform sampling is the default in CRYSTALS-Dilithium to prevent information
-  leakage, however care should be given in implementations to preserve the property of uniform
-  sampling in implementation.
-- Secrecy of S1 - utmost care must be given to protection of S1 and to prevent information or
-  power leakage. As is the case with most proposed lattice based approaches to date, fogery and
-  other attacks may succeed, for example, with Dilithium through [leakage of S1](https://eprint.iacr.org/2018/821.pdf)
-  through side channel mechanisms.
+<ul spacing="compact">
+<li>Constant timing - the implementation should ensure that constant time is utilized in operations</li>
+<li>Sequence and memory access persistance - the implemention SHOULD execute the exact same
+sequence of instructions (at a machine level) with the exact same memory access independent
+of which polynomial is being operated on.</li>
+<li>Uniform sampling - uniform sampling is the default in CRYSTALS-Dilithium to prevent information
+leakage, however care should be given in implementations to preserve the property of uniform
+sampling in implementation.</li>
+<li>Secrecy of S1 - utmost care must be given to protection of S1 and to prevent information or
+power leakage. As is the case with most proposed lattice based approaches to date, fogery and
+other attacks may succeed, for example, with Dilithium through <eref target="https://eprint.iacr.org/2018/821.pdf">leakage of S1</eref>
+through side channel mechanisms.</li>
+</ul>
+</section>
 
-## Randomness considerations
+<section anchor="randomness-considerations"><name>Randomness considerations</name>
+<t>It is recommended that the all nonces are from a trusted source of randomness.</t>
+</section>
+</section>
 
-It is recommended that the all nonces are from a trusted source of randomness.
+<section anchor="iana-considerations"><name>IANA Considerations</name>
+<t>The following has NOT YET been added to the "JSON Web Key Types" registry:</t>
 
-# IANA Considerations
+<ul spacing="compact">
+<li>"kty" Parameter Value: "PQK"</li>
+<li>Key Type Description: Base 64 encoded string key pairs</li>
+<li>JOSE Implementation Requirements: Optional</li>
+<li>Change Controller: IESG</li>
+<li>Specification Document(s): Section 2 of this document (TBD)</li>
+</ul>
+<t>The following has NOT YET been added to the "JSON Web Key Parameters"
+registry:</t>
 
-The following has NOT YET been added to the "JSON Web Key Types" registry:
+<ul spacing="compact">
+<li>Parameter Name: "pset"</li>
+<li>Parameter Description: The parameter set of the crypto system</li>
+<li>Parameter Information Class: Public</li>
+<li>Used with "kty" Value(s): "PQK"</li>
+<li>Change Controller: IESG</li>
+<li>Specification Document(s): Section 2 of this document (TBD)
+<br/>
+</li>
+<li>Parameter Name: "xs"</li>
+<li>Parameter Description: The shake256 of the public key</li>
+<li>Parameter Information Class: Public</li>
+<li>Used with "kty" Value(s): "PQK"</li>
+<li>Change Controller: IESG</li>
+<li>Specification Document(s): Section 2 of this document (TBD)
+<br/>
+</li>
+<li>Parameter Name: "ds"</li>
+<li>Parameter Description: The shake256 of the private key</li>
+<li>Parameter Information Class: Private</li>
+<li>Used with "kty" Value(s): "PQK"</li>
+<li>Change Controller: IESG</li>
+<li>Specification Document(s): Section 2 of this document (TBD)
+<br/>
+</li>
+<li>Parameter Name: "d"</li>
+<li>Parameter Description: The private key</li>
+<li>Parameter Information Class: Private</li>
+<li>Used with "kty" Value(s): "PQK"</li>
+<li>Change Controller: IESG</li>
+<li>Specification Document(s): Section 2 of RFC 8037
+<br/>
+</li>
+<li>Parameter Name: "x"</li>
+<li>Parameter Description: The public key</li>
+<li>Parameter Information Class: Public</li>
+<li>Used with "kty" Value(s): "PQK"</li>
+<li>Change Controller: IESG</li>
+<li>Specification Document(s): Section 2 of RFC 8037</li>
+</ul>
+<t>The following has NOT YET been added to the "JSON Web Signature and
+Encryption Algorithms" registry:</t>
 
-- "kty" Parameter Value: "PQK"
-- Key Type Description: Base 64 encoded string key pairs
-- JOSE Implementation Requirements: Optional
-- Change Controller: IESG
-- Specification Document(s): Section 2 of this document (TBD)
+<ul spacing="compact">
+<li>Algorithm Name: "CRYDI3"</li>
+<li>Algorithm Description: CRYDI3 signature algorithms</li>
+<li>Algorithm Usage Location(s): "alg"</li>
+<li>JOSE Implementation Requirements: Optional</li>
+<li>Change Controller: IESG</li>
+<li>Specification Document(s): Section 3.1 of this document (TBD)</li>
+<li>Algorithm Analysis Documents(s): (TBD)</li>
+</ul>
+<t>The following has been added to the "JSON Web Key Lattice"
+registry:</t>
 
-The following has NOT YET been added to the "JSON Web Key Parameters"
-registry:
+<ul spacing="compact">
+<li>Lattice Name: "CRYDI5"</li>
+<li>Lattice Description: Dilithium 5 signature algorithm key pairs</li>
+<li>JOSE Implementation Requirements: Optional</li>
+<li>Change Controller: IESG</li>
+<li>Specification Document(s): Section 3.1 of this document (TBD)
+<br/>
+</li>
+<li>Lattice Name: "CRYDI3"</li>
+<li>Lattice Description: Dilithium 3 signature algorithm key pairs</li>
+<li>JOSE Implementation Requirements: Optional</li>
+<li>Change Controller: IESG</li>
+<li>Specification Document(s): Section 3.1 of this document (TBD)
+<br/>
+</li>
+<li>Lattice Name: "CRYDI2"</li>
+<li>Lattice Description: Dilithium 2 signature algorithm key pairs</li>
+<li>JOSE Implementation Requirements: Optional</li>
+<li>Change Controller: IESG</li>
+<li>Specification Document(s): Section 3.1 of this document (TBD)</li>
+</ul>
+</section>
 
-- Parameter Name: "pset"
-- Parameter Description: The parameter set of the crypto system
-- Parameter Information Class: Public
-- Used with "kty" Value(s): "PQK"
-- Change Controller: IESG
-- Specification Document(s): Section 2 of this document (TBD)
-  <br />
-- Parameter Name: "xs"
-- Parameter Description: The shake256 of the public key
-- Parameter Information Class: Public
-- Used with "kty" Value(s): "PQK"
-- Change Controller: IESG
-- Specification Document(s): Section 2 of this document (TBD)
-  <br />
-- Parameter Name: "ds"
-- Parameter Description: The shake256 of the private key
-- Parameter Information Class: Private
-- Used with "kty" Value(s): "PQK"
-- Change Controller: IESG
-- Specification Document(s): Section 2 of this document (TBD)
-  <br />
-- Parameter Name: "d"
-- Parameter Description: The private key
-- Parameter Information Class: Private
-- Used with "kty" Value(s): "PQK"
-- Change Controller: IESG
-- Specification Document(s): Section 2 of RFC 8037
-  <br />
-- Parameter Name: "x"
-- Parameter Description: The public key
-- Parameter Information Class: Public
-- Used with "kty" Value(s): "PQK"
-- Change Controller: IESG
-- Specification Document(s): Section 2 of RFC 8037
+<section anchor="appendix"><name>Appendix</name>
 
-The following has NOT YET been added to the "JSON Web Signature and
-Encryption Algorithms" registry:
+<ul spacing="compact">
+<li>JSON Web Signature (JWS) - <eref target="https://tools.ietf.org/html/rfc7515">RFC7515</eref></li>
+<li>JSON Web Encryption (JWE) - <eref target="https://tools.ietf.org/html/rfc7516">RFC7516</eref></li>
+<li>JSON Web Key (JWK) - <eref target="https://tools.ietf.org/html/rfc7517">RFC7517</eref></li>
+<li>JSON Web Algorithms (JWA) - <eref target="https://tools.ietf.org/html/rfc7518">RFC7518</eref></li>
+<li>JSON Web Token (JWT) - <eref target="https://tools.ietf.org/html/rfc7519">RFC7519</eref></li>
+<li>JSON Web Key Thumbprint - <eref target="https://tools.ietf.org/html/rfc7638">RFC7638</eref></li>
+<li>JWS Unencoded Payload Option - <eref target="https://tools.ietf.org/html/rfc7797">RFC7797</eref></li>
+<li>CFRG Elliptic Curve ECDH and Signatures - <eref target="https://tools.ietf.org/html/rfc8037">RFC8037</eref></li>
+<li>CRYSTALS-Dilithium - <eref target="https://www.pq-crystals.org/dilithium/data/dilithium-specification-round3-20210208.pdf">Dilithium</eref></li>
+</ul>
 
-- Algorithm Name: "CRYDI3"
-- Algorithm Description: CRYDI3 signature algorithms
-- Algorithm Usage Location(s): "alg"
-- JOSE Implementation Requirements: Optional
-- Change Controller: IESG
-- Specification Document(s): Section 3.1 of this document (TBD)
-- Algorithm Analysis Documents(s): (TBD)
+<section anchor="test-vectors"><name>Test Vectors</name>
+<t>//TODO</t>
+</section>
+</section>
 
-The following has been added to the "JSON Web Key Lattice"
-registry:
+</middle>
 
-- Lattice Name: "CRYDI5"
-- Lattice Description: Dilithium 5 signature algorithm key pairs
-- JOSE Implementation Requirements: Optional
-- Change Controller: IESG
-- Specification Document(s): Section 3.1 of this document (TBD)
-  <br />
-- Lattice Name: "CRYDI3"
-- Lattice Description: Dilithium 3 signature algorithm key pairs
-- JOSE Implementation Requirements: Optional
-- Change Controller: IESG
-- Specification Document(s): Section 3.1 of this document (TBD)
-  <br />
-- Lattice Name: "CRYDI2"
-- Lattice Description: Dilithium 2 signature algorithm key pairs
-- JOSE Implementation Requirements: Optional
-- Change Controller: IESG
-- Specification Document(s): Section 3.1 of this document (TBD)
-
-# Appendix
-
-- JSON Web Signature (JWS) - [RFC7515][spec-jws]
-- JSON Web Encryption (JWE) - [RFC7516][spec-jwe]
-- JSON Web Key (JWK) - [RFC7517][spec-jwk]
-- JSON Web Algorithms (JWA) - [RFC7518][spec-jwa]
-- JSON Web Token (JWT) - [RFC7519][spec-jwt]
-- JSON Web Key Thumbprint - [RFC7638][spec-thumbprint]
-- JWS Unencoded Payload Option - [RFC7797][spec-b64]
-- CFRG Elliptic Curve ECDH and Signatures - [RFC8037][spec-okp]
-- CRYSTALS-Dilithium - [Dilithium][spec-crystals-dilithium]
-
-[RFC2119]: https://tools.ietf.org/html/rfc2119
-[spec-b64]: https://tools.ietf.org/html/rfc7797
-[spec-cookbook]: https://tools.ietf.org/html/rfc7520
-[spec-jwa]: https://tools.ietf.org/html/rfc7518
-[spec-jwe]: https://tools.ietf.org/html/rfc7516
-[spec-jwk]: https://tools.ietf.org/html/rfc7517
-[spec-jws]: https://tools.ietf.org/html/rfc7515
-[spec-jwt]: https://tools.ietf.org/html/rfc7519
-[spec-okp]: https://tools.ietf.org/html/rfc8037
-[spec-secp256k1]: https://tools.ietf.org/html/rfc8812
-[spec-thumbprint]: https://tools.ietf.org/html/rfc7638
-[spec-crystals-dilithium]: https://www.pq-crystals.org/dilithium/data/dilithium-specification-round3-20210208.pdf
-
-<reference anchor='CRYSTALS-Dilithium' target='https://doi.org/10.13154/tches.v2018.i1.238-268'>
-    <front>
-        <title>CRYSTALS-Dilithium: A Lattice-Based Digital Signature Scheme</title>
-        <author initials='L.' surname='Ducas' fullname='Leo Ducas'>
-            <organization>CWI</organization>
-        </author>
-        <author initials='E.' surname='Kiltz' fullname='Eike Kiltz'>
-            <organization>Ruhr Universitat Bochum</organization>
-        </author>
-        <author initials='T.' surname='Lepoint' fullname='Tancrede Lepoint'>
-            <organization>SRI International</organization>
-        </author>
-        <author initials='V.' surname='Lyubashevsky' fullname='Vadim Lyubashevsky'>
-            <organization>IBM Research – Zurich</organization>
-        </author>
-        <author initials='P.' surname='Schwabe' fullname='Peter Schwabe'>
-            <organization>Radboud University</organization>
-        </author>
-        <author initials='G.' surname='Seiler' fullname='Gregor Seiler'>
-            <organization>IBM Research – Zurich</organization>
-        </author>
-        <author initials='D.' surname='Stehle' fullname='Damien Stehle'>
-            <organization>ENS de Lyon</organization>
-        </author>
-        <date year='2018'/>
-    </front>
+<back>
+<references><name>Normative References</name>
+<reference anchor="CRYSTALS-Dilithium" target="https://doi.org/10.13154/tches.v2018.i1.238-268">
+  <front>
+    <title>CRYSTALS-Dilithium: A Lattice-Based Digital Signature Scheme</title>
+    <author fullname="Leo Ducas" initials="L." surname="Ducas">
+      <organization>CWI</organization>
+    </author>
+    <author fullname="Eike Kiltz" initials="E." surname="Kiltz">
+      <organization>Ruhr Universitat Bochum</organization>
+    </author>
+    <author fullname="Tancrede Lepoint" initials="T." surname="Lepoint">
+      <organization>SRI International</organization>
+    </author>
+    <author fullname="Vadim Lyubashevsky" initials="V." surname="Lyubashevsky">
+      <organization>IBM Research – Zurich</organization>
+    </author>
+    <author fullname="Peter Schwabe" initials="P." surname="Schwabe">
+      <organization>Radboud University</organization>
+    </author>
+    <author fullname="Gregor Seiler" initials="G." surname="Seiler">
+      <organization>IBM Research – Zurich</organization>
+    </author>
+    <author fullname="Damien Stehle" initials="D." surname="Stehle">
+      <organization>ENS de Lyon</organization>
+    </author>
+    <date year="2018"/>
+  </front>
 </reference>
+<xi:include href="https://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.2119.xml"/>
+<xi:include href="https://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.4648.xml"/>
+<xi:include href="https://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.7515.xml"/>
+<xi:include href="https://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.7517.xml"/>
+<xi:include href="https://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.7638.xml"/>
+<xi:include href="https://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.8702.xml"/>
+</references>
+<references><name>Informative References</name>
+<xi:include href="https://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.6234.xml"/>
+</references>
 
-## Test Vectors
+</back>
 
-//TODO
-
-{backmatter}
+</rfc>
