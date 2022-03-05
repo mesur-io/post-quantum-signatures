@@ -824,6 +824,62 @@ e8P_ijQ7p8Vdz0TTrxUeT3lm8d9shnr2lfJT8ImUjvAA2Xez2Mlp8cBE5awDzT
 </sourcecode>
 </section>
 </section>
+
+<section anchor="using-crydi-with-cose"><name>Using CRYDI with COSE</name>
+<t>The approach taken here matches the work done to support secp256k1 in JOSE and COSE in <xref target="RFC8812"/>.</t>
+<t>The following tables map terms between JOSE and COSE for signatures.</t>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Value</th>
+<th>Description</th>
+<th>Recommended</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>CRYDI5</td>
+<td>TBD</td>
+<td>TBD</td>
+<td>No</td>
+</tr>
+
+<tr>
+<td>CRYDI3</td>
+<td>TBD</td>
+<td>TBD</td>
+<td>No</td>
+</tr>
+
+<tr>
+<td>CRYDI2</td>
+<td>TBD</td>
+<td>TBD</td>
+<td>No</td>
+</tr>
+</tbody>
+</table><t>The following tables map terms between JOSE and COSE for key types.</t>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Value</th>
+<th>Description</th>
+<th>Recommended</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>PQK</td>
+<td>TBD</td>
+<td>TBD</td>
+<td>No</td>
+</tr>
+</tbody>
+</table></section>
 </section>
 
 <section anchor="falcon"><name>Falcon</name>
@@ -1119,6 +1175,7 @@ registry:</t>
 <xi:include href="https://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.7517.xml"/>
 <xi:include href="https://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.7638.xml"/>
 <xi:include href="https://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.8702.xml"/>
+<xi:include href="https://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.8812.xml"/>
 </references>
 <references><name>Informative References</name>
 <xi:include href="https://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.6234.xml"/>

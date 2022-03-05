@@ -80,6 +80,7 @@ Table of Contents
        3.4.1.  CRYDI Key Representations
        3.4.2.  CRYDI Algorithms
        3.4.3.  CRYDI Signature Representation
+     3.5.  Using CRYDI with COSE
    4.  Falcon
    5.  SPHINCS+
      5.1.  Overview
@@ -849,6 +850,35 @@ Table of Contents
    \tswhRsnW4uMCSAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIEBMZHyE="
    }
 
+3.5.  Using CRYDI with COSE
+
+   The approach taken here matches the work done to support secp256k1 in
+   JOSE and COSE in [RFC8812].
+
+   The following tables map terms between JOSE and COSE for signatures.
+
+              +========+=======+=============+=============+
+              | Name   | Value | Description | Recommended |
+              +========+=======+=============+=============+
+              | CRYDI5 | TBD   | TBD         | No          |
+              +--------+-------+-------------+-------------+
+              | CRYDI3 | TBD   | TBD         | No          |
+              +--------+-------+-------------+-------------+
+              | CRYDI2 | TBD   | TBD         | No          |
+              +--------+-------+-------------+-------------+
+
+                                 Table 5
+
+   The following tables map terms between JOSE and COSE for key types.
+
+               +======+=======+=============+=============+
+               | Name | Value | Description | Recommended |
+               +======+=======+=============+=============+
+               | PQK  | TBD   | TBD         | No          |
+               +------+-------+-------------+-------------+
+
+                                 Table 6
+
 4.  Falcon
 
    TODO
@@ -1140,6 +1170,12 @@ Table of Contents
               Functions in the Cryptographic Message Syntax (CMS)",
               RFC 8702, DOI 10.17487/RFC8702, January 2020,
               <https://www.rfc-editor.org/info/rfc8702>.
+
+   [RFC8812]  Jones, M., "CBOR Object Signing and Encryption (COSE) and
+              JSON Object Signing and Encryption (JOSE) Registrations
+              for Web Authentication (WebAuthn) Algorithms", RFC 8812,
+              DOI 10.17487/RFC8812, August 2020,
+              <https://www.rfc-editor.org/info/rfc8812>.
 
 10.  Informative References
 
