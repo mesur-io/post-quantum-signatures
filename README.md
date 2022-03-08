@@ -7,6 +7,7 @@ This is the working area for the individual Internet-Draft, "JSON Encoding for P
 * [Individual Draft](https://datatracker.ietf.org/doc/html/draft-prorock-cose-post-quantum-signatures)
 * [Compare Editor's Copy to Individual Draft](https://mesur-io.github.io/post-quantum-signatures/#go.draft-post-quantum-signatures.diff)
 
+A high level overview of our [goals with this draft is available](https://docs.google.com/presentation/d/1OZtW5v3lx8VBIFQ8P2A6IBZqJ3SYoxwrMlfqxVzfIBg/)
 
 ## Contributing
 
