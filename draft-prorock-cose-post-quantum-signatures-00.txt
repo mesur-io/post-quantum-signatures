@@ -2,24 +2,21 @@
 
 
 
-none                                                          M. Prorock
+None                                                          M. Prorock
 Internet-Draft                                                  mesur.io
-Intended status: Informational                                 O. Steele
-Expires: 28 August 2022                                        Transmute
+Intended status: Standards Track                               O. Steele
+Expires: 6 September 2022                                      Transmute
                                                              R. Misoczki
                                                                   Google
                                                               M. Osborne
                                                                      IBM
                                                          C. Cloostermans
-                                                                  J. Bos
                                                                      NXP
-                                                                 D. Bong
-                                                                 Utimaco
-                                                        24 February 2022
+                                                            5 March 2022
 
 
                JSON Encoding for Post Quantum Signatures
-           draft-prorock-cose-post-quantum-signatures-latest
+             draft-prorock-cose-post-quantum-signatures-00
 
 Abstract
 
@@ -33,7 +30,8 @@ Abstract
    PQK, CRYDI, pset.
 
    This document registers signature algorithms types for JOSE and COSE,
-   specifically CRYDI3.
+   specifically CRYDI3 and others as required for various post quantum
+   signature schemes.
 
 Status of This Memo
 
@@ -50,7 +48,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 28 August 2022.
+   This Internet-Draft will expire on 6 September 2022.
 
 Copyright Notice
 
@@ -82,6 +80,7 @@ Table of Contents
        3.4.1.  CRYDI Key Representations
        3.4.2.  CRYDI Algorithms
        3.4.3.  CRYDI Signature Representation
+     3.5.  Using CRYDI with COSE
    4.  Falcon
    5.  SPHINCS+
      5.1.  Overview
@@ -103,28 +102,24 @@ Table of Contents
    8.  Appendix
      8.1.  Test Vectors
    9.  Normative References
+   10. Informative References
    Authors' Addresses
 
 1.  Notational Conventions
 
-   The keywords MUST, MUST NOT, REQUIRED, SHALL, SHALL NOT, SHOULD,
-   SHOULD NOT, RECOMMENDED, MAY, and OPTIONAL, when they appear in this
-   document, are to be interpreted as described in [RFC2119].
+   The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
+   "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this
+   document are to be interpreted as described in [RFC2119].
 
 2.  Terminology
 
    The following terminology is used throughout this document:
 
    PK  The public key for the signature scheme.
-
    SK  The secret key for the signature scheme.
-
    signature  The digital signature output.
-
    message  The input to be signed by the signature scheme.
-
    sha256  The SHA-256 hash function defined in [RFC6234].
-
    shake256  The SHAKE256 hash function defined in [RFC8702].
 
 3.  CRYSTALS-Dilithium
@@ -166,24 +161,19 @@ Table of Contents
    *  Post Quantum in nature - use of lattices and other approaches that
       should remain hard problems even when under attack utilizing
       quantum approaches
-
    *  Simple implementation while maintaing security - a danger in many
       possible approaches to cryptography is that it may be possible
       inadvertantly introduce errors in code that lead to weakness or
       decreases in security level
-
    *  Signature and Public Key Size - compared to other post quantum
       approaches a reasonable key size has been achieved that also
       preserves desired security properties
-
    *  Conservative parameter space - parameterization is utilized for
       the purposes of defining the sizes of marices in use, and thereby
       the number of polynomials described by the key material.
-
    *  Parameter set adjustment for greater security - increasing this
       matrix size increases the number of polynomials, and thereby the
       security level
-
    *  Performance and optimization - the approach makes use of well
       known transforms that can be highly optimized, especially with use
       of hardware optimizations without being so large that it cannot be
@@ -232,21 +222,15 @@ Table of Contents
 
 3.3.1.  Generate
 
-   (Artwork only available as svg: spec/key-gen.svg)
-
-                                  Figure 1
+   See [CRYSTALS-Dilithium]
 
 3.3.2.  Sign
 
-   (Artwork only available as svg: spec/sign.svg)
-
-                                  Figure 2
+   See [CRYSTALS-Dilithium]
 
 3.3.3.  Verify
 
-   (Artwork only available as svg: spec/verify.svg)
-
-                                  Figure 3
+   See [CRYSTALS-Dilithium]
 
 3.4.  Using CRYDI with JOSE
 
@@ -334,9 +318,9 @@ Table of Contents
 
    Per section 5.1 of [CRYSTALS-Dilithium]:
 
-   |  The public key, containing &#961; and t1, is stored as the
-   |  concatenation of the bit-packed representations of &#961; and t1
-   |  in this order.  Therefore, it has a size of 32 + 288 kbytes.
+   |  The public key, containing p and t1, is stored as the
+   |  concatenation of the bit-packed representations of p and t1 in
+   |  this order.  Therefore, it has a size of 32 + 288 kbytes.
 
    The public key is represented as x and encoded using base64url
    encoding as described in [RFC7517].
@@ -445,13 +429,13 @@ Table of Contents
 
    Per section 5.1 of [CRYSTALS-Dilithium]:
 
-   |  The secret key contains &#961;,K,tr,s1,s2 and t0 and is also
-   |  stored as a bit-packed representation of these quantities in the
-   |  given order.  Consequently, a secret key requires 64 + 48 +
-   |  32((k+l)&#183;dlog (2&#951;+ 1)e+ 14k)bytes.  For the weak, medium
-   |  and high security level this is equal to 112 + 576k+ 128lbytes.
-   |  With the very high security parameters one needs 112 + 544k+ 96l=
-   |  3856bytes.
+   |  The secret key contains p,K,tr,s1,s2 and t0 and is also stored as
+   |  a bit-packed representation of these quantities in the given
+   |  order.  Consequently, a secret key requires 64 + 48 + 32((k+l) *
+   |  dlog (2n+ 1)e + 14k) bytes.  For the weak, medium and high
+   |  security level this is equal to 112 + 576k+ 128l bytes.  With the
+   |  very high security parameters one needs 112 + 544k + 96l = 3856
+   |  bytes.
 
    The private key is represented as d and encoded using base64url
    encoding as described in [RFC7517].
@@ -795,9 +779,9 @@ Table of Contents
 
    {
      "header": { "alg": "CRYDI3", "kid": "did:example:123#key-0" },
-     "payload": "It’s a dangerous business, Frodo, going out your door.\
-   \ You step onto the road, and if you don't keep your feet, there’s n\
-   \o knowing where you might be swept off to.",
+     "payload": "It's a dangerous business, Frodo, going out your door.\
+   \ You step onto the road, and if you don't keep your feet, there's\
+   \ no knowing where you might be swept off to.",
      "signature": "2As8T1AHenWzLuTojcAYFDnT05n4bmDGIWenHqoXVizL7311HtVg\
    \7PEJHYmpc1fIvFNrm0xJt0asD5bQk3ZY8WuEQDUjsn4j+zbyob8MPQI5u3p5ZkqlLhG\
    \6Q8p1q0Hd5voY4a78vNxFJpYsETc0bECAft196z5hml2VjuDBqI7W4ju/iDKambJIDz\
@@ -866,6 +850,35 @@ Table of Contents
    \tswhRsnW4uMCSAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIEBMZHyE="
    }
 
+3.5.  Using CRYDI with COSE
+
+   The approach taken here matches the work done to support secp256k1 in
+   JOSE and COSE in [RFC8812].
+
+   The following tables map terms between JOSE and COSE for signatures.
+
+              +========+=======+=============+=============+
+              | Name   | Value | Description | Recommended |
+              +========+=======+=============+=============+
+              | CRYDI5 | TBD   | TBD         | No          |
+              +--------+-------+-------------+-------------+
+              | CRYDI3 | TBD   | TBD         | No          |
+              +--------+-------+-------------+-------------+
+              | CRYDI2 | TBD   | TBD         | No          |
+              +--------+-------+-------------+-------------+
+
+                                 Table 5
+
+   The following tables map terms between JOSE and COSE for key types.
+
+               +======+=======+=============+=============+
+               | Name | Value | Description | Recommended |
+               +======+=======+=============+=============+
+               | PQK  | TBD   | TBD         | No          |
+               +------+-------+-------------+-------------+
+
+                                 Table 6
+
 4.  Falcon
 
    TODO
@@ -907,30 +920,24 @@ Table of Contents
    *  Post Quantum in nature - use of cryptographically secure hash
       functions and other approaches that should remain hard problems
       even when under an attack utilizing quantum approaches
-
    *  Minimal security assumptions - compared to other schemes does not
       base its security on a new paradigm.  The security is solely based
       on the security of the assumptions of the underlying hash
       function.
-
    *  Performance and Optimization - based on combining a great many
       hash function calls of SHA-256, SHAKE256 or Haraka means existing
       (secure) SW and HW implementations of those hash functions can be
       re-used for increased performance
-
    *  Private and Public Key Size - compared to other post quantum
       approaches a very small key size is the form of hash inputs-
       outputs.  This then has the drawback that either a large signature
       or low signing speed has to be accepted
-
    *  Cryptanalysis assuarance - attacks (both pre-quantum and quantum)
       are easy to relate to existing attacks on hash functions.  This
       allows for precise quantification of the security levels
-
    *  Overlap with stateful hash-based algorithms - means there are
       possibilities to combine implementions with those of XMSS and LMS
       (TODO refs)
-
    *  Inherent resistance against side-channel attacks - since its core
       primitive is a hash function, it thereby is hard to attack with
       side-channels.
@@ -1011,17 +1018,14 @@ Table of Contents
 
    *  Constant timing - the implementation should ensure that constant
       time is utilized in operations
-
    *  Sequence and memory access persistance - the implemention SHOULD
       execute the exact same sequence of instructions (at a machine
       level) with the exact same memory access independent of which
       polynomial is being operated on.
-
    *  Uniform sampling - uniform sampling is the default in CRYSTALS-
       Dilithium to prevent information leakage, however care should be
       given in implementations to preserve the property of uniform
       sampling in implementation.
-
    *  Secrecy of S1 - utmost care must be given to protection of S1 and
       to prevent information or power leakage.  As is the case with most
       proposed lattice based approaches to date, fogery and other
@@ -1040,152 +1044,91 @@ Table of Contents
    registry:
 
    *  "kty" Parameter Value: "PQK"
-
    *  Key Type Description: Base 64 encoded string key pairs
-
    *  JOSE Implementation Requirements: Optional
-
    *  Change Controller: IESG
-
-   *  Specification Document(s): Section 2 of this document (RFC TBD)
+   *  Specification Document(s): Section 2 of this document (TBD)
 
    The following has NOT YET been added to the "JSON Web Key Parameters"
    registry:
 
    *  Parameter Name: "pset"
-
    *  Parameter Description: The parameter set of the crypto system
-
    *  Parameter Information Class: Public
-
    *  Used with "kty" Value(s): "PQK"
-
    *  Change Controller: IESG
-
-   *  Specification Document(s): Section 2 of this document (RFC TBD)
-
+   *  Specification Document(s): Section 2 of this document (TBD)
    *  Parameter Name: "xs"
-
    *  Parameter Description: The shake256 of the public key
-
    *  Parameter Information Class: Public
-
    *  Used with "kty" Value(s): "PQK"
-
    *  Change Controller: IESG
-
-   *  Specification Document(s): Section 2 of this document (RFC TBD)
-
+   *  Specification Document(s): Section 2 of this document (TBD)
    *  Parameter Name: "ds"
-
    *  Parameter Description: The shake256 of the private key
-
    *  Parameter Information Class: Private
-
    *  Used with "kty" Value(s): "PQK"
-
    *  Change Controller: IESG
-
-   *  Specification Document(s): Section 2 of this document (RFC TBD)
-
+   *  Specification Document(s): Section 2 of this document (TBD)
    *  Parameter Name: "d"
-
    *  Parameter Description: The private key
-
    *  Parameter Information Class: Private
-
    *  Used with "kty" Value(s): "PQK"
-
    *  Change Controller: IESG
-
    *  Specification Document(s): Section 2 of RFC 8037
-
    *  Parameter Name: "x"
-
    *  Parameter Description: The public key
-
    *  Parameter Information Class: Public
-
    *  Used with "kty" Value(s): "PQK"
-
    *  Change Controller: IESG
-
    *  Specification Document(s): Section 2 of RFC 8037
 
    The following has NOT YET been added to the "JSON Web Signature and
    Encryption Algorithms" registry:
 
    *  Algorithm Name: "CRYDI3"
-
    *  Algorithm Description: CRYDI3 signature algorithms
-
    *  Algorithm Usage Location(s): "alg"
-
    *  JOSE Implementation Requirements: Optional
-
    *  Change Controller: IESG
-
-   *  Specification Document(s): Section 3.1 of this document (RFC TBD)
-
-   *  Algorithm Analysis Documents(s): [RFC TBD]
+   *  Specification Document(s): Section 3.1 of this document (TBD)
+   *  Algorithm Analysis Documents(s): (TBD)
 
    The following has been added to the "JSON Web Key Lattice" registry:
 
    *  Lattice Name: "CRYDI5"
-
    *  Lattice Description: Dilithium 5 signature algorithm key pairs
-
    *  JOSE Implementation Requirements: Optional
-
    *  Change Controller: IESG
-
-   *  Specification Document(s): Section 3.1 of this document (RFC TBD)
-
+   *  Specification Document(s): Section 3.1 of this document (TBD)
    *  Lattice Name: "CRYDI3"
-
    *  Lattice Description: Dilithium 3 signature algorithm key pairs
-
    *  JOSE Implementation Requirements: Optional
-
    *  Change Controller: IESG
-
-   *  Specification Document(s): Section 3.1 of this document (RFC TBD)
-
+   *  Specification Document(s): Section 3.1 of this document (TBD)
    *  Lattice Name: "CRYDI2"
-
    *  Lattice Description: Dilithium 2 signature algorithm key pairs
-
    *  JOSE Implementation Requirements: Optional
-
    *  Change Controller: IESG
-
-   *  Specification Document(s): Section 3.1 of this document (RFC TBD)
+   *  Specification Document(s): Section 3.1 of this document (TBD)
 
 8.  Appendix
 
    *  JSON Web Signature (JWS) - RFC7515 (https://tools.ietf.org/html/
       rfc7515)
-
    *  JSON Web Encryption (JWE) - RFC7516 (https://tools.ietf.org/html/
       rfc7516)
-
    *  JSON Web Key (JWK) - RFC7517 (https://tools.ietf.org/html/rfc7517)
-
    *  JSON Web Algorithms (JWA) - RFC7518 (https://tools.ietf.org/html/
       rfc7518)
-
    *  JSON Web Token (JWT) - RFC7519 (https://tools.ietf.org/html/
       rfc7519)
-
    *  JSON Web Key Thumbprint - RFC7638 (https://tools.ietf.org/html/
       rfc7638)
-
    *  JWS Unencoded Payload Option - RFC7797
       (https://tools.ietf.org/html/rfc7797)
-
    *  CFRG Elliptic Curve ECDH and Signatures - RFC8037
       (https://tools.ietf.org/html/rfc8037)
-
    *  CRYSTALS-Dilithium - Dilithium (https://www.pq-
       crystals.org/dilithium/data/dilithium-specification-
       round3-20210208.pdf)
@@ -1198,7 +1141,7 @@ Table of Contents
 
    [CRYSTALS-Dilithium]
               Ducas, L., Kiltz, E., Lepoint, T., Lyubashevsky, V.,
-              Schwabe, P., Seiler, G., and D. Stehlé, "CRYSTALS-
+              Schwabe, P., Seiler, G., and D. Stehle, "CRYSTALS-
               Dilithium: A Lattice-Based Digital Signature Scheme",
               2018, <https://doi.org/10.13154/tches.v2018.i1.238-268>.
 
@@ -1210,11 +1153,6 @@ Table of Contents
    [RFC4648]  Josefsson, S., "The Base16, Base32, and Base64 Data
               Encodings", RFC 4648, DOI 10.17487/RFC4648, October 2006,
               <https://www.rfc-editor.org/info/rfc4648>.
-
-   [RFC6234]  Eastlake 3rd, D. and T. Hansen, "US Secure Hash Algorithms
-              (SHA and SHA-based HMAC and HKDF)", RFC 6234,
-              DOI 10.17487/RFC6234, May 2011,
-              <https://www.rfc-editor.org/info/rfc6234>.
 
    [RFC7515]  Jones, M., Bradley, J., and N. Sakimura, "JSON Web
               Signature (JWS)", RFC 7515, DOI 10.17487/RFC7515, May
@@ -1233,45 +1171,41 @@ Table of Contents
               RFC 8702, DOI 10.17487/RFC8702, January 2020,
               <https://www.rfc-editor.org/info/rfc8702>.
 
+   [RFC8812]  Jones, M., "CBOR Object Signing and Encryption (COSE) and
+              JSON Object Signing and Encryption (JOSE) Registrations
+              for Web Authentication (WebAuthn) Algorithms", RFC 8812,
+              DOI 10.17487/RFC8812, August 2020,
+              <https://www.rfc-editor.org/info/rfc8812>.
+
+10.  Informative References
+
+   [RFC6234]  Eastlake 3rd, D. and T. Hansen, "US Secure Hash Algorithms
+              (SHA and SHA-based HMAC and HKDF)", RFC 6234,
+              DOI 10.17487/RFC6234, May 2011,
+              <https://www.rfc-editor.org/info/rfc6234>.
+
 Authors' Addresses
 
    Michael Prorock
    mesur.io
-
    Email: mprorock@mesur.io
 
 
    Orie Steele
    Transmute
-
    Email: orie@transmute.industries
 
 
    Rafael Misoczki
    Google
-
    Email: rafaelmisoczki@google.com
 
 
    Michael Osborne
    IBM
-
    Email: osb@zurich.ibm.com
 
 
    Christine Cloostermans
    NXP
-
    Email: christine.cloostermans@nxp.com
-
-
-   Joppe Bos
-   NXP
-
-   Email: joppe.bos@nxp.com
-
-
-   Dieter Bong
-   Utimaco
-
-   Email: Dieter.Bong@utimaco.com
