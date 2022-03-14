@@ -222,15 +222,8 @@ It has the following parameters:
 - The parameter "x" MUST be present and contain the public key
   encoded using the base64url [@!RFC4648] encoding.
 
-- The parameter "xs" MAY be present and contain the shake256 of the public key
-  encoded using the base64url [@!RFC4648] encoding.
-
 - The parameter "d" MUST be present for private keys and contain the
   private key encoded using the base64url encoding. This parameter
-  MUST NOT be present for public keys.
-
-- The parameter "ds" MAY be present for private keys and contain the
-  shake256 of the private key encoded using the base64url encoding. This parameter
   MUST NOT be present for public keys.
 
 Sizes of various key and signature material is as follows (for "pset" value "2")
@@ -326,8 +319,6 @@ Example public key including optional fields:
   "kty": "PQK",
   "alg": "CRYDI3",
   "key_ops": ["verify"],
-  "xs": "z3uZQVjflnRZDSZn1e8g4oKH4YUU6TnpvkU4WrrGdXw=",
-  "ds": "5DuZ8XoJQirc/5TE23tBcoGoHo+JTj1+9ULLXtCiySU=",
   "x": "z7u7GwhsjjnfHH3Nkrs2xvvw020Rcw5ymdlTnhRenjDdrOO+nfXRVUZVy9q1\
 5zDn77zTgrIskM3WX8bqslc+B1fq12iA/wxD2jc1d6j+YjKCtkGH26OR7vc0YC2ZiMzW\
 zGl7yebt7JkmjRbN1N+u/2fAKFLuziMcLNP6WLoWbMqxoC2XOOVNAWX3QjXrCcGU23Nr\
@@ -517,8 +508,6 @@ Example private key using optional fields:
   "kty": "PQK",
   "alg": "CRYDI3",
   "key_ops": ["sign"],
-  "xs": "z3uZQVjflnRZDSZn1e8g4oKH4YUU6TnpvkU4WrrGdXw=",
-  "ds": "5DuZ8XoJQirc/5TE23tBcoGoHo+JTj1+9ULLXtCiySU=",
   "x": "z7u7GwhsjjnfHH3Nkrs2xvvw020Rcw5ymdlTnhRenjDdrOO+nfXRVUZVy9q1\
 5zDn77zTgrIskM3WX8bqslc+B1fq12iA/wxD2jc1d6j+YjKCtkGH26OR7vc0YC2ZiMzW\
 zGl7yebt7JkmjRbN1N+u/2fAKFLuziMcLNP6WLoWbMqxoC2XOOVNAWX3QjXrCcGU23Nr\
@@ -969,20 +958,6 @@ registry:
 - Parameter Name: "pset"
 - Parameter Description: The parameter set of the crypto system
 - Parameter Information Class: Public
-- Used with "kty" Value(s): "PQK"
-- Change Controller: IESG
-- Specification Document(s): Section 2 of this document (TBD)
-  <br />
-- Parameter Name: "xs"
-- Parameter Description: The shake256 of the public key
-- Parameter Information Class: Public
-- Used with "kty" Value(s): "PQK"
-- Change Controller: IESG
-- Specification Document(s): Section 2 of this document (TBD)
-  <br />
-- Parameter Name: "ds"
-- Parameter Description: The shake256 of the private key
-- Parameter Information Class: Private
 - Used with "kty" Value(s): "PQK"
 - Change Controller: IESG
 - Specification Document(s): Section 2 of this document (TBD)
