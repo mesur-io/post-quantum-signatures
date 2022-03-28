@@ -798,9 +798,14 @@ The following tables map terms between JOSE and COSE for key types.
 
 # Falcon
 
+This section defines core operations used by the signature scheme, as proposed in [@!Falcon].
+
 TODO
 
 # SPHINCS+
+
+This section defines core operations used by the signature scheme, as proposed in [@!Sphincs].
+
 
 ## Overview
 
@@ -1060,6 +1065,44 @@ registry:
         <date year='2018'/>
     </front>
 </reference>
+
+<reference anchor='Falcon' target='https://falcon-sign.info/'>
+    <front>
+        <title>Fast-Fourier Lattice-based Compact Signatures over NTRU</title>
+        <author initials='P.' surname='Fouque' fullname='Pierre-Alain Fouque'>
+        </author>
+        <author initials='J.' surname='Hoffstein' fullname='Jeffrey Hoffstein'>
+        </author>
+        <author initials='P.' surname='Kirchner' fullname='Paul Kirchner'>
+        </author>
+        <author initials='V.' surname='Lyubashevsky' fullname='Vadim Lyubashevsky'>
+        </author>
+        <author initials='T.' surname='Pornin' fullname='Thomas Pornin'>
+        </author>
+        <author initials='T.' surname='Prest' fullname='Thomas Prest'>
+        </author>
+        <author initials='T.' surname='Ricosset' fullname='Thomas Ricosset'>
+        </author>
+        <author initials='G.' surname='Seiler' fullname='Gregor Seiler'>
+        </author>
+        <author initials='W.' surname='Whyte' fullname='William Whyte'>
+        </author>
+        <author initials='Z.' surname='Zhang' fullname='Zhenfei Zhang'>
+        </author>
+        <date year='2017'/>
+    </front>
+</reference>
+
+<reference anchor='Sphincs' target='https://sphincs.org'>
+    <front>
+        <title>Sphincs+ Stateless Hash-based Signatures</title>
+        <author initials='A.' surname='Hülsing' fullname='Andreas Hülsing'>
+         <organization>Eindhoven University of Technology (NL)</organization>
+        </author>
+        <date year='2017'/>
+    </front>
+</reference>
+
 
 ## Test Vectors
 
