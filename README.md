@@ -9,6 +9,23 @@ This is the working area for the individual Internet-Draft, "JSON Encoding for P
 
 A high level overview of our [goals with this draft is available](https://docs.google.com/presentation/d/1OZtW5v3lx8VBIFQ8P2A6IBZqJ3SYoxwrMlfqxVzfIBg/)
 
+
+## Inclusion Criteria
+
+In order to include a family, there must be a completed row in the following table.
+
+If you see an incomplete row, and wish to contribute to check the open issues, and start opening PRs.
+
+| family    | kty | alg    | vectors     | spec                                                    |
+|-----------|-----|--------|-------------|---------------------------------------------------------|
+| Dilithium | PQK | CRYDI5 | in-progress | https://tches.iacr.org/index.php/TCHES/article/view/839 |
+| Dilithium | PQK | CRYDI3 | in-progress | https://tches.iacr.org/index.php/TCHES/article/view/839 |
+| Dilithium | PQK | CRYDI2 | in-progress | https://tches.iacr.org/index.php/TCHES/article/view/839 |
+| Falcon    | PQK | TBD    |             |                                                         |
+| Sphincs   | PQK | TBD    |             |                                                         |
+| LMS       | PQK | TBD    |             | https://datatracker.ietf.org/doc/html/rfc8554           |
+| XMSS      | PQK | TBD    | in-progress | https://datatracker.ietf.org/doc/html/rfc8391           |
+
 ## Contributing
 
 See the
