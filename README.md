@@ -24,7 +24,7 @@ If you see an incomplete row, and wish to contribute to check the open issues, a
 | Falcon    | PQK | TBD    |             |                                                         |
 | Sphincs   | PQK | TBD    |             |                                                         |
 | LMS       | PQK | TBD    |             | https://datatracker.ietf.org/doc/html/rfc8554           |
-| XMSS      | PQK | TBD    | in-progress | https://datatracker.ietf.org/doc/html/rfc8391           |
+| XMSS      | PQK | TBD    | (1/2)       | https://datatracker.ietf.org/doc/html/rfc8391           |
 
 ## Contributing
 
