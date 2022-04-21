@@ -811,7 +811,7 @@ This section defines core operations used by the signature scheme, as proposed i
 
 This section of the document describes the hash-based signature scheme SPHINCS+.
 The scheme is based on the concept of authenticating a large number or few-time
-signatures keypair using a combination of Markle-tree signatures, a so-called
+signatures keypair using a combination of Merkle-tree signatures, a so-called
 hypertree. For each message to be signed a (pseudo-)random FTS keypair is
 selected with which the message can be signed. Combining this signature along
 with an authentication path through the hyper-tree consisting of hash-based
@@ -875,19 +875,19 @@ TODO
 
 ## Core Operations
 
-TODO
+This section defines core operations used by the signature scheme, as proposed in [@!SPHINCS+].
 
 ### Generate
 
-TODO
+The key generation of SPHINCS+ consists of generating randomness for the secret keey (seed) and public key (seed and PRF). It then computes the public key root of the top most tree of the hypertree. See [@!SPHINCS+] for further details.
 
 ### Sign
 
-TODO
+The signature generation of SPINCS+ generates the randomization string for the message, along with the few-time (FORS) signature over that message and the corresponding hypertree signature over the FORS public key. See [@!SPHINCS+] for further details.
 
 ### Verify
 
-TODO
+The signature verification of SPINCS+ takes randomization string and the message to compute the signed digest, then in order verify the FORS signature and the hypertree signature over that message. The verification is succesful if the result of the latter matches the public key root. See [@!SPHINCS+] for further details.
 
 ## Using SPHINCS+ with JOSE
 
@@ -1024,6 +1024,7 @@ registry:
 - JWS Unencoded Payload Option - [RFC7797][spec-b64]
 - CFRG Elliptic Curve ECDH and Signatures - [RFC8037][spec-okp]
 - CRYSTALS-Dilithium - [Dilithium][spec-crystals-dilithium]
+- SPHINCS+ - [SPHINCS+][spec-sphincs+]
 
 [RFC2119]: https://tools.ietf.org/html/rfc2119
 [spec-b64]: https://tools.ietf.org/html/rfc7797
@@ -1037,6 +1038,8 @@ registry:
 [spec-secp256k1]: https://tools.ietf.org/html/rfc8812
 [spec-thumbprint]: https://tools.ietf.org/html/rfc7638
 [spec-crystals-dilithium]: https://www.pq-crystals.org/dilithium/data/dilithium-specification-round3-20210208.pdf
+[spec-sphincs+]: https://sphincs.org/data/sphincs+-round3-specification.pdf
+
 
 <reference anchor='CRYSTALS-Dilithium' target='https://doi.org/10.13154/tches.v2018.i1.238-268'>
     <front>
