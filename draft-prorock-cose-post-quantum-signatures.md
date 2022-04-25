@@ -1136,7 +1136,7 @@ registry:
     </front>
 </reference>
 
-<reference anchor='Sphincs' target='https://sphincs.org'>
+<reference anchor='SPHINCS-PLUS' target='https://sphincs.org'>
     <front>
         <title>Sphincs+ Stateless Hash-based Signatures</title>
         <author initials='A.' surname='Hülsing' fullname='Andreas Hülsing'>
