@@ -1,0 +1,16 @@
+{
+  "name": "secp256k1-transmute",
+  "version": "1.0.0",
+  "description": "",
+  "main": "bin.js",
+  "scripts": {
+    "test": "./generate.sh"
+  },
+  "author": "Orie Steele",
+  "license": "ISC",
+  "dependencies": {
+    "@transmute/did-key.js": "^0.3.0-unstable.8",
+    "jose": "^4.6.1",
+    "yargs": "^17.4.1"
+  }
+}
