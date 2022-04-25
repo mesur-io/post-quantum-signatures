@@ -804,7 +804,7 @@ TODO
 
 # SPHINCS+
 
-This section defines core operations used by the signature scheme, as proposed in [@!Sphincs].
+This section defines core operations used by the signature scheme, as proposed in [@!SPHINCS-PLUS].
 
 
 ## Overview
@@ -879,15 +879,15 @@ This section defines core operations used by the signature scheme, as proposed i
 
 ### Generate
 
-The key generation of SPHINCS+ consists of generating randomness for the secret keey (seed) and public key (seed and PRF). It then computes the public key root of the top most tree of the hypertree. See [@!SPHINCS+] for further details.
+The key generation of SPHINCS+ consists of generating randomness for the secret keey (seed) and public key (seed and PRF). It then computes the public key root of the top most tree of the hypertree. See [@!SPHINCS-PLUS] for further details.
 
 ### Sign
 
-The signature generation of SPINCS+ generates the randomization string for the message, along with the few-time (FORS) signature over that message and the corresponding hypertree signature over the FORS public key. See [@!SPHINCS+] for further details.
+The signature generation of SPINCS+ generates the randomization string for the message, along with the few-time (FORS) signature over that message and the corresponding hypertree signature over the FORS public key. See [@!SPHINCS-PLUS] for further details.
 
 ### Verify
 
-The signature verification of SPINCS+ takes randomization string and the message to compute the signed digest, then in order verify the FORS signature and the hypertree signature over that message. The verification is succesful if the result of the latter matches the public key root. See [@!SPHINCS+] for further details.
+The signature verification of SPINCS+ takes randomization string and the message to compute the signed digest, then in order verify the FORS signature and the hypertree signature over that message. The verification is succesful if the result of the latter matches the public key root. See [@!SPHINCS-PLUS] for further details.
 
 ## Using SPHINCS+ with JOSE
 
@@ -1024,7 +1024,7 @@ registry:
 - JWS Unencoded Payload Option - [RFC7797][spec-b64]
 - CFRG Elliptic Curve ECDH and Signatures - [RFC8037][spec-okp]
 - CRYSTALS-Dilithium - [Dilithium][spec-crystals-dilithium]
-- SPHINCS+ - [SPHINCS+][spec-sphincs+]
+- SPHINCS+ - [SPHINCS-PLUS][spec-sphincs-plus]
 
 [RFC2119]: https://tools.ietf.org/html/rfc2119
 [spec-b64]: https://tools.ietf.org/html/rfc7797
@@ -1038,7 +1038,7 @@ registry:
 [spec-secp256k1]: https://tools.ietf.org/html/rfc8812
 [spec-thumbprint]: https://tools.ietf.org/html/rfc7638
 [spec-crystals-dilithium]: https://www.pq-crystals.org/dilithium/data/dilithium-specification-round3-20210208.pdf
-[spec-sphincs+]: https://sphincs.org/data/sphincs+-round3-specification.pdf
+[spec-sphincs-plus]: https://sphincs.org/data/sphincs+-round3-specification.pdf
 
 
 <reference anchor='CRYSTALS-Dilithium' target='https://doi.org/10.13154/tches.v2018.i1.238-268'>
