@@ -801,7 +801,7 @@ The following tables map terms between JOSE and COSE for key types.
 ## Overview
 
 This section of the document describes the lattice signature scheme [@!Falcon],
-the “Fast Fourier lattice-based compact signatures over NTRU”. Falcon is
+the "Fast Fourier lattice-based compact signatures over NTRU". Falcon is
 based on the GPV hash-and-sign lattice-based signature framework
 introduced by Gentry, Peikert and Vaikuntanathan [GPV08], which is a
 framework that requires a class of lattices and a trapdoor sampler technique.
@@ -1078,8 +1078,8 @@ registry:
 [spec-thumbprint]: https://tools.ietf.org/html/rfc7638
 [spec-crystals-dilithium]: https://www.pq-crystals.org/dilithium/data/dilithium-specification-round3-20210208.pdf
 [spec-sphincs-plus]: https://sphincs.org/data/sphincs+-round3-specification.pdf
-[DP16]: Léo Ducas and Thomas Prest. Fast fourier orthogonalization. In Sergei A. Abramov, Eugene V. Zima, and Xiao-Shan Gao, editors, Proceedings of the ACM on International Symposium on Symbolic and Algebraic Computation, ISSAC 2016, Waterloo, ON, Canada, July 19-22, 2016, pages 191–198. ACM, 2016.
-[GPV08]: Craig Gentry, Chris Peikert, and Vinod Vaikuntanathan. Trapdoors for hard lattices and new cryptographic constructions. In Richard E. Ladner and Cynthia Dwork, editors, 40th ACM STOC, pages 197–206, Victoria, BC, Canada, May 17–20, 2008. ACM Press.
+[DP16]: Leo Ducas and Thomas Prest. Fast fourier orthogonalization. In Sergei A. Abramov, Eugene V. Zima, and Xiao-Shan Gao, editors, Proceedings of the ACM on International Symposium on Symbolic and Algebraic Computation, ISSAC 2016, Waterloo, ON, Canada, July 19-22, 2016, pages 191-198. ACM, 2016.
+[GPV08]: Craig Gentry, Chris Peikert, and Vinod Vaikuntanathan. Trapdoors for hard lattices and new cryptographic constructions. In Richard E. Ladner and Cynthia Dwork, editors, 40th ACM STOC, pages 197-206, Victoria, BC, Canada, May 17-20, 2008. ACM Press.
 
 <reference anchor='CRYSTALS-Dilithium' target='https://doi.org/10.13154/tches.v2018.i1.238-268'>
     <front>
@@ -1094,13 +1094,13 @@ registry:
             <organization>SRI International</organization>
         </author>
         <author initials='V.' surname='Lyubashevsky' fullname='Vadim Lyubashevsky'>
-            <organization>IBM Research – Zurich</organization>
+            <organization>IBM Research - Zurich</organization>
         </author>
         <author initials='P.' surname='Schwabe' fullname='Peter Schwabe'>
             <organization>Radboud University</organization>
         </author>
         <author initials='G.' surname='Seiler' fullname='Gregor Seiler'>
-            <organization>IBM Research – Zurich</organization>
+            <organization>IBM Research - Zurich</organization>
         </author>
         <author initials='D.' surname='Stehle' fullname='Damien Stehle'>
             <organization>ENS de Lyon</organization>
@@ -1139,7 +1139,7 @@ registry:
 <reference anchor='SPHINCS-PLUS' target='https://sphincs.org'>
     <front>
         <title>Sphincs+ Stateless Hash-based Signatures</title>
-        <author initials='A.' surname='Hülsing' fullname='Andreas Hülsing'>
+        <author initials='A.' surname='Hulsing' fullname='Andreas Hulsing'>
          <organization>Eindhoven University of Technology (NL)</organization>
         </author>
         <date year='2017'/>
