@@ -843,7 +843,7 @@ the integers in constant-time, a gap that has been recently filled in the litera
 
 # SPHINCS+
 
-This section defines core operations used by the signature scheme, as proposed in [@!Sphincs].
+This section defines core operations used by the signature scheme, as proposed in [@!SPHINCS-PLUS].
 
 
 ## Overview
@@ -914,19 +914,19 @@ TODO
 
 ## Core Operations
 
-This section defines core operations used by the signature scheme, as proposed in [@!SPHINCS+].
+This section defines core operations used by the signature scheme, as proposed in [@!SPHINCS-PLUS].
 
 ### Generate
 
-The key generation of SPHINCS+ consists of generating randomness for the secret keey (seed) and public key (seed and PRF). It then computes the public key root of the top most tree of the hypertree. See [@!SPHINCS+] for further details.
+The key generation of SPHINCS+ consists of generating randomness for the secret keey (seed) and public key (seed and PRF). It then computes the public key root of the top most tree of the hypertree. See [@!SPHINCS-PLUS] for further details.
 
 ### Sign
 
-The signature generation of SPINCS+ generates the randomization string for the message, along with the few-time (FORS) signature over that message and the corresponding hypertree signature over the FORS public key. See [@!SPHINCS+] for further details.
+The signature generation of SPINCS+ generates the randomization string for the message, along with the few-time (FORS) signature over that message and the corresponding hypertree signature over the FORS public key. See [@!SPHINCS-PLUS] for further details.
 
 ### Verify
 
-The signature verification of SPINCS+ takes randomization string and the message to compute the signed digest, then in order verify the FORS signature and the hypertree signature over that message. The verification is succesful if the result of the latter matches the public key root. See [@!SPHINCS+] for further details.
+The signature verification of SPINCS+ takes randomization string and the message to compute the signed digest, then in order verify the FORS signature and the hypertree signature over that message. The verification is succesful if the result of the latter matches the public key root. See [@!SPHINCS-PLUS] for further details.
 
 ## Using SPHINCS+ with JOSE
 
@@ -1063,7 +1063,7 @@ registry:
 - JWS Unencoded Payload Option - [RFC7797][spec-b64]
 - CFRG Elliptic Curve ECDH and Signatures - [RFC8037][spec-okp]
 - CRYSTALS-Dilithium - [Dilithium][spec-crystals-dilithium]
-- SPHINCS+ - [SPHINCS+][spec-sphincs+]
+- SPHINCS+ - [SPHINCS-PLUS][spec-sphincs-plus]
 
 [RFC2119]: https://tools.ietf.org/html/rfc2119
 [spec-b64]: https://tools.ietf.org/html/rfc7797
@@ -1077,10 +1077,9 @@ registry:
 [spec-secp256k1]: https://tools.ietf.org/html/rfc8812
 [spec-thumbprint]: https://tools.ietf.org/html/rfc7638
 [spec-crystals-dilithium]: https://www.pq-crystals.org/dilithium/data/dilithium-specification-round3-20210208.pdf
+[spec-sphincs-plus]: https://sphincs.org/data/sphincs+-round3-specification.pdf
 [DP16]: Léo Ducas and Thomas Prest. Fast fourier orthogonalization. In Sergei A. Abramov, Eugene V. Zima, and Xiao-Shan Gao, editors, Proceedings of the ACM on International Symposium on Symbolic and Algebraic Computation, ISSAC 2016, Waterloo, ON, Canada, July 19-22, 2016, pages 191–198. ACM, 2016. 
 [GPV08]: Craig Gentry, Chris Peikert, and Vinod Vaikuntanathan. Trapdoors for hard lattices and new cryptographic constructions. In Richard E. Ladner and Cynthia Dwork, editors, 40th ACM STOC, pages 197–206, Victoria, BC, Canada, May 17–20, 2008. ACM Press.
-[spec-sphincs+]: https://sphincs.org/data/sphincs+-round3-specification.pdf
-
 
 <reference anchor='CRYSTALS-Dilithium' target='https://doi.org/10.13154/tches.v2018.i1.238-268'>
     <front>
@@ -1137,7 +1136,7 @@ registry:
     </front>
 </reference>
 
-<reference anchor='Sphincs' target='https://sphincs.org'>
+<reference anchor='SPHINCS-PLUS' target='https://sphincs.org'>
     <front>
         <title>Sphincs+ Stateless Hash-based Signatures</title>
         <author initials='A.' surname='Hülsing' fullname='Andreas Hülsing'>
