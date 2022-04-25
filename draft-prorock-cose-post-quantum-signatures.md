@@ -800,46 +800,46 @@ The following tables map terms between JOSE and COSE for key types.
 
 ## Overview
 
-This section of the document describes the lattice signature scheme [@!Falcon],   
-the “Fast Fourier lattice-based compact signatures over NTRU”. Falcon is 
-based on the GPV hash-and-sign lattice-based signature framework 
-introduced by Gentry, Peikert and Vaikuntanathan [GPV08], which is a 
-framework that requires a class of lattices and a trapdoor sampler technique. 
-For the class of lattices, Flacon uses the well-known NTRU lattices, while for 
-the trapdoor sampler, it uses a new fast Fourier sampling technique [DP16]. 
-The underlying hard problem is the short integer solution problem (SIS) over 
-NTRU lattices, for which no efficient solving algorithm is currently known for 
-both classical as well as quantum settings. 
+This section of the document describes the lattice signature scheme [@!Falcon],
+the "Fast Fourier lattice-based compact signatures over NTRU". Falcon is
+based on the GPV hash-and-sign lattice-based signature framework
+introduced by Gentry, Peikert and Vaikuntanathan [GPV08], which is a
+framework that requires a class of lattices and a trapdoor sampler technique.
+For the class of lattices, Flacon uses the well-known NTRU lattices, while for
+the trapdoor sampler, it uses a new fast Fourier sampling technique [DP16].
+The underlying hard problem is the short integer solution problem (SIS) over
+NTRU lattices, for which no efficient solving algorithm is currently known for
+both classical as well as quantum settings.
 
 
 The main design principle of Falcon is compactness, i.e. it was designed in a
-way that achieves minimal total memory bandwidth requirement (the sum 
-of the signature size plus the public key size). This is possible due to the 
-compactness of NTRU lattices. Falcon also offers very efficient signing and 
-verification procedures. The main potential downsides of Falcon refer to the 
+way that achieves minimal total memory bandwidth requirement (the sum
+of the signature size plus the public key size). This is possible due to the
+compactness of NTRU lattices. Falcon also offers very efficient signing and
+verification procedures. The main potential downsides of Falcon refer to the
 non-triviality of its algorithms and the need for floating point arithmetic support.
 
 
-The GPV framework, which underpins the Falcon design, is proven to be 
-secure in the (quantum) random oracle model as long as the SIS problem 
-remains intractable. Falcon requires an adaption of this prove to account for 
-the fact it uses NTRU lattices. 
+The GPV framework, which underpins the Falcon design, is proven to be
+secure in the (quantum) random oracle model as long as the SIS problem
+remains intractable. Falcon requires an adaption of this prove to account for
+the fact it uses NTRU lattices.
 
 Falcon brings several advantages over other approaches to signature suites:
 
 - Post quantum secure as long as the NTRU-SIS problem remains intractable.
-- Compactness: Falcon aims at minimum signature plus public key sizes. This 
-should be contrasted with hash-based signature schemes (e.g. SPHINCS+), 
-which minimizes public key sizes but suffer from long signatures, and 
-multivariate quadratic schemes, which minimizes signatures sizes but suffers 
-from long public keys. It also offers substantially shorter signatures than other 
-lattice schemes while public keys are about the same size. 
-- Efficiency: Falcon can produce thousands of signatures per second on a 
-common computer, while verification is up to ten times faster. The operations 
+- Compactness: Falcon aims at minimum signature plus public key sizes. This
+should be contrasted with hash-based signature schemes (e.g. SPHINCS+),
+which minimizes public key sizes but suffer from long signatures, and
+multivariate quadratic schemes, which minimizes signatures sizes but suffers
+from long public keys. It also offers substantially shorter signatures than other
+lattice schemes while public keys are about the same size.
+- Efficiency: Falcon can produce thousands of signatures per second on a
+common computer, while verification is up to ten times faster. The operations
 in Falcon have O(n log n) complexity for degree n.
-- Side-channel resistance: Falcon used to have an important limitation regarding 
-side-channel attacks due to the hardness of implementing discrete Gaussian sampling over 
-the integers in constant-time, a gap that has been recently filled in the literature. 
+- Side-channel resistance: Falcon used to have an important limitation regarding
+side-channel attacks due to the hardness of implementing discrete Gaussian sampling over
+the integers in constant-time, a gap that has been recently filled in the literature.
 
 # SPHINCS+
 
@@ -1078,8 +1078,8 @@ registry:
 [spec-thumbprint]: https://tools.ietf.org/html/rfc7638
 [spec-crystals-dilithium]: https://www.pq-crystals.org/dilithium/data/dilithium-specification-round3-20210208.pdf
 [spec-sphincs-plus]: https://sphincs.org/data/sphincs+-round3-specification.pdf
-[DP16]: Léo Ducas and Thomas Prest. Fast fourier orthogonalization. In Sergei A. Abramov, Eugene V. Zima, and Xiao-Shan Gao, editors, Proceedings of the ACM on International Symposium on Symbolic and Algebraic Computation, ISSAC 2016, Waterloo, ON, Canada, July 19-22, 2016, pages 191–198. ACM, 2016. 
-[GPV08]: Craig Gentry, Chris Peikert, and Vinod Vaikuntanathan. Trapdoors for hard lattices and new cryptographic constructions. In Richard E. Ladner and Cynthia Dwork, editors, 40th ACM STOC, pages 197–206, Victoria, BC, Canada, May 17–20, 2008. ACM Press.
+[DP16]: Leo Ducas and Thomas Prest. Fast fourier orthogonalization. In Sergei A. Abramov, Eugene V. Zima, and Xiao-Shan Gao, editors, Proceedings of the ACM on International Symposium on Symbolic and Algebraic Computation, ISSAC 2016, Waterloo, ON, Canada, July 19-22, 2016, pages 191-198. ACM, 2016.
+[GPV08]: Craig Gentry, Chris Peikert, and Vinod Vaikuntanathan. Trapdoors for hard lattices and new cryptographic constructions. In Richard E. Ladner and Cynthia Dwork, editors, 40th ACM STOC, pages 197-206, Victoria, BC, Canada, May 17-20, 2008. ACM Press.
 
 <reference anchor='CRYSTALS-Dilithium' target='https://doi.org/10.13154/tches.v2018.i1.238-268'>
     <front>
@@ -1094,13 +1094,13 @@ registry:
             <organization>SRI International</organization>
         </author>
         <author initials='V.' surname='Lyubashevsky' fullname='Vadim Lyubashevsky'>
-            <organization>IBM Research – Zurich</organization>
+            <organization>IBM Research - Zurich</organization>
         </author>
         <author initials='P.' surname='Schwabe' fullname='Peter Schwabe'>
             <organization>Radboud University</organization>
         </author>
         <author initials='G.' surname='Seiler' fullname='Gregor Seiler'>
-            <organization>IBM Research – Zurich</organization>
+            <organization>IBM Research - Zurich</organization>
         </author>
         <author initials='D.' surname='Stehle' fullname='Damien Stehle'>
             <organization>ENS de Lyon</organization>
@@ -1139,7 +1139,7 @@ registry:
 <reference anchor='SPHINCS-PLUS' target='https://sphincs.org'>
     <front>
         <title>Sphincs+ Stateless Hash-based Signatures</title>
-        <author initials='A.' surname='Hülsing' fullname='Andreas Hülsing'>
+        <author initials='A.' surname='Hulsing' fullname='Andreas Hulsing'>
          <organization>Eindhoven University of Technology (NL)</organization>
         </author>
         <date year='2017'/>
