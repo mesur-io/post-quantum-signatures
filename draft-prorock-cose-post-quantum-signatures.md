@@ -61,7 +61,8 @@ organization = "NXP"
 .# Abstract
 
 This document describes JSON and CBOR serializations for several
-post quantum cryptography (PQC) based suites.
+post quantum cryptography (PQC) based suites including CRYSTALS Dilithium,
+Falcon, and SPHINCS+.
 
 This document does not define any new cryptography,
 only seralizations of existing cryptographic systems.

@@ -21,7 +21,8 @@ Expires: 12 January 2023                                       Transmute
 Abstract
 
    This document describes JSON and CBOR serializations for several post
-   quantum cryptography (PQC) based suites.
+   quantum cryptography (PQC) based suites including CRYSTALS Dilithium,
+   Falcon, and SPHINCS+.
 
    This document does not define any new cryptography, only
    seralizations of existing cryptographic systems.
@@ -46,7 +47,6 @@ Status of This Memo
    Task Force (IETF).  Note that other groups may also distribute
    working documents as Internet-Drafts.  The list of current Internet-
    Drafts is at https://datatracker.ietf.org/drafts/current/.
-
 
 
 
