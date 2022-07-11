@@ -182,28 +182,17 @@ table below
 
 ## Core Operations
 
-This section defines core operations used by the signature scheme, as proposed in [@!CRYSTALS-Dilithium].
-
-### Generate
-
-See [@!CRYSTALS-Dilithium]
-
-### Sign
-
-See [@!CRYSTALS-Dilithium]
-
-### Verify
-
-See [@!CRYSTALS-Dilithium]
+Core operations used by the signature scheme should be implemented according to the details in [@!CRYSTALS-Dilithium].
+Core operations include key generation, sign, and verify.
 
 ## Using CRYDI with JOSE
 
-This sections is based on [CBOR Object Signing and Encryption (COSE) and 
+This sections is based on [CBOR Object Signing and Encryption (COSE) and
 JSON Object Signing and Encryption (JOSE)](https://datatracker.ietf.org/doc/html/rfc8812#section-3)
 
 ### CRYDI Key Representations
 
-A new key type (kty) value "LWE" (for keys related to the family of algorithms that utilize 
+A new key type (kty) value "LWE" (for keys related to the family of algorithms that utilize
 Learning With Errors approaches to Post Quantum lattice based cryptography) is defined for
 public key algorithms that use base 64 encoded strings of the underlying binary materia
 as private and public keys and that support cryptographic sponge functions.
@@ -843,14 +832,19 @@ in Falcon have O(n log n) complexity for degree n.
 side-channel attacks due to the hardness of implementing discrete Gaussian sampling over
 the integers in constant-time, a gap that has been recently filled in the literature.
 
+## Core Operations
+
+Core operations used by the signature scheme should be implemented according to the details in [@!Falcon].
+Core operations include key generation, sign, and verify.
+
 ## Using FALCON with JOSE
 
-This sections is based on [CBOR Object Signing and Encryption (COSE) and 
+This sections is based on [CBOR Object Signing and Encryption (COSE) and
 JSON Object Signing and Encryption (JOSE)](https://datatracker.ietf.org/doc/html/rfc8812#section-3)
 
 ### NTRU Key Representations
 
-A new key type (kty) value "NTRU" (for keys related to the family of algorithms that utilize 
+A new key type (kty) value "NTRU" (for keys related to the family of algorithms that utilize
 NTRU based approaches to Post Quantum lattice based cryptography) is defined for
 public key algorithms that use base 64 encoded strings of the underlying binary materia
 as private and public keys and that support cryptographic sponge functions.
@@ -990,28 +984,17 @@ also vulnerable to differential and fault attacks.
 
 ## Core Operations
 
-This section defines core operations used by the signature scheme, as proposed in [@!SPHINCS-PLUS].
-
-### Generate
-
-The key generation of SPHINCS+ consists of generating randomness for the secret keey (seed) and public key (seed and PRF). It then computes the public key root of the top most tree of the hypertree. See [@!SPHINCS-PLUS] for further details.
-
-### Sign
-
-The signature generation of SPINCS+ generates the randomization string for the message, along with the few-time (FORS) signature over that message and the corresponding hypertree signature over the FORS public key. See [@!SPHINCS-PLUS] for further details.
-
-### Verify
-
-The signature verification of SPINCS+ takes randomization string and the message to compute the signed digest, then in order verify the FORS signature and the hypertree signature over that message. The verification is succesful if the result of the latter matches the public key root. See [@!SPHINCS-PLUS] for further details.
+Core operations used by the signature scheme should be implemented according to the details in [@!SPHINCS-PLUS].
+Core operations include key generation, sign, and verify.
 
 ## Using SPHINCS-PLUS with JOSE
 
-This sections is based on [CBOR Object Signing and Encryption (COSE) and 
+This sections is based on [CBOR Object Signing and Encryption (COSE) and
 JSON Object Signing and Encryption (JOSE)](https://datatracker.ietf.org/doc/html/rfc8812#section-3)
 
 ### SPHINCS-PLUS Key Representations
 
-A new key type (kty) value "HASH" (for keys related to the family of algorithms that utilize 
+A new key type (kty) value "HASH" (for keys related to the family of algorithms that utilize
 hash based approaches to Post Quantum Cryptography) is defined for
 public key algorithms that use base 64 encoded strings of the underlying binary materia
 as private and public keys and that support cryptographic sponge functions.
@@ -1034,8 +1017,8 @@ It has the following parameters:
 - The parameter "pset" MAY be specfied to indicate the paramter set
   in use for the algorithm, but SHOULD also reflect the targeted NIST level for the
   algorithm in combination with the specified paramter set.
-  For "alg" "HAS" one of the described parameter sets as listed in the section SPHINCS+ 
-  Algorithms MUST be specified. 
+  For "alg" "HAS" one of the described parameter sets as listed in the section SPHINCS+
+  Algorithms MUST be specified.
 
 - The parameter "x" MUST be present and contain the public key
   encoded using the base64url [@!RFC4648] encoding.
