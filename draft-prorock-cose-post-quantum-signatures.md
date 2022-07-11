@@ -850,7 +850,7 @@ Core operations include key generation, sign, and verify.
 This sections is based on [CBOR Object Signing and Encryption (COSE) and
 JSON Object Signing and Encryption (JOSE)](https://datatracker.ietf.org/doc/html/rfc8812#section-3)
 
-### NTRU Key Representations
+### FALCON Key Representations
 
 A new key type (kty) value "NTRU" (for keys related to the family of algorithms that utilize
 NTRU based approaches to Post Quantum lattice based cryptography) is defined for
@@ -909,7 +909,7 @@ These `alg` values are used in both key representations and signatures.
 | NTRU        | FALCON512     | 512          |
 | NTRU        | FALCON1024    | 1024         |
 
-## Using NTRU with COSE
+## Using FALCON with COSE
 
 The approach taken here matches the work done to support secp256k1 in JOSE and COSE in [@!RFC8812].
 
@@ -1096,6 +1096,10 @@ The following tables map terms between JOSE and COSE for key types.
 | ---------- | ----- | ----------- | ----------- |
 | HASH       | TBD   | TBD         | No          |
 
+# CRYSTALS-Kyber
+
+TBD
+
 # Security Considerations
 
 The following considerations SHOULD apply to all signature schemes described
@@ -1132,29 +1136,32 @@ It is recommended that the all nonces are from a trusted source of randomness.
 
 # IANA Considerations
 
-The following has NOT YET been added to the "JSON Web Key Types" registry:
+The following has NOT YET been added to the "JSON Web Key Types"
+registry:
 
-- "kty" Parameter Value: "LWE"
-- Key Type Description: Base 64 encoded string key pairs
+- Name: "LWE"
+- Description: LWE family post quantum signature algorithm key pairs
 - JOSE Implementation Requirements: Optional
 - Change Controller: IESG
-- Specification Document(s): Section 3 of this document (TBD)
+- Specification Document(s): Section 3.1 of this document (TBD)
 
-The following has NOT YET been added to the "JSON Web Key Types" registry:
+The following has NOT YET been added to the "JSON Web Key Types"
+registry:
 
-- "kty" Parameter Value: "NTRU"
-- Key Type Description: Base 64 encoded string key pairs
+- Name: "NTRU"
+- Description: NTRU family post quantum signature algorithm key pairs
 - JOSE Implementation Requirements: Optional
 - Change Controller: IESG
-- Specification Document(s): Section 4 of this document (TBD)
+- Specification Document(s): Section 3.1 of this document (TBD)
 
-The following has NOT YET been added to the "JSON Web Key Types" registry:
+The following has NOT YET been added to the "JSON Web Key Types"
+registry:
 
-- "kty" Parameter Value: "HASH"
-- Key Type Description: Base 64 encoded string key pairs
+- Name: "HASH"
+- Description: Hash based post quantum signature algorithm key pairs
 - JOSE Implementation Requirements: Optional
 - Change Controller: IESG
-- Specification Document(s): Section 5 of this document (TBD)
+- Specification Document(s): Section 3.1 of this document (TBD)
 
 The following has NOT YET been added to the "JSON Web Key Parameters"
 registry:
@@ -1165,20 +1172,37 @@ registry:
 - Used with "kty" Value(s): "LWE", "NTRU", "HASH"
 - Change Controller: IESG
 - Specification Document(s): Section 2 of this document (TBD)
-  <br />
+
+The following has NOT YET been added to the "JSON Web Key Parameters"
+registry:
+
 - Parameter Name: "d"
 - Parameter Description: The private key
 - Parameter Information Class: Private
 - Used with "kty" Value(s): "LWE", "NTRU", "HASH"
 - Change Controller: IESG
 - Specification Document(s): Section 2 of RFC 8037
-  <br />
+
+The following has NOT YET been added to the "JSON Web Key Parameters"
+registry:
+
 - Parameter Name: "x"
 - Parameter Description: The public key
 - Parameter Information Class: Public
 - Used with "kty" Value(s): "LWE", "NTRU", "HASH"
 - Change Controller: IESG
 - Specification Document(s): Section 2 of RFC 8037
+
+The following has NOT YET been added to the "JSON Web Signature and
+Encryption Algorithms" registry:
+
+- Algorithm Name: "CRYDI2"
+- Algorithm Description: CRYDI2 signature algorithms
+- Algorithm Usage Location(s): "alg"
+- JOSE Implementation Requirements: Optional
+- Change Controller: IESG
+- Specification Document(s): Section 3.1 of this document (TBD)
+- Algorithm Analysis Documents(s): (TBD)
 
 The following has NOT YET been added to the "JSON Web Signature and
 Encryption Algorithms" registry:
@@ -1191,26 +1215,104 @@ Encryption Algorithms" registry:
 - Specification Document(s): Section 3.1 of this document (TBD)
 - Algorithm Analysis Documents(s): (TBD)
 
-The following has been added to the "JSON Web Key Lattice"
-registry:
+The following has NOT YET been added to the "JSON Web Signature and
+Encryption Algorithms" registry:
 
-- Lattice Name: "CRYDI5"
-- Lattice Description: Dilithium 5 signature algorithm key pairs
+- Algorithm Name: "CRYDI5"
+- Algorithm Description: CRYDI5 signature algorithms
+- Algorithm Usage Location(s): "alg"
 - JOSE Implementation Requirements: Optional
 - Change Controller: IESG
 - Specification Document(s): Section 3.1 of this document (TBD)
-  <br />
-- Lattice Name: "CRYDI3"
-- Lattice Description: Dilithium 3 signature algorithm key pairs
+- Algorithm Analysis Documents(s): (TBD)
+
+The following has NOT YET been added to the "JSON Web Signature and
+Encryption Algorithms" registry:
+
+- Algorithm Name: "FALCON512"
+- Algorithm Description: FALCON512 signature algorithms
+- Algorithm Usage Location(s): "alg"
 - JOSE Implementation Requirements: Optional
 - Change Controller: IESG
-- Specification Document(s): Section 3.1 of this document (TBD)
-  <br />
-- Lattice Name: "CRYDI2"
-- Lattice Description: Dilithium 2 signature algorithm key pairs
+- Specification Document(s): Section 4.1 of this document (TBD)
+- Algorithm Analysis Documents(s): (TBD)
+
+The following has NOT YET been added to the "JSON Web Signature and
+Encryption Algorithms" registry:
+
+- Algorithm Name: "FALCON1024"
+- Algorithm Description: FALCON1024 signature algorithms
+- Algorithm Usage Location(s): "alg"
 - JOSE Implementation Requirements: Optional
 - Change Controller: IESG
-- Specification Document(s): Section 3.1 of this document (TBD)
+- Specification Document(s): Section 4.1 of this document (TBD)
+- Algorithm Analysis Documents(s): (TBD)
+
+The following has NOT YET been added to the "JSON Web Signature and
+Encryption Algorithms" registry:
+
+- Algorithm Name: "SPHINCS+128s"
+- Algorithm Description: SPHINCS+128s signature algorithms
+- Algorithm Usage Location(s): "alg"
+- JOSE Implementation Requirements: Optional
+- Change Controller: IESG
+- Specification Document(s): Section 5.1 of this document (TBD)
+- Algorithm Analysis Documents(s): (TBD)
+
+The following has NOT YET been added to the "JSON Web Signature and
+Encryption Algorithms" registry:
+
+- Algorithm Name: "SPHINCS+128f"
+- Algorithm Description: SPHINCS+128f signature algorithms
+- Algorithm Usage Location(s): "alg"
+- JOSE Implementation Requirements: Optional
+- Change Controller: IESG
+- Specification Document(s): Section 5.1 of this document (TBD)
+- Algorithm Analysis Documents(s): (TBD)
+
+The following has NOT YET been added to the "JSON Web Signature and
+Encryption Algorithms" registry:
+
+- Algorithm Name: "SPHINCS+192s"
+- Algorithm Description: SPHINCS+192s signature algorithms
+- Algorithm Usage Location(s): "alg"
+- JOSE Implementation Requirements: Optional
+- Change Controller: IESG
+- Specification Document(s): Section 5.1 of this document (TBD)
+- Algorithm Analysis Documents(s): (TBD)
+
+The following has NOT YET been added to the "JSON Web Signature and
+Encryption Algorithms" registry:
+
+- Algorithm Name: "SPHINCS+192f"
+- Algorithm Description: SPHINCS+192f signature algorithms
+- Algorithm Usage Location(s): "alg"
+- JOSE Implementation Requirements: Optional
+- Change Controller: IESG
+- Specification Document(s): Section 5.1 of this document (TBD)
+- Algorithm Analysis Documents(s): (TBD)
+
+The following has NOT YET been added to the "JSON Web Signature and
+Encryption Algorithms" registry:
+
+- Algorithm Name: "SPHINCS+256s"
+- Algorithm Description: SPHINCS+256s signature algorithms
+- Algorithm Usage Location(s): "alg"
+- JOSE Implementation Requirements: Optional
+- Change Controller: IESG
+- Specification Document(s): Section 5.1 of this document (TBD)
+- Algorithm Analysis Documents(s): (TBD)
+
+The following has NOT YET been added to the "JSON Web Signature and
+Encryption Algorithms" registry:
+
+- Algorithm Name: "SPHINCS+256f"
+- Algorithm Description: SPHINCS+256f signature algorithms
+- Algorithm Usage Location(s): "alg"
+- JOSE Implementation Requirements: Optional
+- Change Controller: IESG
+- Specification Document(s): Section 5.1 of this document (TBD)
+- Algorithm Analysis Documents(s): (TBD)
 
 # Appendix
 
