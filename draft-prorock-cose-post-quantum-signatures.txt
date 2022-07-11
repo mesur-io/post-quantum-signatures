@@ -27,7 +27,11 @@ Abstract
    seralizations of existing cryptographic systems.
 
    This document registers key types for JOSE and COSE, specifically
-   LWE, NTRU, HASH.
+   LWE, NTRU, and HASH.
+
+   Key types in this document are specified by the cryptographic
+   algorithm family in use by a particular algorithm as discussed in
+   [RFC7517].
 
    This document registers signature algorithms types for JOSE and COSE,
    specifically CRYDI3 and others as required for use of various post
@@ -248,7 +252,19 @@ Table of Contents
    *  The parameter "kty" MUST be "LWE".
 
    *  The parameter "alg" MUST be specified, and its value MUST be one
-      of the values specified in table *TBD*.
+      of the values specified in the table below
+
+              +========+===================================+
+              | alg    | Description                       |
+              +========+===================================+
+              | CRYDI5 | CRYSTALS-Dilithium paramter set 5 |
+              +--------+-----------------------------------+
+              | CRYDI3 | CRYSTALS-Dilithium paramter set 3 |
+              +--------+-----------------------------------+
+              | CRYDI2 | CRYSTALS-Dilithium paramter set 2 |
+              +--------+-----------------------------------+
+
+                                 Table 2
 
    *  The parameter "pset" MAY be specfied to indicate the not only
       paramter set in use for the algorithm, but SHOULD also reflect the
@@ -282,7 +298,7 @@ Table of Contents
     | Key       |               |              |      |              |
     +-----------+---------------+--------------+------+--------------+
 
-                                 Table 2
+                                 Table 3
 
    When calculating JWK Thumbprints [RFC7638], the four public key
    fields are included in the hash input in lexicographic order: "kty",
@@ -306,7 +322,7 @@ Table of Contents
                       | LWE | CRYDI2 | 2            |
                       +-----+--------+--------------+
 
-                                  Table 3
+                                  Table 4
 
 3.4.2.1.  Public Key
 
@@ -707,7 +723,7 @@ Table of Contents
                     | 2          | CRYDI2             |
                     +------------+--------------------+
 
-                                  Table 4
+                                  Table 5
 
    The key type used with these keys is "PQK" and the algorithm used for
    signing is "CRYDI".  These subtypes MUST NOT be used for key
@@ -857,7 +873,7 @@ Table of Contents
               | CRYDI2 | TBD   | TBD         | No          |
               +--------+-------+-------------+-------------+
 
-                                 Table 5
+                                 Table 6
 
    The following tables map terms between JOSE and COSE for key types.
 
@@ -867,7 +883,7 @@ Table of Contents
                | PQK  | TBD   | TBD         | No          |
                +------+-------+-------------+-------------+
 
-                                 Table 6
+                                 Table 7
 
 4.  Falcon
 
@@ -957,7 +973,7 @@ Table of Contents
               | FALCON1024 | Falcon with parameter set 1024 |
               +------------+--------------------------------+
 
-                                  Table 7
+                                  Table 8
 
    *  The parameter "pset" MAY be specfied to indicate the paramter set
       in use for the algorithm, but SHOULD also reflect the targeted
@@ -998,7 +1014,7 @@ Table of Contents
     | Key       |               |              |      |              |
     +-----------+---------------+--------------+------+--------------+
 
-                                 Table 8
+                                 Table 9
 
    When calculating JWK Thumbprints [RFC7638], the four public key
    fields are included in the hash input in lexicographic order: "kty",
@@ -1020,7 +1036,7 @@ Table of Contents
                    | NTRU | FALCON1024 | 1024         |
                    +------+------------+--------------+
 
-                                 Table 9
+                                 Table 10
 
 4.4.  Using NTRU with COSE
 
@@ -1037,7 +1053,7 @@ Table of Contents
             | FALCON1024 | TBD   | TBD         | No          |
             +------------+-------+-------------+-------------+
 
-                                 Table 10
+                                 Table 11
 
    The following tables map terms between JOSE and COSE for key types.
 
@@ -1047,7 +1063,7 @@ Table of Contents
                | NTRU | TBD   | TBD         | No          |
                +------+-------+-------------+-------------+
 
-                                 Table 11
+                                 Table 12
 
 5.  SPHINCS-PLUS
 
@@ -1165,7 +1181,7 @@ Table of Contents
           | SPHINCS+256f | SPHINCS+ with parameter set of 256f |
           +--------------+-------------------------------------+
 
-                                 Table 12
+                                 Table 13
 
    *  The parameter "pset" MAY be specfied to indicate the paramter set
       in use for the algorithm, but SHOULD also reflect the targeted
@@ -1195,7 +1211,7 @@ Table of Contents
     | Key       |               |              |      |              |
     +-----------+---------------+--------------+------+--------------+
 
-                                 Table 13
+                                 Table 14
 
    When calculating JWK Thumbprints [RFC7638], the four public key
    fields are included in the hash input in lexicographic order: "kty",
@@ -1225,7 +1241,7 @@ Table of Contents
                   | HASH | SPHINCS+256f | 256f         |
                   +------+--------------+--------------+
 
-                                 Table 14
+                                 Table 15
 
 5.3.2.1.  Public Key
 
@@ -1262,7 +1278,7 @@ Table of Contents
            | SPHINCS+256f | TBD   | TBD         | No          |
            +--------------+-------+-------------+-------------+
 
-                                 Table 15
+                                 Table 16
 
    The following tables map terms between JOSE and COSE for key types.
 
@@ -1272,7 +1288,7 @@ Table of Contents
                | HASH | TBD   | TBD         | No          |
                +------+-------+-------------+-------------+
 
-                                 Table 16
+                                 Table 17
 
 6.  Security Considerations
 
