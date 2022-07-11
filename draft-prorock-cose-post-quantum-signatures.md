@@ -203,7 +203,13 @@ It has the following parameters:
 - The parameter "kty" MUST be "LWE".
 
 - The parameter "alg" MUST be specified, and its value MUST be one of the values
-  specified in table __TBD__.
+  specified in the table below
+
+| alg           | Description                          |
+| ------------- | ------------------------------------ |
+| CRYDI5        | CRYSTALS-Dilithium paramter set 5    |
+| CRYDI3        | CRYSTALS-Dilithium paramter set 3    |
+| CRYDI2        | CRYSTALS-Dilithium paramter set 2    |
 
 - The parameter "pset" MAY be specfied to indicate the not only paramter set
   in use for the algorithm, but SHOULD also reflect the targeted NIST level for the
