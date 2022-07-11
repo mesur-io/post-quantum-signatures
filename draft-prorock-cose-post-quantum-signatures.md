@@ -802,10 +802,10 @@ The following tables map terms between JOSE and COSE for key types.
 This section of the document describes the lattice signature scheme [@!Falcon],
 the "Fast Fourier lattice-based compact signatures over NTRU". Falcon is
 based on the GPV hash-and-sign lattice-based signature framework
-introduced by Gentry, Peikert and Vaikuntanathan [@GPV08], which is a
+introduced by Gentry, Peikert and Vaikuntanathan [GPV08], which is a
 framework that requires a class of lattices and a trapdoor sampler technique.
 For the class of lattices, Flacon uses the well-known NTRU lattices, while for
-the trapdoor sampler, it uses a new fast Fourier sampling technique [@DP16].
+the trapdoor sampler, it uses a new fast Fourier sampling technique [DP16].
 The underlying hard problem is the short integer solution problem (SIS) over
 NTRU lattices, for which no efficient solving algorithm is currently known for
 both classical as well as quantum settings.
