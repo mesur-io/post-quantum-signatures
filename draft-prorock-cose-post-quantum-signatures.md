@@ -69,7 +69,7 @@ only seralizations of existing cryptographic systems.
 This document registers key types for JOSE and COSE, specifically `LWE`, `NTRU`, and `HASH`.
 
 Key types in this document are specified by the cryptographic algorithm family in use by
-a particular algorithm as discussed in [@!RFC7517].
+a particular algorithm as discussed in RFC7517.
 
 This document registers signature algorithms types for JOSE and COSE, specifically `CRYDI3`
 and others as required for use of various post quantum signature schemes.
