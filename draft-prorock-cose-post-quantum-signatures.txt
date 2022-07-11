@@ -31,7 +31,7 @@ Abstract
 
    Key types in this document are specified by the cryptographic
    algorithm family in use by a particular algorithm as discussed in
-   [RFC7517].
+   RFC7517.
 
    This document registers signature algorithms types for JOSE and COSE,
    specifically CRYDI3 and others as required for use of various post
