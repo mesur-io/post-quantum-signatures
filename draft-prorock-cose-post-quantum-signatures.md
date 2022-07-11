@@ -66,10 +66,10 @@ post quantum cryptography (PQC) based suites.
 This document does not define any new cryptography,
 only seralizations of existing cryptographic systems.
 
-This document registers key types for JOSE and COSE, specifically `PQK`, `CRYDI`, `pset`.
+This document registers key types for JOSE and COSE, specifically `LWE`, `NTRU`, `HASH`.
 
 This document registers signature algorithms types for JOSE and COSE, specifically `CRYDI3`
-and others as required for various post quantum signature schemes.
+and others as required for use of various post quantum signature schemes.
 
 
 {mainmatter}
@@ -159,7 +159,7 @@ signatures, especially as compared to classical approaches for digital signing.
 Unlike certain other approaches such as Ed25519 that have a large set of
 parameters, CRYSTALS-Dilithium uses distinct numbers of paramters to
 increase or decrease the security level according to the required
-level for a particular scenario. Under DILITHIUM-Crustals, the key
+level for a particular scenario. Under CRYSTALS-Dilithium, the key
 parameter specificiation determines the size of the matrix and thereby
 the number of polynomials that describe he lattice. For use according to
 this specification we do not recommend a parameter set of less than 3,
@@ -198,21 +198,23 @@ See [@!CRYSTALS-Dilithium]
 
 ## Using CRYDI with JOSE
 
-Basing off of [this](https://datatracker.ietf.org/doc/html/rfc8812#section-3)
+This sections is based on [CBOR Object Signing and Encryption (COSE) and 
+JSON Object Signing and Encryption (JOSE)](https://datatracker.ietf.org/doc/html/rfc8812#section-3)
 
 ### CRYDI Key Representations
 
-A new key type (kty) value "PQK" (Post Quantum Key Pair) is defined for
+A new key type (kty) value "LWE" (for keys related to the family of algorithms that utilize 
+Learning With Errors approaches to Post Quantum lattice based cryptography) is defined for
 public key algorithms that use base 64 encoded strings of the underlying binary materia
 as private and public keys and that support cryptographic sponge functions.
 It has the following parameters:
 
-- The parameter "kty" MUST be "PQK".
+- The parameter "kty" MUST be "LWE".
 
 - The parameter "alg" MUST be specified, and its value MUST be one of the values
   specified in table __TBD__.
 
-- The parameter "pset" MUST be specfied to indicate the not only paramter set
+- The parameter "pset" MAY be specfied to indicate the not only paramter set
   in use for the algorithm, but SHOULD also reflect the targeted NIST level for the
   algorithm in combination with the specified paramter set.
   For "alg" "CRYDI" one of the described parameter sets "2", "3", or "5" MUST be
@@ -236,7 +238,7 @@ Sizes of various key and signature material is as follows (for "pset" value "2")
 
 When calculating JWK Thumbprints [@!RFC7638], the four public key
 fields are included in the hash input in lexicographic order:
-"kty", "pset", and "x".
+"kty", "alg", and "x".
 
 
 ### CRYDI Algorithms
@@ -247,9 +249,9 @@ These `alg` values are used in both key representations and signatures.
 
 | kty         | alg           | Paramter Set |
 | ----------- | ------------- | ------------ |
-| PQK         | CRYDI5        | 5            |
-| PQK         | CRYDI3        | 3            |
-| PQK         | CRYDI2        | 2            |
+| LWE         | CRYDI5        | 5            |
+| LWE         | CRYDI3        | 3            |
+| LWE         | CRYDI2        | 2            |
 
 #### Public Key
 
@@ -265,7 +267,7 @@ Example public key using only required fields:
 =============== NOTE: '\' line wrapping per RFC 8792 ================
 
 {
-  "kty": "PQK",
+  "kty": "LWE",
   "alg": "CRYDI3",
   "x": "z7u7GwhsjjnfHH3Nkrs2xvvw020Rcw5ymdlTnhRenjDdrOO+nfXRVUZVy9q1\
 5zDn77zTgrIskM3WX8bqslc+B1fq12iA/wxD2jc1d6j+YjKCtkGH26OR7vc0YC2ZiMzW\
@@ -316,7 +318,7 @@ Example public key including optional fields:
 
 {
   "kid": "key-0",
-  "kty": "PQK",
+  "kty": "LWE",
   "alg": "CRYDI3",
   "key_ops": ["verify"],
   "x": "z7u7GwhsjjnfHH3Nkrs2xvvw020Rcw5ymdlTnhRenjDdrOO+nfXRVUZVy9q1\
@@ -375,7 +377,7 @@ Example private key using only required fields:
 =============== NOTE: '\' line wrapping per RFC 8792 ================
 
 {
-  "kty": "PQK",
+  "kty": "LWE",
   "alg": "CRYDI3",
   "x": "z7u7GwhsjjnfHH3Nkrs2xvvw020Rcw5ymdlTnhRenjDdrOO+nfXRVUZVy9q1\
 5zDn77zTgrIskM3WX8bqslc+B1fq12iA/wxD2jc1d6j+YjKCtkGH26OR7vc0YC2ZiMzW\
@@ -505,7 +507,7 @@ Example private key using optional fields:
 
 {
   "kid": "key-0",
-  "kty": "PQK",
+  "kty": "LWE",
   "alg": "CRYDI3",
   "key_ops": ["sign"],
   "x": "z7u7GwhsjjnfHH3Nkrs2xvvw020Rcw5ymdlTnhRenjDdrOO+nfXRVUZVy9q1\
@@ -638,7 +640,7 @@ value of the "alg" parameter.
 
 The following key subtypes are defined here for use with CRYDI:
 
-| "pset" | CRYDI Paramter Set |
+| "paramter" | CRYDI Paramter Set |
 | ------ | ------------------ |
 | 5      | CRYDI5             |
 | 3      | CRYDI3             |
@@ -667,10 +669,10 @@ follows:
 When using a JWK for this algorithm, the following checks
 are made:
 
-- The "kty" field MUST be present, and it MUST be "PQK" for JOSE.
+- The "kty" field MUST be present, and it MUST be "LWE" for JOSE.
 
 - The "alg" field MUST be present, and it MUST represent the
-  pset subtype.
+  algorith and parameter set.
 
 - If the "key_ops" field is present, it MUST include "sign" when
   creating an CRYDI signature.
@@ -841,7 +843,88 @@ in Falcon have O(n log n) complexity for degree n.
 side-channel attacks due to the hardness of implementing discrete Gaussian sampling over 
 the integers in constant-time, a gap that has been recently filled in the literature. 
 
-# SPHINCS+
+## Using FALCON with JOSE
+
+This sections is based on [CBOR Object Signing and Encryption (COSE) and 
+JSON Object Signing and Encryption (JOSE)](https://datatracker.ietf.org/doc/html/rfc8812#section-3)
+
+### NTRU Key Representations
+
+A new key type (kty) value "NTRU" (for keys related to the family of algorithms that utilize 
+NTRU based approaches to Post Quantum lattice based cryptography) is defined for
+public key algorithms that use base 64 encoded strings of the underlying binary materia
+as private and public keys and that support cryptographic sponge functions.
+It has the following parameters:
+
+- The parameter "kty" MUST be "NTRU".
+
+- The parameter "alg" MUST be specified, and its value MUST be one of the values
+  specified the below table
+
+| alg         | Description                         |
+| ----------- | ----------------------------------- |
+| FALCON512   | Falcon with parameter set 512       |
+| FALCON1024  | Falcon with parameter set 1024      |
+
+- The parameter "pset" MAY be specfied to indicate the paramter set
+  in use for the algorithm, but SHOULD also reflect the targeted NIST level for the
+  algorithm in combination with the specified paramter set.
+  For "alg" "FALCON" one of the described parameter sets "512" or "1024" MUST be
+  specified. Parameter set "512" or above SHOULD be used with "FALCON" for any situation
+  requiring at least 128bits of security against both quantum and classical attacks
+
+- The parameter "x" MUST be present and contain the public key
+  encoded using the base64url [@!RFC4648] encoding.
+
+- The parameter "d" MUST be present for private keys and contain the
+  private key encoded using the base64url encoding. This parameter
+  MUST NOT be present for public keys.
+
+Sizes of various key and signature material is as follows
+
+| Variable    | Paramter Name | Paramter Set | Size | base64url encoded size |
+| ----------- | ------------- | ------------ | ---- | ---------------------- |
+| Signature   | sig           | 512          | 666  |                        |
+| Public Key  | x             | 512          | 897  |                        |
+| Private Key | d             | 512          | 1281 |                        |
+| Signature   | sig           | 1024         | 1280 |                        |
+| Public Key  | x             | 1024         | 1793 |                        |
+| Private Key | d             | 1024         | 2305 |                        |
+
+When calculating JWK Thumbprints [@!RFC7638], the four public key
+fields are included in the hash input in lexicographic order:
+"kty", "alg", and "x".
+
+
+### FALCON Algorithms
+
+In order to reduce the complexity of the key representation and signature representations we register a unique algorithm name per pset.
+This allows us to omit registering the `pset` term, and reduced the likelyhood that it will be misused.
+These `alg` values are used in both key representations and signatures.
+
+| kty         | alg           | Paramter Set |
+| ----------- | ------------- | ------------ |
+| NTRU        | FALCON512     | 512          |
+| NTRU        | FALCON1024    | 1024         |
+
+## Using NTRU with COSE
+
+The approach taken here matches the work done to support secp256k1 in JOSE and COSE in [@!RFC8812].
+
+The following tables map terms between JOSE and COSE for signatures.
+
+| Name       | Value | Description | Recommended |
+| ---------- | ----- | ----------- | ----------- |
+| FALCON512  | TBD   | TBD         | No          |
+| FALCON1024 | TBD   | TBD         | No          |
+
+The following tables map terms between JOSE and COSE for key types.
+
+| Name   | Value | Description | Recommended |
+| ------ | ----- | ----------- | ----------- |
+| NTRU   | TBD   | TBD         | No          |
+
+# SPHINCS-PLUS
 
 This section defines core operations used by the signature scheme, as proposed in [@!Sphincs].
 
@@ -904,13 +987,6 @@ speed of signing, depending on the chosen parameter set. Especially in IoT
 applications this might pose a problem. Additionally hash-based schemes are
 also vulnerable to differential and fault attacks.
 
-## Parameters
-
-TODO
-
-### Parameter sets
-
-TODO
 
 ## Core Operations
 
@@ -928,17 +1004,73 @@ The signature generation of SPINCS+ generates the randomization string for the m
 
 The signature verification of SPINCS+ takes randomization string and the message to compute the signed digest, then in order verify the FORS signature and the hypertree signature over that message. The verification is succesful if the result of the latter matches the public key root. See [@!SPHINCS+] for further details.
 
-## Using SPHINCS+ with JOSE
+## Using SPHINCS-PLUS with JOSE
 
-Basing off of [this](https://datatracker.ietf.org/doc/html/rfc8812#section-3)
+This sections is based on [CBOR Object Signing and Encryption (COSE) and 
+JSON Object Signing and Encryption (JOSE)](https://datatracker.ietf.org/doc/html/rfc8812#section-3)
 
-### SPHINCS+ Key Representations
+### SPHINCS-PLUS Key Representations
 
-TODO
+A new key type (kty) value "HASH" (for keys related to the family of algorithms that utilize 
+hash based approaches to Post Quantum Cryptography) is defined for
+public key algorithms that use base 64 encoded strings of the underlying binary materia
+as private and public keys and that support cryptographic sponge functions.
+It has the following parameters:
 
-### SPHINCS+ Algorithms
+- The parameter "kty" MUST be "HASH".
 
-TODO
+- The parameter "alg" MUST be specified, and its value MUST be one of the values
+  specified the below table
+
+| alg         | Description                          |
+| ----------- | ------------------------------------ |
+| SPHINCS+128s | SPHINCS+ with parameter set of 128s |
+| SPHINCS+128f | SPHINCS+ with parameter set of 128f |
+| SPHINCS+192s | SPHINCS+ with parameter set of 192s |
+| SPHINCS+192f | SPHINCS+ with parameter set of 192f |
+| SPHINCS+256s | SPHINCS+ with parameter set of 256s |
+| SPHINCS+256f | SPHINCS+ with parameter set of 256f |
+
+- The parameter "pset" MAY be specfied to indicate the paramter set
+  in use for the algorithm, but SHOULD also reflect the targeted NIST level for the
+  algorithm in combination with the specified paramter set.
+  For "alg" "HAS" one of the described parameter sets as listed in the section SPHINCS+ 
+  Algorithms MUST be specified. 
+
+- The parameter "x" MUST be present and contain the public key
+  encoded using the base64url [@!RFC4648] encoding.
+
+- The parameter "d" MUST be present for private keys and contain the
+  private key encoded using the base64url encoding. This parameter
+  MUST NOT be present for public keys.
+
+Sizes of various key and signature material is as follows (TBD)
+
+| Variable    | Paramter Name | Paramter Set | Size | base64url encoded size |
+| ----------- | ------------- | ------------ | ---- | ---------------------- |
+| Signature   | sig           |              |      |                        |
+| Public Key  | x             |              |      |                        |
+| Private Key | d             |              |      |                        |
+
+
+When calculating JWK Thumbprints [@!RFC7638], the four public key
+fields are included in the hash input in lexicographic order:
+"kty", "alg", and "x".
+
+### SPHINCS-PLUS Algorithms
+
+In order to reduce the complexity of the key representation and signature representations we register a unique algorithm name per pset.
+This allows us to omit registering the `pset` term, and reduced the likelyhood that it will be misused.
+These `alg` values are used in both key representations and signatures.
+
+| kty         | alg           | Paramter Set |
+| ----------- | ------------- | ------------ |
+| HASH        | SPHINCS+128s  | 128s         |
+| HASH        | SPHINCS+128f  | 128f         |
+| HASH        | SPHINCS+192s  | 192s         |
+| HASH        | SPHINCS+192f  | 192f         |
+| HASH        | SPHINCS+256s  | 256s         |
+| HASH        | SPHINCS+256f  | 256f         |
 
 #### Public Key
 
@@ -948,9 +1080,30 @@ TODO
 
 TODO
 
-### SPHINCS+ Signature Representation
+### SPHINCS-PLUS Signature Representation
 
 TODO
+
+## Using HASH with COSE
+
+The approach taken here matches the work done to support secp256k1 in JOSE and COSE in [@!RFC8812].
+
+The following tables map terms between JOSE and COSE for signatures.
+
+| Name            | Value | Description | Recommended |
+| --------------- | ----- | ----------- | ----------- |
+| SPHINCS+128s    | TBD   | TBD         | No          |
+| SPHINCS+128f    | TBD   | TBD         | No          |
+| SPHINCS+192s    | TBD   | TBD         | No          |
+| SPHINCS+192f    | TBD   | TBD         | No          |
+| SPHINCS+256s    | TBD   | TBD         | No          |
+| SPHINCS+256f    | TBD   | TBD         | No          |
+
+The following tables map terms between JOSE and COSE for key types.
+
+| Name       | Value | Description | Recommended |
+| ---------- | ----- | ----------- | ----------- |
+| HASH       | TBD   | TBD         | No          |
 
 # Security Considerations
 
@@ -990,11 +1143,27 @@ It is recommended that the all nonces are from a trusted source of randomness.
 
 The following has NOT YET been added to the "JSON Web Key Types" registry:
 
-- "kty" Parameter Value: "PQK"
+- "kty" Parameter Value: "LWE"
 - Key Type Description: Base 64 encoded string key pairs
 - JOSE Implementation Requirements: Optional
 - Change Controller: IESG
-- Specification Document(s): Section 2 of this document (TBD)
+- Specification Document(s): Section 3 of this document (TBD)
+
+The following has NOT YET been added to the "JSON Web Key Types" registry:
+
+- "kty" Parameter Value: "NTRU"
+- Key Type Description: Base 64 encoded string key pairs
+- JOSE Implementation Requirements: Optional
+- Change Controller: IESG
+- Specification Document(s): Section 4 of this document (TBD)
+
+The following has NOT YET been added to the "JSON Web Key Types" registry:
+
+- "kty" Parameter Value: "HASH"
+- Key Type Description: Base 64 encoded string key pairs
+- JOSE Implementation Requirements: Optional
+- Change Controller: IESG
+- Specification Document(s): Section 5 of this document (TBD)
 
 The following has NOT YET been added to the "JSON Web Key Parameters"
 registry:
@@ -1002,21 +1171,21 @@ registry:
 - Parameter Name: "pset"
 - Parameter Description: The parameter set of the crypto system
 - Parameter Information Class: Public
-- Used with "kty" Value(s): "PQK"
+- Used with "kty" Value(s): "LWE", "NTRU", "HASH"
 - Change Controller: IESG
 - Specification Document(s): Section 2 of this document (TBD)
   <br />
 - Parameter Name: "d"
 - Parameter Description: The private key
 - Parameter Information Class: Private
-- Used with "kty" Value(s): "PQK"
+- Used with "kty" Value(s): "LWE", "NTRU", "HASH"
 - Change Controller: IESG
 - Specification Document(s): Section 2 of RFC 8037
   <br />
 - Parameter Name: "x"
 - Parameter Description: The public key
 - Parameter Information Class: Public
-- Used with "kty" Value(s): "PQK"
+- Used with "kty" Value(s): "LWE", "NTRU", "HASH"
 - Change Controller: IESG
 - Specification Document(s): Section 2 of RFC 8037
 
