@@ -15,32 +15,32 @@
 post quantum cryptography (PQC) based suites. 
        This document does not define any new cryptography,
 only seralizations of existing cryptographic systems. 
-       This document registers key types for JOSE and COSE, specifically  PQK ,  CRYDI ,  pset . 
+       This document registers key types for JOSE and COSE, specifically  LWE ,  NTRU ,  HASH . 
        This document registers signature algorithms types for JOSE and COSE, specifically  CRYDI3 
-and others as required for various post quantum signature schemes. 
+and others as required for use of various post quantum signature schemes. 
     " name="description">
-<meta content="xml2rfc 3.12.4" name="generator">
+<meta content="xml2rfc 3.13.0" name="generator">
 <meta content="JOSE" name="keyword">
 <meta content="COSE" name="keyword">
 <meta content="PQC" name="keyword">
 <meta content="draft-prorock-cose-post-quantum-signatures-latest" name="ietf.draft">
 <!-- Generator version information:
-  xml2rfc 3.12.4
-    Python 3.9.7
+  xml2rfc 3.13.0
+    Python 3.10.4
     appdirs 1.4.4
-    ConfigArgParse 1.3
-    google-i18n-address 2.5.1
+    ConfigArgParse 1.5.3
+    google-i18n-address 2.5.2
     html5lib 1.1
     intervaltree 3.1.0
-    Jinja2 2.11.3
+    Jinja2 3.1.2
     kitchen 1.2.6
-    lxml 4.6.5
-    MarkupSafe 2.0.1
-    pycountry 20.7.3
-    pyflakes 2.3.1
-    PyYAML 5.4.1
-    requests 2.26.0
-    setuptools 52.0.0
+    lxml 4.9.1
+    MarkupSafe 2.1.1
+    pycountry 22.3.5
+    pyflakes 2.4.0
+    PyYAML 6.0
+    requests 2.27.1
+    setuptools 59.4.0
     six 1.16.0
 -->
 <link href="draft-prorock-cose-post-quantum-signatures.xml" rel="alternate" type="application/rfc+xml">
@@ -165,6 +165,14 @@ and others as required for various post quantum signature schemes.
   font-weight: 700;
   font-display: swap;
   src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: local('Lora SemiBold'), local('Lora-SemiBold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-semibold-latin.woff2') format('woff2');
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
@@ -348,7 +356,7 @@ ol, ul {
   padding: 0;
   margin: 0 0 0.5em 2em;
 }
-ol ol, ul ul, ol ul, ul ol {
+:is(ol, ul) :is(ol, ul) {
   margin-left: 1em;
 }
 li {
@@ -363,8 +371,7 @@ ul.empty, .ulEmpty {
 ul.empty li, .ulEmpty li {
   margin-top: 0.5em;
 }
-ul.compact, .ulCompact,
-ol.compact, .olCompact {
+:is(ul, ol).compact, .ulCompact, .olCompact {
   line-height: 100%;
   margin: 0 0 0 2em;
 }
@@ -380,7 +387,7 @@ dl > dd {
   margin-bottom: .8em;
   min-height: 1.3em;
 }
-dl.compact > dd, .dlCompact > dd {
+:is(dl.compact, .dlCompact) > dd {
   margin-bottom: 0em;
 }
 dl > dd > dl {
@@ -422,6 +429,9 @@ tt, code {
      remove leading to avoid altering the final height of lines */
   line-height: 0;
 }
+:is(h1, h2, h3, h4, h5, h6) :is(tt, code) {
+  font-size: 84%;
+}
 pre {
   border: 1px solid var(--line-color);
   font-size: 13.5px;
@@ -446,6 +456,19 @@ figcaption, caption {
   text-align: left;
 }
 @media screen {
+  /* Auto-collapse boilerplate. */
+  :is(#status-of-memo, #copyright) p {
+    margin: -2px 0;
+    max-height: 0;
+    transition: max-height 2s ease, margin 0.5s ease 0.5s;
+    overflow: hidden;
+  }
+  :is(#status-of-memo, #copyright):hover p,
+  :is(#status-of-memo, #copyright) h2:target ~ p {
+    margin: 0.5em 0;
+    max-height: 500px;
+    overflow: auto;
+  }
   pre, svg {
     display: inline-block;
     overflow-x: auto;
@@ -461,7 +484,7 @@ figcaption, caption {
     display: block;
     width: calc(100% - 25px);
   }
-  pre + .pilcrow, svg + .pilcrow {
+  :is(pre, svg) + .pilcrow {
     display: inline-block;
     vertical-align: text-bottom;
     padding-bottom: 8px;
@@ -510,17 +533,11 @@ th, td {
 th {
   background-color: var(--line-color);
 }
-tr:nth-child(2n) > td {
+:is(tr:nth-child(2n), thead+tbody > tr:nth-child(2n+1)) > td {
   background-color: var(--background-color);
 }
-tr:nth-child(2n+1) > td {
+:is(tr:nth-child(2n+1), thead+tbody > tr:nth-child(2n)) > td {
   background-color: var(--highlight-color);
-}
-thead+tbody > tr:nth-child(2n) > td {
-  background-color: var(--highlight-color);
-}
-thead+tbody > tr:nth-child(2n+1) > td {
-  background-color: var(--background-color);
 }
 table caption {
   margin: 0;
@@ -560,8 +577,9 @@ hr {
 }
 .bcp14 {
   font-variant: small-caps;
+  font-weight: 600;
+  font-size: 14.5px;
 }
-
 .role {
   font-variant: all-small-caps;
 }
@@ -800,7 +818,7 @@ hr.addr {
     margin: 0 0 0 4px;
     font-size: var(--small-font-size);
   }
-  #toc ul p, #toc ul li {
+  #toc ul :is(p, li) {
     margin: 2px 0;
     line-height: 22px;
   }
@@ -910,13 +928,13 @@ dl.dlNewline > dt {
 }
 
 /* Provide styling for table cell text alignment */
-table .text-left, table .text-left {
+table .text-left {
   text-align: left;
 }
-table .text-center, table .text-center {
+table .text-center {
   text-align: center;
 }
-table .text-right, table .text-right {
+table .text-right {
   text-align: right;
 }
 
@@ -983,12 +1001,6 @@ address div.right {
   }
 
 }
-/* Tweak the bcp14 keyword presentation */
-.bcp14 {
-  font-variant: small-caps;
-  font-weight: bold;
-  font-size: 0.9em;
-}
 
 /* Dark mode. */
 @media (prefers-color-scheme: dark) {
@@ -1003,19 +1015,20 @@ address div.right {
   --pilcrow-strong: #666;
   scrollbar-color: #777 #333;
 }
-/* Trick: a prefix match works because only black and white are allowed */
-svg [stroke="black"], svg [stroke^="#000"] {
+}
+
+/* SVG Trick: a prefix match works because only black and white are allowed */
+svg :is([stroke="black"], [stroke^="#000"]) {
   stroke: var(--text-color);
 }
-svg [stroke="white"], svg [stroke^="#fff"] {
+svg :is([stroke="white"], [stroke^="#fff"]) {
   stroke: var(--background-color);
 }
-svg [fill="black"], svg [fill^="#000"], svg :not([fill]) {
+svg :is([fill="black"], [fill^="#000"], :not([fill])) {
   fill: var(--text-color);
 }
-svg [stroke="fill"], svg [fill^="#fff"] {
+svg :is([stroke="fill"], [fill^="#fff"]) {
   fill: var(--background-color);
-}
 }
 </style>
 
@@ -1025,11 +1038,11 @@ svg [stroke="fill"], svg [fill^="#fff"] {
 <thead><tr>
 <td class="left">Internet-Draft</td>
 <td class="center">post-quantum-signatures</td>
-<td class="right">April 2022</td>
+<td class="right">July 2022</td>
 </tr></thead>
 <tfoot><tr>
 <td class="left">Prorock, et al.</td>
-<td class="center">Expires 27 October 2022</td>
+<td class="center">Expires 12 January 2023</td>
 <td class="right">[Page]</td>
 </tr></tfoot>
 </table>
@@ -1042,12 +1055,12 @@ svg [stroke="fill"], svg [fill^="#fff"] {
 <dd class="internet-draft">draft-prorock-cose-post-quantum-signatures-latest</dd>
 <dt class="label-published">Published:</dt>
 <dd class="published">
-<time datetime="2022-04-25" class="published">25 April 2022</time>
+<time datetime="2022-07-11" class="published">11 July 2022</time>
     </dd>
 <dt class="label-intended-status">Intended Status:</dt>
 <dd class="intended-status">Standards Track</dd>
 <dt class="label-expires">Expires:</dt>
-<dd class="expires"><time datetime="2022-10-27">27 October 2022</time></dd>
+<dd class="expires"><time datetime="2023-01-12">12 January 2023</time></dd>
 <dt class="label-authors">Authors:</dt>
 <dd class="authors">
 <div class="author">
@@ -1080,9 +1093,9 @@ svg [stroke="fill"], svg [fill^="#fff"] {
 post quantum cryptography (PQC) based suites.<a href="#section-abstract-1" class="pilcrow">¶</a></p>
 <p id="section-abstract-2">This document does not define any new cryptography,
 only seralizations of existing cryptographic systems.<a href="#section-abstract-2" class="pilcrow">¶</a></p>
-<p id="section-abstract-3">This document registers key types for JOSE and COSE, specifically <code>PQK</code>, <code>CRYDI</code>, <code>pset</code>.<a href="#section-abstract-3" class="pilcrow">¶</a></p>
+<p id="section-abstract-3">This document registers key types for JOSE and COSE, specifically <code>LWE</code>, <code>NTRU</code>, <code>HASH</code>.<a href="#section-abstract-3" class="pilcrow">¶</a></p>
 <p id="section-abstract-4">This document registers signature algorithms types for JOSE and COSE, specifically <code>CRYDI3</code>
-and others as required for various post quantum signature schemes.<a href="#section-abstract-4" class="pilcrow">¶</a></p>
+and others as required for use of various post quantum signature schemes.<a href="#section-abstract-4" class="pilcrow">¶</a></p>
 </section>
 <div id="status-of-memo">
 <section id="section-boilerplate.1">
@@ -1103,7 +1116,7 @@ and others as required for various post quantum signature schemes.<a href="#sect
         time. It is inappropriate to use Internet-Drafts as reference
         material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
 <p id="section-boilerplate.1-4">
-        This Internet-Draft will expire on 27 October 2022.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+        This Internet-Draft will expire on 12 January 2023.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="copyright">
@@ -1154,17 +1167,6 @@ and others as required for various post quantum signature schemes.<a href="#sect
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3.2.3">
                 <p id="section-toc.1-1.3.2.3.1"><a href="#section-3.3" class="xref">3.3</a>.  <a href="#name-core-operations" class="xref">Core Operations</a></p>
-<ul class="compact toc ulBare ulEmpty">
-<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3.2.3.2.1">
-                    <p id="section-toc.1-1.3.2.3.2.1.1"><a href="#section-3.3.1" class="xref">3.3.1</a>.  <a href="#name-generate" class="xref">Generate</a></p>
-</li>
-                  <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3.2.3.2.2">
-                    <p id="section-toc.1-1.3.2.3.2.2.1"><a href="#section-3.3.2" class="xref">3.3.2</a>.  <a href="#name-sign" class="xref">Sign</a></p>
-</li>
-                  <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3.2.3.2.3">
-                    <p id="section-toc.1-1.3.2.3.2.3.1"><a href="#section-3.3.3" class="xref">3.3.3</a>.  <a href="#name-verify" class="xref">Verify</a></p>
-</li>
-                </ul>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3.2.4">
                 <p id="section-toc.1-1.3.2.4.1"><a href="#section-3.4" class="xref">3.4</a>.  <a href="#name-using-crydi-with-jose" class="xref">Using CRYDI with JOSE</a></p>
@@ -1191,49 +1193,50 @@ and others as required for various post quantum signature schemes.<a href="#sect
 <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.1">
                 <p id="section-toc.1-1.4.2.1.1"><a href="#section-4.1" class="xref">4.1</a>.  <a href="#name-overview-2" class="xref">Overview</a></p>
 </li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.2">
+                <p id="section-toc.1-1.4.2.2.1"><a href="#section-4.2" class="xref">4.2</a>.  <a href="#name-core-operations-2" class="xref">Core Operations</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.3">
+                <p id="section-toc.1-1.4.2.3.1"><a href="#section-4.3" class="xref">4.3</a>.  <a href="#name-using-falcon-with-jose" class="xref">Using FALCON with JOSE</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.3.2.1">
+                    <p id="section-toc.1-1.4.2.3.2.1.1"><a href="#section-4.3.1" class="xref">4.3.1</a>.  <a href="#name-ntru-key-representations" class="xref">NTRU Key Representations</a></p>
+</li>
+                  <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.3.2.2">
+                    <p id="section-toc.1-1.4.2.3.2.2.1"><a href="#section-4.3.2" class="xref">4.3.2</a>.  <a href="#name-falcon-algorithms" class="xref">FALCON Algorithms</a></p>
+</li>
+                </ul>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.4">
+                <p id="section-toc.1-1.4.2.4.1"><a href="#section-4.4" class="xref">4.4</a>.  <a href="#name-using-ntru-with-cose" class="xref">Using NTRU with COSE</a></p>
+</li>
             </ul>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5">
-            <p id="section-toc.1-1.5.1"><a href="#section-5" class="xref">5</a>.  <a href="#name-sphincs" class="xref">SPHINCS+</a></p>
+            <p id="section-toc.1-1.5.1"><a href="#section-5" class="xref">5</a>.  <a href="#name-sphincs-plus" class="xref">SPHINCS-PLUS</a></p>
 <ul class="compact toc ulBare ulEmpty">
 <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.1">
                 <p id="section-toc.1-1.5.2.1.1"><a href="#section-5.1" class="xref">5.1</a>.  <a href="#name-overview-3" class="xref">Overview</a></p>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.2">
-                <p id="section-toc.1-1.5.2.2.1"><a href="#section-5.2" class="xref">5.2</a>.  <a href="#name-parameters-2" class="xref">Parameters</a></p>
-<ul class="compact toc ulBare ulEmpty">
-<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.2.2.1">
-                    <p id="section-toc.1-1.5.2.2.2.1.1"><a href="#section-5.2.1" class="xref">5.2.1</a>.  <a href="#name-parameter-sets-2" class="xref">Parameter sets</a></p>
-</li>
-                </ul>
+                <p id="section-toc.1-1.5.2.2.1"><a href="#section-5.2" class="xref">5.2</a>.  <a href="#name-core-operations-3" class="xref">Core Operations</a></p>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.3">
-                <p id="section-toc.1-1.5.2.3.1"><a href="#section-5.3" class="xref">5.3</a>.  <a href="#name-core-operations-2" class="xref">Core Operations</a></p>
+                <p id="section-toc.1-1.5.2.3.1"><a href="#section-5.3" class="xref">5.3</a>.  <a href="#name-using-sphincs-plus-with-jos" class="xref">Using SPHINCS-PLUS with JOSE</a></p>
 <ul class="compact toc ulBare ulEmpty">
 <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.3.2.1">
-                    <p id="section-toc.1-1.5.2.3.2.1.1"><a href="#section-5.3.1" class="xref">5.3.1</a>.  <a href="#name-generate-2" class="xref">Generate</a></p>
+                    <p id="section-toc.1-1.5.2.3.2.1.1"><a href="#section-5.3.1" class="xref">5.3.1</a>.  <a href="#name-sphincs-plus-key-representa" class="xref">SPHINCS-PLUS Key Representations</a></p>
 </li>
                   <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.3.2.2">
-                    <p id="section-toc.1-1.5.2.3.2.2.1"><a href="#section-5.3.2" class="xref">5.3.2</a>.  <a href="#name-sign-2" class="xref">Sign</a></p>
+                    <p id="section-toc.1-1.5.2.3.2.2.1"><a href="#section-5.3.2" class="xref">5.3.2</a>.  <a href="#name-sphincs-plus-algorithms" class="xref">SPHINCS-PLUS Algorithms</a></p>
 </li>
                   <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.3.2.3">
-                    <p id="section-toc.1-1.5.2.3.2.3.1"><a href="#section-5.3.3" class="xref">5.3.3</a>.  <a href="#name-verify-2" class="xref">Verify</a></p>
+                    <p id="section-toc.1-1.5.2.3.2.3.1"><a href="#section-5.3.3" class="xref">5.3.3</a>.  <a href="#name-sphincs-plus-signature-repr" class="xref">SPHINCS-PLUS Signature Representation</a></p>
 </li>
                 </ul>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.4">
-                <p id="section-toc.1-1.5.2.4.1"><a href="#section-5.4" class="xref">5.4</a>.  <a href="#name-using-sphincs-with-jose" class="xref">Using SPHINCS+ with JOSE</a></p>
-<ul class="compact toc ulBare ulEmpty">
-<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.4.2.1">
-                    <p id="section-toc.1-1.5.2.4.2.1.1"><a href="#section-5.4.1" class="xref">5.4.1</a>.  <a href="#name-sphincs-key-representations" class="xref">SPHINCS+ Key Representations</a></p>
-</li>
-                  <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.4.2.2">
-                    <p id="section-toc.1-1.5.2.4.2.2.1"><a href="#section-5.4.2" class="xref">5.4.2</a>.  <a href="#name-sphincs-algorithms" class="xref">SPHINCS+ Algorithms</a></p>
-</li>
-                  <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.4.2.3">
-                    <p id="section-toc.1-1.5.2.4.2.3.1"><a href="#section-5.4.3" class="xref">5.4.3</a>.  <a href="#name-sphincs-signature-represent" class="xref">SPHINCS+ Signature Representation</a></p>
-</li>
-                </ul>
+                <p id="section-toc.1-1.5.2.4.1"><a href="#section-5.4" class="xref">5.4</a>.  <a href="#name-using-hash-with-cose" class="xref">Using HASH with COSE</a></p>
 </li>
             </ul>
 </li>
@@ -1389,7 +1392,7 @@ signatures, especially as compared to classical approaches for digital signing.<
 <p id="section-3.2-1">Unlike certain other approaches such as Ed25519 that have a large set of
 parameters, CRYSTALS-Dilithium uses distinct numbers of paramters to
 increase or decrease the security level according to the required
-level for a particular scenario. Under DILITHIUM-Crustals, the key
+level for a particular scenario. Under CRYSTALS-Dilithium, the key
 parameter specificiation determines the size of the matrix and thereby
 the number of polynomials that describe he lattice. For use according to
 this specification we do not recommend a parameter set of less than 3,
@@ -1439,31 +1442,8 @@ table below<a href="#section-3.2.1-1" class="pilcrow">¶</a></p>
         <h3 id="name-core-operations">
 <a href="#section-3.3" class="section-number selfRef">3.3. </a><a href="#name-core-operations" class="section-name selfRef">Core Operations</a>
         </h3>
-<p id="section-3.3-1">This section defines core operations used by the signature scheme, as proposed in <span>[<a href="#CRYSTALS-Dilithium" class="xref">CRYSTALS-Dilithium</a>]</span>.<a href="#section-3.3-1" class="pilcrow">¶</a></p>
-<div id="generate">
-<section id="section-3.3.1">
-          <h4 id="name-generate">
-<a href="#section-3.3.1" class="section-number selfRef">3.3.1. </a><a href="#name-generate" class="section-name selfRef">Generate</a>
-          </h4>
-<p id="section-3.3.1-1">See <span>[<a href="#CRYSTALS-Dilithium" class="xref">CRYSTALS-Dilithium</a>]</span><a href="#section-3.3.1-1" class="pilcrow">¶</a></p>
-</section>
-</div>
-<div id="sign">
-<section id="section-3.3.2">
-          <h4 id="name-sign">
-<a href="#section-3.3.2" class="section-number selfRef">3.3.2. </a><a href="#name-sign" class="section-name selfRef">Sign</a>
-          </h4>
-<p id="section-3.3.2-1">See <span>[<a href="#CRYSTALS-Dilithium" class="xref">CRYSTALS-Dilithium</a>]</span><a href="#section-3.3.2-1" class="pilcrow">¶</a></p>
-</section>
-</div>
-<div id="verify">
-<section id="section-3.3.3">
-          <h4 id="name-verify">
-<a href="#section-3.3.3" class="section-number selfRef">3.3.3. </a><a href="#name-verify" class="section-name selfRef">Verify</a>
-          </h4>
-<p id="section-3.3.3-1">See <span>[<a href="#CRYSTALS-Dilithium" class="xref">CRYSTALS-Dilithium</a>]</span><a href="#section-3.3.3-1" class="pilcrow">¶</a></p>
-</section>
-</div>
+<p id="section-3.3-1">Core operations used by the signature scheme should be implemented according to the details in <span>[<a href="#CRYSTALS-Dilithium" class="xref">CRYSTALS-Dilithium</a>]</span>.
+Core operations include key generation, sign, and verify.<a href="#section-3.3-1" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="using-crydi-with-jose">
@@ -1471,26 +1451,28 @@ table below<a href="#section-3.2.1-1" class="pilcrow">¶</a></p>
         <h3 id="name-using-crydi-with-jose">
 <a href="#section-3.4" class="section-number selfRef">3.4. </a><a href="#name-using-crydi-with-jose" class="section-name selfRef">Using CRYDI with JOSE</a>
         </h3>
-<p id="section-3.4-1">Basing off of <a href="https://datatracker.ietf.org/doc/html/rfc8812#section-3">this</a><a href="#section-3.4-1" class="pilcrow">¶</a></p>
+<p id="section-3.4-1">This sections is based on <a href="https://datatracker.ietf.org/doc/html/rfc8812#section-3">CBOR Object Signing and Encryption (COSE) and
+JSON Object Signing and Encryption (JOSE)</a><a href="#section-3.4-1" class="pilcrow">¶</a></p>
 <div id="crydi-key-representations">
 <section id="section-3.4.1">
           <h4 id="name-crydi-key-representations">
 <a href="#section-3.4.1" class="section-number selfRef">3.4.1. </a><a href="#name-crydi-key-representations" class="section-name selfRef">CRYDI Key Representations</a>
           </h4>
-<p id="section-3.4.1-1">A new key type (kty) value "PQK" (Post Quantum Key Pair) is defined for
+<p id="section-3.4.1-1">A new key type (kty) value "LWE" (for keys related to the family of algorithms that utilize
+Learning With Errors approaches to Post Quantum lattice based cryptography) is defined for
 public key algorithms that use base 64 encoded strings of the underlying binary materia
 as private and public keys and that support cryptographic sponge functions.
 It has the following parameters:<a href="#section-3.4.1-1" class="pilcrow">¶</a></p>
 <ul class="normal">
 <li class="normal" id="section-3.4.1-2.1">
-              <p id="section-3.4.1-2.1.1">The parameter "kty" MUST be "PQK".<a href="#section-3.4.1-2.1.1" class="pilcrow">¶</a></p>
+              <p id="section-3.4.1-2.1.1">The parameter "kty" MUST be "LWE".<a href="#section-3.4.1-2.1.1" class="pilcrow">¶</a></p>
 </li>
             <li class="normal" id="section-3.4.1-2.2">
               <p id="section-3.4.1-2.2.1">The parameter "alg" MUST be specified, and its value MUST be one of the values
 specified in table <strong>TBD</strong>.<a href="#section-3.4.1-2.2.1" class="pilcrow">¶</a></p>
 </li>
             <li class="normal" id="section-3.4.1-2.3">
-              <p id="section-3.4.1-2.3.1">The parameter "pset" MUST be specfied to indicate the not only paramter set
+              <p id="section-3.4.1-2.3.1">The parameter "pset" MAY be specfied to indicate the not only paramter set
 in use for the algorithm, but SHOULD also reflect the targeted NIST level for the
 algorithm in combination with the specified paramter set.
 For "alg" "CRYDI" one of the described parameter sets "2", "3", or "5" MUST be
@@ -1545,7 +1527,7 @@ MUST NOT be present for public keys.<a href="#section-3.4.1-2.5.1" class="pilcro
           </table>
 <p id="section-3.4.1-5">When calculating JWK Thumbprints <span>[<a href="#RFC7638" class="xref">RFC7638</a>]</span>, the four public key
 fields are included in the hash input in lexicographic order:
-"kty", "pset", and "x".<a href="#section-3.4.1-5" class="pilcrow">¶</a></p>
+"kty", "alg", and "x".<a href="#section-3.4.1-5" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="crydi-algorithms">
@@ -1567,17 +1549,17 @@ These <code>alg</code> values are used in both key representations and signature
             </thead>
             <tbody>
               <tr>
-                <td class="text-left" rowspan="1" colspan="1">PQK</td>
+                <td class="text-left" rowspan="1" colspan="1">LWE</td>
                 <td class="text-left" rowspan="1" colspan="1">CRYDI5</td>
                 <td class="text-left" rowspan="1" colspan="1">5</td>
               </tr>
               <tr>
-                <td class="text-left" rowspan="1" colspan="1">PQK</td>
+                <td class="text-left" rowspan="1" colspan="1">LWE</td>
                 <td class="text-left" rowspan="1" colspan="1">CRYDI3</td>
                 <td class="text-left" rowspan="1" colspan="1">3</td>
               </tr>
               <tr>
-                <td class="text-left" rowspan="1" colspan="1">PQK</td>
+                <td class="text-left" rowspan="1" colspan="1">LWE</td>
                 <td class="text-left" rowspan="1" colspan="1">CRYDI2</td>
                 <td class="text-left" rowspan="1" colspan="1">2</td>
               </tr>
@@ -1598,7 +1580,7 @@ These <code>alg</code> values are used in both key representations and signature
 <pre class="lang-json sourcecode">=============== NOTE: '\' line wrapping per RFC 8792 ================
 
 {
-  "kty": "PQK",
+  "kty": "LWE",
   "alg": "CRYDI3",
   "x": "z7u7GwhsjjnfHH3Nkrs2xvvw020Rcw5ymdlTnhRenjDdrOO+nfXRVUZVy9q1\
 5zDn77zTgrIskM3WX8bqslc+B1fq12iA/wxD2jc1d6j+YjKCtkGH26OR7vc0YC2ZiMzW\
@@ -1648,7 +1630,7 @@ Ul3XpvuoW3BgCwJzBUCWvPs47DJRgGxO11bSaEYYlhTVaaShcvzgz46AkqO+Q7TjckDP\
 
 {
   "kid": "key-0",
-  "kty": "PQK",
+  "kty": "LWE",
   "alg": "CRYDI3",
   "key_ops": ["verify"],
   "x": "z7u7GwhsjjnfHH3Nkrs2xvvw020Rcw5ymdlTnhRenjDdrOO+nfXRVUZVy9q1\
@@ -1707,10 +1689,10 @@ Ul3XpvuoW3BgCwJzBUCWvPs47DJRgGxO11bSaEYYlhTVaaShcvzgz46AkqO+Q7TjckDP\
 <p id="section-3.4.2.2-3">The private key is represented as <code>d</code> and encoded using base64url encoding as described in <span>[<a href="#RFC7517" class="xref">RFC7517</a>]</span>.<a href="#section-3.4.2.2-3" class="pilcrow">¶</a></p>
 <p id="section-3.4.2.2-4">Example private key using only required fields:<a href="#section-3.4.2.2-4" class="pilcrow">¶</a></p>
 <div id="section-3.4.2.2-5">
-<pre class="lang-json sourcecode">=============== NOTE: '\' line wrapping per RFC 8792 ================
+<pre class="breakable lang-json sourcecode">=============== NOTE: '\' line wrapping per RFC 8792 ================
 
 {
-  "kty": "PQK",
+  "kty": "LWE",
   "alg": "CRYDI3",
   "x": "z7u7GwhsjjnfHH3Nkrs2xvvw020Rcw5ymdlTnhRenjDdrOO+nfXRVUZVy9q1\
 5zDn77zTgrIskM3WX8bqslc+B1fq12iA/wxD2jc1d6j+YjKCtkGH26OR7vc0YC2ZiMzW\
@@ -1835,11 +1817,11 @@ owebEJAy63htMytq+xd3cJyZR0lWBUOqvSpd/A=="
 </div>
 <p id="section-3.4.2.2-6">Example private key using optional fields:<a href="#section-3.4.2.2-6" class="pilcrow">¶</a></p>
 <div id="section-3.4.2.2-7">
-<pre class="lang-json sourcecode">=============== NOTE: '\' line wrapping per RFC 8792 ================
+<pre class="breakable lang-json sourcecode">=============== NOTE: '\' line wrapping per RFC 8792 ================
 
 {
   "kid": "key-0",
-  "kty": "PQK",
+  "kty": "LWE",
   "alg": "CRYDI3",
   "key_ops": ["sign"],
   "x": "z7u7GwhsjjnfHH3Nkrs2xvvw020Rcw5ymdlTnhRenjDdrOO+nfXRVUZVy9q1\
@@ -1981,7 +1963,7 @@ value of the "alg" parameter.<a href="#section-3.4.3-1" class="pilcrow">¶</a></
             <caption><a href="#table-4" class="selfRef">Table 4</a></caption>
 <thead>
               <tr>
-                <th class="text-left" rowspan="1" colspan="1">"pset"</th>
+                <th class="text-left" rowspan="1" colspan="1">"paramter"</th>
                 <th class="text-left" rowspan="1" colspan="1">CRYDI Paramter Set</th>
               </tr>
             </thead>
@@ -2024,11 +2006,11 @@ representation of z and encodings of h and c in this order.<a href="#section-3.4
 are made:<a href="#section-3.4.3-9" class="pilcrow">¶</a></p>
 <ul class="normal">
 <li class="normal" id="section-3.4.3-10.1">
-              <p id="section-3.4.3-10.1.1">The "kty" field MUST be present, and it MUST be "PQK" for JOSE.<a href="#section-3.4.3-10.1.1" class="pilcrow">¶</a></p>
+              <p id="section-3.4.3-10.1.1">The "kty" field MUST be present, and it MUST be "LWE" for JOSE.<a href="#section-3.4.3-10.1.1" class="pilcrow">¶</a></p>
 </li>
             <li class="normal" id="section-3.4.3-10.2">
               <p id="section-3.4.3-10.2.1">The "alg" field MUST be present, and it MUST represent the
-pset subtype.<a href="#section-3.4.3-10.2.1" class="pilcrow">¶</a></p>
+algorith and parameter set.<a href="#section-3.4.3-10.2.1" class="pilcrow">¶</a></p>
 </li>
             <li class="normal" id="section-3.4.3-10.3">
               <p id="section-3.4.3-10.3.1">If the "key_ops" field is present, it MUST include "sign" when
@@ -2062,7 +2044,7 @@ e8P_ijQ7p8Vdz0TTrxUeT3lm8d9shnr2lfJT8ImUjvAA2Xez2Mlp8cBE5awDzT
 </div>
 <p id="section-3.4.3-13">The same example decoded for readability:<a href="#section-3.4.3-13" class="pilcrow">¶</a></p>
 <div id="section-3.4.3-14">
-<pre class="lang-json sourcecode">=============== NOTE: '\\' line wrapping per RFC 8792 ===============
+<pre class="breakable lang-json sourcecode">=============== NOTE: '\\' line wrapping per RFC 8792 ===============
 
 {
   "header": { "alg": "CRYDI3", "kid": "did:example:123#key-0" },
@@ -2256,12 +2238,235 @@ the integers in constant-time, a gap that has been recently filled in the litera
         </ul>
 </section>
 </div>
+<div id="core-operations-1">
+<section id="section-4.2">
+        <h3 id="name-core-operations-2">
+<a href="#section-4.2" class="section-number selfRef">4.2. </a><a href="#name-core-operations-2" class="section-name selfRef">Core Operations</a>
+        </h3>
+<p id="section-4.2-1">Core operations used by the signature scheme should be implemented according to the details in <span>[<a href="#Falcon" class="xref">Falcon</a>]</span>.
+Core operations include key generation, sign, and verify.<a href="#section-4.2-1" class="pilcrow">¶</a></p>
 </section>
 </div>
-<div id="sphincs">
+<div id="using-falcon-with-jose">
+<section id="section-4.3">
+        <h3 id="name-using-falcon-with-jose">
+<a href="#section-4.3" class="section-number selfRef">4.3. </a><a href="#name-using-falcon-with-jose" class="section-name selfRef">Using FALCON with JOSE</a>
+        </h3>
+<p id="section-4.3-1">This sections is based on <a href="https://datatracker.ietf.org/doc/html/rfc8812#section-3">CBOR Object Signing and Encryption (COSE) and
+JSON Object Signing and Encryption (JOSE)</a><a href="#section-4.3-1" class="pilcrow">¶</a></p>
+<div id="ntru-key-representations">
+<section id="section-4.3.1">
+          <h4 id="name-ntru-key-representations">
+<a href="#section-4.3.1" class="section-number selfRef">4.3.1. </a><a href="#name-ntru-key-representations" class="section-name selfRef">NTRU Key Representations</a>
+          </h4>
+<p id="section-4.3.1-1">A new key type (kty) value "NTRU" (for keys related to the family of algorithms that utilize
+NTRU based approaches to Post Quantum lattice based cryptography) is defined for
+public key algorithms that use base 64 encoded strings of the underlying binary materia
+as private and public keys and that support cryptographic sponge functions.
+It has the following parameters:<a href="#section-4.3.1-1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-4.3.1-2.1">
+              <p id="section-4.3.1-2.1.1">The parameter "kty" MUST be "NTRU".<a href="#section-4.3.1-2.1.1" class="pilcrow">¶</a></p>
+</li>
+            <li class="normal" id="section-4.3.1-2.2">
+              <p id="section-4.3.1-2.2.1">The parameter "alg" MUST be specified, and its value MUST be one of the values
+specified the below table<a href="#section-4.3.1-2.2.1" class="pilcrow">¶</a></p>
+</li>
+          </ul>
+<table class="center" id="table-7">
+            <caption><a href="#table-7" class="selfRef">Table 7</a></caption>
+<thead>
+              <tr>
+                <th class="text-left" rowspan="1" colspan="1">alg</th>
+                <th class="text-left" rowspan="1" colspan="1">Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">FALCON512</td>
+                <td class="text-left" rowspan="1" colspan="1">Falcon with parameter set 512</td>
+              </tr>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">FALCON1024</td>
+                <td class="text-left" rowspan="1" colspan="1">Falcon with parameter set 1024</td>
+              </tr>
+            </tbody>
+          </table>
+<ul class="normal">
+<li class="normal" id="section-4.3.1-4.1">
+              <p id="section-4.3.1-4.1.1">The parameter "pset" MAY be specfied to indicate the paramter set
+in use for the algorithm, but SHOULD also reflect the targeted NIST level for the
+algorithm in combination with the specified paramter set.
+For "alg" "FALCON" one of the described parameter sets "512" or "1024" MUST be
+specified. Parameter set "512" or above SHOULD be used with "FALCON" for any situation
+requiring at least 128bits of security against both quantum and classical attacks<a href="#section-4.3.1-4.1.1" class="pilcrow">¶</a></p>
+</li>
+            <li class="normal" id="section-4.3.1-4.2">
+              <p id="section-4.3.1-4.2.1">The parameter "x" MUST be present and contain the public key
+encoded using the base64url <span>[<a href="#RFC4648" class="xref">RFC4648</a>]</span> encoding.<a href="#section-4.3.1-4.2.1" class="pilcrow">¶</a></p>
+</li>
+            <li class="normal" id="section-4.3.1-4.3">
+              <p id="section-4.3.1-4.3.1">The parameter "d" MUST be present for private keys and contain the
+private key encoded using the base64url encoding. This parameter
+MUST NOT be present for public keys.<a href="#section-4.3.1-4.3.1" class="pilcrow">¶</a></p>
+</li>
+          </ul>
+<p id="section-4.3.1-5">Sizes of various key and signature material is as follows<a href="#section-4.3.1-5" class="pilcrow">¶</a></p>
+<table class="center" id="table-8">
+            <caption><a href="#table-8" class="selfRef">Table 8</a></caption>
+<thead>
+              <tr>
+                <th class="text-left" rowspan="1" colspan="1">Variable</th>
+                <th class="text-left" rowspan="1" colspan="1">Paramter Name</th>
+                <th class="text-left" rowspan="1" colspan="1">Paramter Set</th>
+                <th class="text-left" rowspan="1" colspan="1">Size</th>
+                <th class="text-left" rowspan="1" colspan="1">base64url encoded size</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">Signature</td>
+                <td class="text-left" rowspan="1" colspan="1">sig</td>
+                <td class="text-left" rowspan="1" colspan="1">512</td>
+                <td class="text-left" rowspan="1" colspan="1">666</td>
+                <td class="text-left" rowspan="1" colspan="1"></td>
+              </tr>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">Public Key</td>
+                <td class="text-left" rowspan="1" colspan="1">x</td>
+                <td class="text-left" rowspan="1" colspan="1">512</td>
+                <td class="text-left" rowspan="1" colspan="1">897</td>
+                <td class="text-left" rowspan="1" colspan="1"></td>
+              </tr>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">Private Key</td>
+                <td class="text-left" rowspan="1" colspan="1">d</td>
+                <td class="text-left" rowspan="1" colspan="1">512</td>
+                <td class="text-left" rowspan="1" colspan="1">1281</td>
+                <td class="text-left" rowspan="1" colspan="1"></td>
+              </tr>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">Signature</td>
+                <td class="text-left" rowspan="1" colspan="1">sig</td>
+                <td class="text-left" rowspan="1" colspan="1">1024</td>
+                <td class="text-left" rowspan="1" colspan="1">1280</td>
+                <td class="text-left" rowspan="1" colspan="1"></td>
+              </tr>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">Public Key</td>
+                <td class="text-left" rowspan="1" colspan="1">x</td>
+                <td class="text-left" rowspan="1" colspan="1">1024</td>
+                <td class="text-left" rowspan="1" colspan="1">1793</td>
+                <td class="text-left" rowspan="1" colspan="1"></td>
+              </tr>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">Private Key</td>
+                <td class="text-left" rowspan="1" colspan="1">d</td>
+                <td class="text-left" rowspan="1" colspan="1">1024</td>
+                <td class="text-left" rowspan="1" colspan="1">2305</td>
+                <td class="text-left" rowspan="1" colspan="1"></td>
+              </tr>
+            </tbody>
+          </table>
+<p id="section-4.3.1-7">When calculating JWK Thumbprints <span>[<a href="#RFC7638" class="xref">RFC7638</a>]</span>, the four public key
+fields are included in the hash input in lexicographic order:
+"kty", "alg", and "x".<a href="#section-4.3.1-7" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="falcon-algorithms">
+<section id="section-4.3.2">
+          <h4 id="name-falcon-algorithms">
+<a href="#section-4.3.2" class="section-number selfRef">4.3.2. </a><a href="#name-falcon-algorithms" class="section-name selfRef">FALCON Algorithms</a>
+          </h4>
+<p id="section-4.3.2-1">In order to reduce the complexity of the key representation and signature representations we register a unique algorithm name per pset.
+This allows us to omit registering the <code>pset</code> term, and reduced the likelyhood that it will be misused.
+These <code>alg</code> values are used in both key representations and signatures.<a href="#section-4.3.2-1" class="pilcrow">¶</a></p>
+<table class="center" id="table-9">
+            <caption><a href="#table-9" class="selfRef">Table 9</a></caption>
+<thead>
+              <tr>
+                <th class="text-left" rowspan="1" colspan="1">kty</th>
+                <th class="text-left" rowspan="1" colspan="1">alg</th>
+                <th class="text-left" rowspan="1" colspan="1">Paramter Set</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">NTRU</td>
+                <td class="text-left" rowspan="1" colspan="1">FALCON512</td>
+                <td class="text-left" rowspan="1" colspan="1">512</td>
+              </tr>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">NTRU</td>
+                <td class="text-left" rowspan="1" colspan="1">FALCON1024</td>
+                <td class="text-left" rowspan="1" colspan="1">1024</td>
+              </tr>
+            </tbody>
+          </table>
+</section>
+</div>
+</section>
+</div>
+<div id="using-ntru-with-cose">
+<section id="section-4.4">
+        <h3 id="name-using-ntru-with-cose">
+<a href="#section-4.4" class="section-number selfRef">4.4. </a><a href="#name-using-ntru-with-cose" class="section-name selfRef">Using NTRU with COSE</a>
+        </h3>
+<p id="section-4.4-1">The approach taken here matches the work done to support secp256k1 in JOSE and COSE in <span>[<a href="#RFC8812" class="xref">RFC8812</a>]</span>.<a href="#section-4.4-1" class="pilcrow">¶</a></p>
+<p id="section-4.4-2">The following tables map terms between JOSE and COSE for signatures.<a href="#section-4.4-2" class="pilcrow">¶</a></p>
+<table class="center" id="table-10">
+          <caption><a href="#table-10" class="selfRef">Table 10</a></caption>
+<thead>
+            <tr>
+              <th class="text-left" rowspan="1" colspan="1">Name</th>
+              <th class="text-left" rowspan="1" colspan="1">Value</th>
+              <th class="text-left" rowspan="1" colspan="1">Description</th>
+              <th class="text-left" rowspan="1" colspan="1">Recommended</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">FALCON512</td>
+              <td class="text-left" rowspan="1" colspan="1">TBD</td>
+              <td class="text-left" rowspan="1" colspan="1">TBD</td>
+              <td class="text-left" rowspan="1" colspan="1">No</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">FALCON1024</td>
+              <td class="text-left" rowspan="1" colspan="1">TBD</td>
+              <td class="text-left" rowspan="1" colspan="1">TBD</td>
+              <td class="text-left" rowspan="1" colspan="1">No</td>
+            </tr>
+          </tbody>
+        </table>
+<p id="section-4.4-4">The following tables map terms between JOSE and COSE for key types.<a href="#section-4.4-4" class="pilcrow">¶</a></p>
+<table class="center" id="table-11">
+          <caption><a href="#table-11" class="selfRef">Table 11</a></caption>
+<thead>
+            <tr>
+              <th class="text-left" rowspan="1" colspan="1">Name</th>
+              <th class="text-left" rowspan="1" colspan="1">Value</th>
+              <th class="text-left" rowspan="1" colspan="1">Description</th>
+              <th class="text-left" rowspan="1" colspan="1">Recommended</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">NTRU</td>
+              <td class="text-left" rowspan="1" colspan="1">TBD</td>
+              <td class="text-left" rowspan="1" colspan="1">TBD</td>
+              <td class="text-left" rowspan="1" colspan="1">No</td>
+            </tr>
+          </tbody>
+        </table>
+</section>
+</div>
+</section>
+</div>
+<div id="sphincs-plus">
 <section id="section-5">
-      <h2 id="name-sphincs">
-<a href="#section-5" class="section-number selfRef">5. </a><a href="#name-sphincs" class="section-name selfRef">SPHINCS+</a>
+      <h2 id="name-sphincs-plus">
+<a href="#section-5" class="section-number selfRef">5. </a><a href="#name-sphincs-plus" class="section-name selfRef">SPHINCS-PLUS</a>
       </h2>
 <p id="section-5-1">This section defines core operations used by the signature scheme, as proposed in <span>[<a href="#SPHINCS-PLUS" class="xref">SPHINCS-PLUS</a>]</span>.<a href="#section-5-1" class="pilcrow">¶</a></p>
 <div id="overview-2">
@@ -2330,100 +2535,289 @@ applications this might pose a problem. Additionally hash-based schemes are
 also vulnerable to differential and fault attacks.<a href="#section-5.1-6" class="pilcrow">¶</a></p>
 </section>
 </div>
-<div id="parameters-1">
+<div id="core-operations-2">
 <section id="section-5.2">
-        <h3 id="name-parameters-2">
-<a href="#section-5.2" class="section-number selfRef">5.2. </a><a href="#name-parameters-2" class="section-name selfRef">Parameters</a>
+        <h3 id="name-core-operations-3">
+<a href="#section-5.2" class="section-number selfRef">5.2. </a><a href="#name-core-operations-3" class="section-name selfRef">Core Operations</a>
         </h3>
-<p id="section-5.2-1">TODO<a href="#section-5.2-1" class="pilcrow">¶</a></p>
-<div id="parameter-sets-1">
-<section id="section-5.2.1">
-          <h4 id="name-parameter-sets-2">
-<a href="#section-5.2.1" class="section-number selfRef">5.2.1. </a><a href="#name-parameter-sets-2" class="section-name selfRef">Parameter sets</a>
-          </h4>
-<p id="section-5.2.1-1">TODO<a href="#section-5.2.1-1" class="pilcrow">¶</a></p>
+<p id="section-5.2-1">Core operations used by the signature scheme should be implemented according to the details in <span>[<a href="#SPHINCS-PLUS" class="xref">SPHINCS-PLUS</a>]</span>.
+Core operations include key generation, sign, and verify.<a href="#section-5.2-1" class="pilcrow">¶</a></p>
 </section>
 </div>
-</section>
-</div>
-<div id="core-operations-1">
+<div id="using-sphincs-plus-with-jose">
 <section id="section-5.3">
-        <h3 id="name-core-operations-2">
-<a href="#section-5.3" class="section-number selfRef">5.3. </a><a href="#name-core-operations-2" class="section-name selfRef">Core Operations</a>
+        <h3 id="name-using-sphincs-plus-with-jos">
+<a href="#section-5.3" class="section-number selfRef">5.3. </a><a href="#name-using-sphincs-plus-with-jos" class="section-name selfRef">Using SPHINCS-PLUS with JOSE</a>
         </h3>
-<p id="section-5.3-1">This section defines core operations used by the signature scheme, as proposed in <span>[<a href="#SPHINCS-PLUS" class="xref">SPHINCS-PLUS</a>]</span>.<a href="#section-5.3-1" class="pilcrow">¶</a></p>
-<div id="generate-1">
+<p id="section-5.3-1">This sections is based on <a href="https://datatracker.ietf.org/doc/html/rfc8812#section-3">CBOR Object Signing and Encryption (COSE) and
+JSON Object Signing and Encryption (JOSE)</a><a href="#section-5.3-1" class="pilcrow">¶</a></p>
+<div id="sphincs-plus-key-representations">
 <section id="section-5.3.1">
-          <h4 id="name-generate-2">
-<a href="#section-5.3.1" class="section-number selfRef">5.3.1. </a><a href="#name-generate-2" class="section-name selfRef">Generate</a>
+          <h4 id="name-sphincs-plus-key-representa">
+<a href="#section-5.3.1" class="section-number selfRef">5.3.1. </a><a href="#name-sphincs-plus-key-representa" class="section-name selfRef">SPHINCS-PLUS Key Representations</a>
           </h4>
-<p id="section-5.3.1-1">The key generation of SPHINCS+ consists of generating randomness for the secret keey (seed) and public key (seed and PRF). It then computes the public key root of the top most tree of the hypertree. See <span>[<a href="#SPHINCS-PLUS" class="xref">SPHINCS-PLUS</a>]</span> for further details.<a href="#section-5.3.1-1" class="pilcrow">¶</a></p>
+<p id="section-5.3.1-1">A new key type (kty) value "HASH" (for keys related to the family of algorithms that utilize
+hash based approaches to Post Quantum Cryptography) is defined for
+public key algorithms that use base 64 encoded strings of the underlying binary materia
+as private and public keys and that support cryptographic sponge functions.
+It has the following parameters:<a href="#section-5.3.1-1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-5.3.1-2.1">
+              <p id="section-5.3.1-2.1.1">The parameter "kty" MUST be "HASH".<a href="#section-5.3.1-2.1.1" class="pilcrow">¶</a></p>
+</li>
+            <li class="normal" id="section-5.3.1-2.2">
+              <p id="section-5.3.1-2.2.1">The parameter "alg" MUST be specified, and its value MUST be one of the values
+specified the below table<a href="#section-5.3.1-2.2.1" class="pilcrow">¶</a></p>
+</li>
+          </ul>
+<table class="center" id="table-12">
+            <caption><a href="#table-12" class="selfRef">Table 12</a></caption>
+<thead>
+              <tr>
+                <th class="text-left" rowspan="1" colspan="1">alg</th>
+                <th class="text-left" rowspan="1" colspan="1">Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">SPHINCS+128s</td>
+                <td class="text-left" rowspan="1" colspan="1">SPHINCS+ with parameter set of 128s</td>
+              </tr>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">SPHINCS+128f</td>
+                <td class="text-left" rowspan="1" colspan="1">SPHINCS+ with parameter set of 128f</td>
+              </tr>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">SPHINCS+192s</td>
+                <td class="text-left" rowspan="1" colspan="1">SPHINCS+ with parameter set of 192s</td>
+              </tr>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">SPHINCS+192f</td>
+                <td class="text-left" rowspan="1" colspan="1">SPHINCS+ with parameter set of 192f</td>
+              </tr>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">SPHINCS+256s</td>
+                <td class="text-left" rowspan="1" colspan="1">SPHINCS+ with parameter set of 256s</td>
+              </tr>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">SPHINCS+256f</td>
+                <td class="text-left" rowspan="1" colspan="1">SPHINCS+ with parameter set of 256f</td>
+              </tr>
+            </tbody>
+          </table>
+<ul class="normal">
+<li class="normal" id="section-5.3.1-4.1">
+              <p id="section-5.3.1-4.1.1">The parameter "pset" MAY be specfied to indicate the paramter set
+in use for the algorithm, but SHOULD also reflect the targeted NIST level for the
+algorithm in combination with the specified paramter set.
+For "alg" "HAS" one of the described parameter sets as listed in the section SPHINCS+
+Algorithms MUST be specified.<a href="#section-5.3.1-4.1.1" class="pilcrow">¶</a></p>
+</li>
+            <li class="normal" id="section-5.3.1-4.2">
+              <p id="section-5.3.1-4.2.1">The parameter "x" MUST be present and contain the public key
+encoded using the base64url <span>[<a href="#RFC4648" class="xref">RFC4648</a>]</span> encoding.<a href="#section-5.3.1-4.2.1" class="pilcrow">¶</a></p>
+</li>
+            <li class="normal" id="section-5.3.1-4.3">
+              <p id="section-5.3.1-4.3.1">The parameter "d" MUST be present for private keys and contain the
+private key encoded using the base64url encoding. This parameter
+MUST NOT be present for public keys.<a href="#section-5.3.1-4.3.1" class="pilcrow">¶</a></p>
+</li>
+          </ul>
+<p id="section-5.3.1-5">Sizes of various key and signature material is as follows (TBD)<a href="#section-5.3.1-5" class="pilcrow">¶</a></p>
+<table class="center" id="table-13">
+            <caption><a href="#table-13" class="selfRef">Table 13</a></caption>
+<thead>
+              <tr>
+                <th class="text-left" rowspan="1" colspan="1">Variable</th>
+                <th class="text-left" rowspan="1" colspan="1">Paramter Name</th>
+                <th class="text-left" rowspan="1" colspan="1">Paramter Set</th>
+                <th class="text-left" rowspan="1" colspan="1">Size</th>
+                <th class="text-left" rowspan="1" colspan="1">base64url encoded size</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">Signature</td>
+                <td class="text-left" rowspan="1" colspan="1">sig</td>
+                <td class="text-left" rowspan="1" colspan="1"></td>
+                <td class="text-left" rowspan="1" colspan="1"></td>
+                <td class="text-left" rowspan="1" colspan="1"></td>
+              </tr>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">Public Key</td>
+                <td class="text-left" rowspan="1" colspan="1">x</td>
+                <td class="text-left" rowspan="1" colspan="1"></td>
+                <td class="text-left" rowspan="1" colspan="1"></td>
+                <td class="text-left" rowspan="1" colspan="1"></td>
+              </tr>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">Private Key</td>
+                <td class="text-left" rowspan="1" colspan="1">d</td>
+                <td class="text-left" rowspan="1" colspan="1"></td>
+                <td class="text-left" rowspan="1" colspan="1"></td>
+                <td class="text-left" rowspan="1" colspan="1"></td>
+              </tr>
+            </tbody>
+          </table>
+<p id="section-5.3.1-7">When calculating JWK Thumbprints <span>[<a href="#RFC7638" class="xref">RFC7638</a>]</span>, the four public key
+fields are included in the hash input in lexicographic order:
+"kty", "alg", and "x".<a href="#section-5.3.1-7" class="pilcrow">¶</a></p>
 </section>
 </div>
-<div id="sign-1">
+<div id="sphincs-plus-algorithms">
 <section id="section-5.3.2">
-          <h4 id="name-sign-2">
-<a href="#section-5.3.2" class="section-number selfRef">5.3.2. </a><a href="#name-sign-2" class="section-name selfRef">Sign</a>
+          <h4 id="name-sphincs-plus-algorithms">
+<a href="#section-5.3.2" class="section-number selfRef">5.3.2. </a><a href="#name-sphincs-plus-algorithms" class="section-name selfRef">SPHINCS-PLUS Algorithms</a>
           </h4>
-<p id="section-5.3.2-1">The signature generation of SPINCS+ generates the randomization string for the message, along with the few-time (FORS) signature over that message and the corresponding hypertree signature over the FORS public key. See <span>[<a href="#SPHINCS-PLUS" class="xref">SPHINCS-PLUS</a>]</span> for further details.<a href="#section-5.3.2-1" class="pilcrow">¶</a></p>
-</section>
-</div>
-<div id="verify-1">
-<section id="section-5.3.3">
-          <h4 id="name-verify-2">
-<a href="#section-5.3.3" class="section-number selfRef">5.3.3. </a><a href="#name-verify-2" class="section-name selfRef">Verify</a>
-          </h4>
-<p id="section-5.3.3-1">The signature verification of SPINCS+ takes randomization string and the message to compute the signed digest, then in order verify the FORS signature and the hypertree signature over that message. The verification is succesful if the result of the latter matches the public key root. See <span>[<a href="#SPHINCS-PLUS" class="xref">SPHINCS-PLUS</a>]</span> for further details.<a href="#section-5.3.3-1" class="pilcrow">¶</a></p>
-</section>
-</div>
-</section>
-</div>
-<div id="using-sphincs-with-jose">
-<section id="section-5.4">
-        <h3 id="name-using-sphincs-with-jose">
-<a href="#section-5.4" class="section-number selfRef">5.4. </a><a href="#name-using-sphincs-with-jose" class="section-name selfRef">Using SPHINCS+ with JOSE</a>
-        </h3>
-<p id="section-5.4-1">Basing off of <a href="https://datatracker.ietf.org/doc/html/rfc8812#section-3">this</a><a href="#section-5.4-1" class="pilcrow">¶</a></p>
-<div id="sphincs-key-representations">
-<section id="section-5.4.1">
-          <h4 id="name-sphincs-key-representations">
-<a href="#section-5.4.1" class="section-number selfRef">5.4.1. </a><a href="#name-sphincs-key-representations" class="section-name selfRef">SPHINCS+ Key Representations</a>
-          </h4>
-<p id="section-5.4.1-1">TODO<a href="#section-5.4.1-1" class="pilcrow">¶</a></p>
-</section>
-</div>
-<div id="sphincs-algorithms">
-<section id="section-5.4.2">
-          <h4 id="name-sphincs-algorithms">
-<a href="#section-5.4.2" class="section-number selfRef">5.4.2. </a><a href="#name-sphincs-algorithms" class="section-name selfRef">SPHINCS+ Algorithms</a>
-          </h4>
-<p id="section-5.4.2-1">TODO<a href="#section-5.4.2-1" class="pilcrow">¶</a></p>
+<p id="section-5.3.2-1">In order to reduce the complexity of the key representation and signature representations we register a unique algorithm name per pset.
+This allows us to omit registering the <code>pset</code> term, and reduced the likelyhood that it will be misused.
+These <code>alg</code> values are used in both key representations and signatures.<a href="#section-5.3.2-1" class="pilcrow">¶</a></p>
+<table class="center" id="table-14">
+            <caption><a href="#table-14" class="selfRef">Table 14</a></caption>
+<thead>
+              <tr>
+                <th class="text-left" rowspan="1" colspan="1">kty</th>
+                <th class="text-left" rowspan="1" colspan="1">alg</th>
+                <th class="text-left" rowspan="1" colspan="1">Paramter Set</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">HASH</td>
+                <td class="text-left" rowspan="1" colspan="1">SPHINCS+128s</td>
+                <td class="text-left" rowspan="1" colspan="1">128s</td>
+              </tr>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">HASH</td>
+                <td class="text-left" rowspan="1" colspan="1">SPHINCS+128f</td>
+                <td class="text-left" rowspan="1" colspan="1">128f</td>
+              </tr>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">HASH</td>
+                <td class="text-left" rowspan="1" colspan="1">SPHINCS+192s</td>
+                <td class="text-left" rowspan="1" colspan="1">192s</td>
+              </tr>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">HASH</td>
+                <td class="text-left" rowspan="1" colspan="1">SPHINCS+192f</td>
+                <td class="text-left" rowspan="1" colspan="1">192f</td>
+              </tr>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">HASH</td>
+                <td class="text-left" rowspan="1" colspan="1">SPHINCS+256s</td>
+                <td class="text-left" rowspan="1" colspan="1">256s</td>
+              </tr>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">HASH</td>
+                <td class="text-left" rowspan="1" colspan="1">SPHINCS+256f</td>
+                <td class="text-left" rowspan="1" colspan="1">256f</td>
+              </tr>
+            </tbody>
+          </table>
 <div id="public-key-1">
-<section id="section-5.4.2.1">
+<section id="section-5.3.2.1">
             <h5 id="name-public-key-2">
-<a href="#section-5.4.2.1" class="section-number selfRef">5.4.2.1. </a><a href="#name-public-key-2" class="section-name selfRef">Public Key</a>
+<a href="#section-5.3.2.1" class="section-number selfRef">5.3.2.1. </a><a href="#name-public-key-2" class="section-name selfRef">Public Key</a>
             </h5>
-<p id="section-5.4.2.1-1">TODO<a href="#section-5.4.2.1-1" class="pilcrow">¶</a></p>
+<p id="section-5.3.2.1-1">TODO<a href="#section-5.3.2.1-1" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="private-key-1">
-<section id="section-5.4.2.2">
+<section id="section-5.3.2.2">
             <h5 id="name-private-key-2">
-<a href="#section-5.4.2.2" class="section-number selfRef">5.4.2.2. </a><a href="#name-private-key-2" class="section-name selfRef">Private Key</a>
+<a href="#section-5.3.2.2" class="section-number selfRef">5.3.2.2. </a><a href="#name-private-key-2" class="section-name selfRef">Private Key</a>
             </h5>
-<p id="section-5.4.2.2-1">TODO<a href="#section-5.4.2.2-1" class="pilcrow">¶</a></p>
+<p id="section-5.3.2.2-1">TODO<a href="#section-5.3.2.2-1" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
 </div>
-<div id="sphincs-signature-representation">
-<section id="section-5.4.3">
-          <h4 id="name-sphincs-signature-represent">
-<a href="#section-5.4.3" class="section-number selfRef">5.4.3. </a><a href="#name-sphincs-signature-represent" class="section-name selfRef">SPHINCS+ Signature Representation</a>
+<div id="sphincs-plus-signature-representation">
+<section id="section-5.3.3">
+          <h4 id="name-sphincs-plus-signature-repr">
+<a href="#section-5.3.3" class="section-number selfRef">5.3.3. </a><a href="#name-sphincs-plus-signature-repr" class="section-name selfRef">SPHINCS-PLUS Signature Representation</a>
           </h4>
-<p id="section-5.4.3-1">TODO<a href="#section-5.4.3-1" class="pilcrow">¶</a></p>
+<p id="section-5.3.3-1">TODO<a href="#section-5.3.3-1" class="pilcrow">¶</a></p>
 </section>
 </div>
+</section>
+</div>
+<div id="using-hash-with-cose">
+<section id="section-5.4">
+        <h3 id="name-using-hash-with-cose">
+<a href="#section-5.4" class="section-number selfRef">5.4. </a><a href="#name-using-hash-with-cose" class="section-name selfRef">Using HASH with COSE</a>
+        </h3>
+<p id="section-5.4-1">The approach taken here matches the work done to support secp256k1 in JOSE and COSE in <span>[<a href="#RFC8812" class="xref">RFC8812</a>]</span>.<a href="#section-5.4-1" class="pilcrow">¶</a></p>
+<p id="section-5.4-2">The following tables map terms between JOSE and COSE for signatures.<a href="#section-5.4-2" class="pilcrow">¶</a></p>
+<table class="center" id="table-15">
+          <caption><a href="#table-15" class="selfRef">Table 15</a></caption>
+<thead>
+            <tr>
+              <th class="text-left" rowspan="1" colspan="1">Name</th>
+              <th class="text-left" rowspan="1" colspan="1">Value</th>
+              <th class="text-left" rowspan="1" colspan="1">Description</th>
+              <th class="text-left" rowspan="1" colspan="1">Recommended</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">SPHINCS+128s</td>
+              <td class="text-left" rowspan="1" colspan="1">TBD</td>
+              <td class="text-left" rowspan="1" colspan="1">TBD</td>
+              <td class="text-left" rowspan="1" colspan="1">No</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">SPHINCS+128f</td>
+              <td class="text-left" rowspan="1" colspan="1">TBD</td>
+              <td class="text-left" rowspan="1" colspan="1">TBD</td>
+              <td class="text-left" rowspan="1" colspan="1">No</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">SPHINCS+192s</td>
+              <td class="text-left" rowspan="1" colspan="1">TBD</td>
+              <td class="text-left" rowspan="1" colspan="1">TBD</td>
+              <td class="text-left" rowspan="1" colspan="1">No</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">SPHINCS+192f</td>
+              <td class="text-left" rowspan="1" colspan="1">TBD</td>
+              <td class="text-left" rowspan="1" colspan="1">TBD</td>
+              <td class="text-left" rowspan="1" colspan="1">No</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">SPHINCS+256s</td>
+              <td class="text-left" rowspan="1" colspan="1">TBD</td>
+              <td class="text-left" rowspan="1" colspan="1">TBD</td>
+              <td class="text-left" rowspan="1" colspan="1">No</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">SPHINCS+256f</td>
+              <td class="text-left" rowspan="1" colspan="1">TBD</td>
+              <td class="text-left" rowspan="1" colspan="1">TBD</td>
+              <td class="text-left" rowspan="1" colspan="1">No</td>
+            </tr>
+          </tbody>
+        </table>
+<p id="section-5.4-4">The following tables map terms between JOSE and COSE for key types.<a href="#section-5.4-4" class="pilcrow">¶</a></p>
+<table class="center" id="table-16">
+          <caption><a href="#table-16" class="selfRef">Table 16</a></caption>
+<thead>
+            <tr>
+              <th class="text-left" rowspan="1" colspan="1">Name</th>
+              <th class="text-left" rowspan="1" colspan="1">Value</th>
+              <th class="text-left" rowspan="1" colspan="1">Description</th>
+              <th class="text-left" rowspan="1" colspan="1">Recommended</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">HASH</td>
+              <td class="text-left" rowspan="1" colspan="1">TBD</td>
+              <td class="text-left" rowspan="1" colspan="1">TBD</td>
+              <td class="text-left" rowspan="1" colspan="1">No</td>
+            </tr>
+          </tbody>
+        </table>
 </section>
 </div>
 </section>
@@ -2489,7 +2883,7 @@ through side channel mechanisms.<a href="#section-6.2-2.4" class="pilcrow">¶</a
       </h2>
 <p id="section-7-1">The following has NOT YET been added to the "JSON Web Key Types" registry:<a href="#section-7-1" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-7-2.1">"kty" Parameter Value: "PQK"<a href="#section-7-2.1" class="pilcrow">¶</a>
+<li class="normal" id="section-7-2.1">"kty" Parameter Value: "LWE"<a href="#section-7-2.1" class="pilcrow">¶</a>
 </li>
         <li class="normal" id="section-7-2.2">Key Type Description: Base 64 encoded string key pairs<a href="#section-7-2.2" class="pilcrow">¶</a>
 </li>
@@ -2497,103 +2891,129 @@ through side channel mechanisms.<a href="#section-6.2-2.4" class="pilcrow">¶</a
 </li>
         <li class="normal" id="section-7-2.4">Change Controller: IESG<a href="#section-7-2.4" class="pilcrow">¶</a>
 </li>
-        <li class="normal" id="section-7-2.5">Specification Document(s): Section 2 of this document (TBD)<a href="#section-7-2.5" class="pilcrow">¶</a>
+        <li class="normal" id="section-7-2.5">Specification Document(s): Section 3 of this document (TBD)<a href="#section-7-2.5" class="pilcrow">¶</a>
 </li>
       </ul>
-<p id="section-7-3">The following has NOT YET been added to the "JSON Web Key Parameters"
-registry:<a href="#section-7-3" class="pilcrow">¶</a></p>
+<p id="section-7-3">The following has NOT YET been added to the "JSON Web Key Types" registry:<a href="#section-7-3" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-7-4.1">Parameter Name: "pset"<a href="#section-7-4.1" class="pilcrow">¶</a>
+<li class="normal" id="section-7-4.1">"kty" Parameter Value: "NTRU"<a href="#section-7-4.1" class="pilcrow">¶</a>
 </li>
-        <li class="normal" id="section-7-4.2">Parameter Description: The parameter set of the crypto system<a href="#section-7-4.2" class="pilcrow">¶</a>
+        <li class="normal" id="section-7-4.2">Key Type Description: Base 64 encoded string key pairs<a href="#section-7-4.2" class="pilcrow">¶</a>
 </li>
-        <li class="normal" id="section-7-4.3">Parameter Information Class: Public<a href="#section-7-4.3" class="pilcrow">¶</a>
+        <li class="normal" id="section-7-4.3">JOSE Implementation Requirements: Optional<a href="#section-7-4.3" class="pilcrow">¶</a>
 </li>
-        <li class="normal" id="section-7-4.4">Used with "kty" Value(s): "PQK"<a href="#section-7-4.4" class="pilcrow">¶</a>
+        <li class="normal" id="section-7-4.4">Change Controller: IESG<a href="#section-7-4.4" class="pilcrow">¶</a>
 </li>
-        <li class="normal" id="section-7-4.5">Change Controller: IESG<a href="#section-7-4.5" class="pilcrow">¶</a>
-</li>
-        <li class="normal" id="section-7-4.6">Specification Document(s): Section 2 of this document (TBD)
-<br><a href="#section-7-4.6" class="pilcrow">¶</a>
-</li>
-        <li class="normal" id="section-7-4.7">Parameter Name: "d"<a href="#section-7-4.7" class="pilcrow">¶</a>
-</li>
-        <li class="normal" id="section-7-4.8">Parameter Description: The private key<a href="#section-7-4.8" class="pilcrow">¶</a>
-</li>
-        <li class="normal" id="section-7-4.9">Parameter Information Class: Private<a href="#section-7-4.9" class="pilcrow">¶</a>
-</li>
-        <li class="normal" id="section-7-4.10">Used with "kty" Value(s): "PQK"<a href="#section-7-4.10" class="pilcrow">¶</a>
-</li>
-        <li class="normal" id="section-7-4.11">Change Controller: IESG<a href="#section-7-4.11" class="pilcrow">¶</a>
-</li>
-        <li class="normal" id="section-7-4.12">Specification Document(s): Section 2 of RFC 8037
-<br><a href="#section-7-4.12" class="pilcrow">¶</a>
-</li>
-        <li class="normal" id="section-7-4.13">Parameter Name: "x"<a href="#section-7-4.13" class="pilcrow">¶</a>
-</li>
-        <li class="normal" id="section-7-4.14">Parameter Description: The public key<a href="#section-7-4.14" class="pilcrow">¶</a>
-</li>
-        <li class="normal" id="section-7-4.15">Parameter Information Class: Public<a href="#section-7-4.15" class="pilcrow">¶</a>
-</li>
-        <li class="normal" id="section-7-4.16">Used with "kty" Value(s): "PQK"<a href="#section-7-4.16" class="pilcrow">¶</a>
-</li>
-        <li class="normal" id="section-7-4.17">Change Controller: IESG<a href="#section-7-4.17" class="pilcrow">¶</a>
-</li>
-        <li class="normal" id="section-7-4.18">Specification Document(s): Section 2 of RFC 8037<a href="#section-7-4.18" class="pilcrow">¶</a>
+        <li class="normal" id="section-7-4.5">Specification Document(s): Section 4 of this document (TBD)<a href="#section-7-4.5" class="pilcrow">¶</a>
 </li>
       </ul>
-<p id="section-7-5">The following has NOT YET been added to the "JSON Web Signature and
-Encryption Algorithms" registry:<a href="#section-7-5" class="pilcrow">¶</a></p>
+<p id="section-7-5">The following has NOT YET been added to the "JSON Web Key Types" registry:<a href="#section-7-5" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-7-6.1">Algorithm Name: "CRYDI3"<a href="#section-7-6.1" class="pilcrow">¶</a>
+<li class="normal" id="section-7-6.1">"kty" Parameter Value: "HASH"<a href="#section-7-6.1" class="pilcrow">¶</a>
 </li>
-        <li class="normal" id="section-7-6.2">Algorithm Description: CRYDI3 signature algorithms<a href="#section-7-6.2" class="pilcrow">¶</a>
+        <li class="normal" id="section-7-6.2">Key Type Description: Base 64 encoded string key pairs<a href="#section-7-6.2" class="pilcrow">¶</a>
 </li>
-        <li class="normal" id="section-7-6.3">Algorithm Usage Location(s): "alg"<a href="#section-7-6.3" class="pilcrow">¶</a>
+        <li class="normal" id="section-7-6.3">JOSE Implementation Requirements: Optional<a href="#section-7-6.3" class="pilcrow">¶</a>
 </li>
-        <li class="normal" id="section-7-6.4">JOSE Implementation Requirements: Optional<a href="#section-7-6.4" class="pilcrow">¶</a>
+        <li class="normal" id="section-7-6.4">Change Controller: IESG<a href="#section-7-6.4" class="pilcrow">¶</a>
 </li>
-        <li class="normal" id="section-7-6.5">Change Controller: IESG<a href="#section-7-6.5" class="pilcrow">¶</a>
-</li>
-        <li class="normal" id="section-7-6.6">Specification Document(s): Section 3.1 of this document (TBD)<a href="#section-7-6.6" class="pilcrow">¶</a>
-</li>
-        <li class="normal" id="section-7-6.7">Algorithm Analysis Documents(s): (TBD)<a href="#section-7-6.7" class="pilcrow">¶</a>
+        <li class="normal" id="section-7-6.5">Specification Document(s): Section 5 of this document (TBD)<a href="#section-7-6.5" class="pilcrow">¶</a>
 </li>
       </ul>
-<p id="section-7-7">The following has been added to the "JSON Web Key Lattice"
+<p id="section-7-7">The following has NOT YET been added to the "JSON Web Key Parameters"
 registry:<a href="#section-7-7" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-7-8.1">Lattice Name: "CRYDI5"<a href="#section-7-8.1" class="pilcrow">¶</a>
+<li class="normal" id="section-7-8.1">Parameter Name: "pset"<a href="#section-7-8.1" class="pilcrow">¶</a>
 </li>
-        <li class="normal" id="section-7-8.2">Lattice Description: Dilithium 5 signature algorithm key pairs<a href="#section-7-8.2" class="pilcrow">¶</a>
+        <li class="normal" id="section-7-8.2">Parameter Description: The parameter set of the crypto system<a href="#section-7-8.2" class="pilcrow">¶</a>
 </li>
-        <li class="normal" id="section-7-8.3">JOSE Implementation Requirements: Optional<a href="#section-7-8.3" class="pilcrow">¶</a>
+        <li class="normal" id="section-7-8.3">Parameter Information Class: Public<a href="#section-7-8.3" class="pilcrow">¶</a>
 </li>
-        <li class="normal" id="section-7-8.4">Change Controller: IESG<a href="#section-7-8.4" class="pilcrow">¶</a>
+        <li class="normal" id="section-7-8.4">Used with "kty" Value(s): "LWE", "NTRU", "HASH"<a href="#section-7-8.4" class="pilcrow">¶</a>
 </li>
-        <li class="normal" id="section-7-8.5">Specification Document(s): Section 3.1 of this document (TBD)
-<br><a href="#section-7-8.5" class="pilcrow">¶</a>
+        <li class="normal" id="section-7-8.5">Change Controller: IESG<a href="#section-7-8.5" class="pilcrow">¶</a>
 </li>
-        <li class="normal" id="section-7-8.6">Lattice Name: "CRYDI3"<a href="#section-7-8.6" class="pilcrow">¶</a>
+        <li class="normal" id="section-7-8.6">Specification Document(s): Section 2 of this document (TBD)
+<br><a href="#section-7-8.6" class="pilcrow">¶</a>
 </li>
-        <li class="normal" id="section-7-8.7">Lattice Description: Dilithium 3 signature algorithm key pairs<a href="#section-7-8.7" class="pilcrow">¶</a>
+        <li class="normal" id="section-7-8.7">Parameter Name: "d"<a href="#section-7-8.7" class="pilcrow">¶</a>
 </li>
-        <li class="normal" id="section-7-8.8">JOSE Implementation Requirements: Optional<a href="#section-7-8.8" class="pilcrow">¶</a>
+        <li class="normal" id="section-7-8.8">Parameter Description: The private key<a href="#section-7-8.8" class="pilcrow">¶</a>
 </li>
-        <li class="normal" id="section-7-8.9">Change Controller: IESG<a href="#section-7-8.9" class="pilcrow">¶</a>
+        <li class="normal" id="section-7-8.9">Parameter Information Class: Private<a href="#section-7-8.9" class="pilcrow">¶</a>
 </li>
-        <li class="normal" id="section-7-8.10">Specification Document(s): Section 3.1 of this document (TBD)
-<br><a href="#section-7-8.10" class="pilcrow">¶</a>
+        <li class="normal" id="section-7-8.10">Used with "kty" Value(s): "LWE", "NTRU", "HASH"<a href="#section-7-8.10" class="pilcrow">¶</a>
 </li>
-        <li class="normal" id="section-7-8.11">Lattice Name: "CRYDI2"<a href="#section-7-8.11" class="pilcrow">¶</a>
+        <li class="normal" id="section-7-8.11">Change Controller: IESG<a href="#section-7-8.11" class="pilcrow">¶</a>
 </li>
-        <li class="normal" id="section-7-8.12">Lattice Description: Dilithium 2 signature algorithm key pairs<a href="#section-7-8.12" class="pilcrow">¶</a>
+        <li class="normal" id="section-7-8.12">Specification Document(s): Section 2 of RFC 8037
+<br><a href="#section-7-8.12" class="pilcrow">¶</a>
 </li>
-        <li class="normal" id="section-7-8.13">JOSE Implementation Requirements: Optional<a href="#section-7-8.13" class="pilcrow">¶</a>
+        <li class="normal" id="section-7-8.13">Parameter Name: "x"<a href="#section-7-8.13" class="pilcrow">¶</a>
 </li>
-        <li class="normal" id="section-7-8.14">Change Controller: IESG<a href="#section-7-8.14" class="pilcrow">¶</a>
+        <li class="normal" id="section-7-8.14">Parameter Description: The public key<a href="#section-7-8.14" class="pilcrow">¶</a>
 </li>
-        <li class="normal" id="section-7-8.15">Specification Document(s): Section 3.1 of this document (TBD)<a href="#section-7-8.15" class="pilcrow">¶</a>
+        <li class="normal" id="section-7-8.15">Parameter Information Class: Public<a href="#section-7-8.15" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="section-7-8.16">Used with "kty" Value(s): "LWE", "NTRU", "HASH"<a href="#section-7-8.16" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="section-7-8.17">Change Controller: IESG<a href="#section-7-8.17" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="section-7-8.18">Specification Document(s): Section 2 of RFC 8037<a href="#section-7-8.18" class="pilcrow">¶</a>
+</li>
+      </ul>
+<p id="section-7-9">The following has NOT YET been added to the "JSON Web Signature and
+Encryption Algorithms" registry:<a href="#section-7-9" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-7-10.1">Algorithm Name: "CRYDI3"<a href="#section-7-10.1" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="section-7-10.2">Algorithm Description: CRYDI3 signature algorithms<a href="#section-7-10.2" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="section-7-10.3">Algorithm Usage Location(s): "alg"<a href="#section-7-10.3" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="section-7-10.4">JOSE Implementation Requirements: Optional<a href="#section-7-10.4" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="section-7-10.5">Change Controller: IESG<a href="#section-7-10.5" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="section-7-10.6">Specification Document(s): Section 3.1 of this document (TBD)<a href="#section-7-10.6" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="section-7-10.7">Algorithm Analysis Documents(s): (TBD)<a href="#section-7-10.7" class="pilcrow">¶</a>
+</li>
+      </ul>
+<p id="section-7-11">The following has been added to the "JSON Web Key Lattice"
+registry:<a href="#section-7-11" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-7-12.1">Lattice Name: "CRYDI5"<a href="#section-7-12.1" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="section-7-12.2">Lattice Description: Dilithium 5 signature algorithm key pairs<a href="#section-7-12.2" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="section-7-12.3">JOSE Implementation Requirements: Optional<a href="#section-7-12.3" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="section-7-12.4">Change Controller: IESG<a href="#section-7-12.4" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="section-7-12.5">Specification Document(s): Section 3.1 of this document (TBD)
+<br><a href="#section-7-12.5" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="section-7-12.6">Lattice Name: "CRYDI3"<a href="#section-7-12.6" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="section-7-12.7">Lattice Description: Dilithium 3 signature algorithm key pairs<a href="#section-7-12.7" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="section-7-12.8">JOSE Implementation Requirements: Optional<a href="#section-7-12.8" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="section-7-12.9">Change Controller: IESG<a href="#section-7-12.9" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="section-7-12.10">Specification Document(s): Section 3.1 of this document (TBD)
+<br><a href="#section-7-12.10" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="section-7-12.11">Lattice Name: "CRYDI2"<a href="#section-7-12.11" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="section-7-12.12">Lattice Description: Dilithium 2 signature algorithm key pairs<a href="#section-7-12.12" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="section-7-12.13">JOSE Implementation Requirements: Optional<a href="#section-7-12.13" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="section-7-12.14">Change Controller: IESG<a href="#section-7-12.14" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="section-7-12.15">Specification Document(s): Section 3.1 of this document (TBD)<a href="#section-7-12.15" class="pilcrow">¶</a>
 </li>
       </ul>
 </section>
