@@ -5,14 +5,14 @@
 None                                                          M. Prorock
 Internet-Draft                                                  mesur.io
 Intended status: Standards Track                               O. Steele
-Expires: 12 January 2023                                       Transmute
+Expires: 13 January 2023                                       Transmute
                                                              R. Misoczki
                                                                   Google
                                                               M. Osborne
                                                                      IBM
                                                          C. Cloostermans
                                                                      NXP
-                                                            11 July 2022
+                                                            12 July 2022
 
 
                JSON Encoding for Post Quantum Signatures
@@ -53,7 +53,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 12 January 2023.
+   This Internet-Draft will expire on 13 January 2023.
 
 Copyright Notice
 
@@ -896,7 +896,7 @@ Table of Contents
    NTRU".  Falcon is based on the GPV hash-and-sign lattice-based
    signature framework introduced by Gentry, Peikert and Vaikuntanathan
    [GPV08], which is a framework that requires a class of lattices and a
-   trapdoor sampler technique.  For the class of lattices, Flacon uses
+   trapdoor sampler technique.  For the class of lattices, Falcon uses
    the well-known NTRU lattices, while for the trapdoor sampler, it uses
    a new fast Fourier sampling technique [DP16].  The underlying hard
    problem is the short integer solution problem (SIS) over NTRU
