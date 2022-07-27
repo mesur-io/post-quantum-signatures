@@ -16,22 +16,22 @@ In order to include a family, there must be a completed row in the following tab
 
 If you see an incomplete row, and wish to contribute to check the open issues, and start opening PRs.
 
-| family    | kty   | alg          | vectors     | spec                                                    |
-|-----------|-------|--------------|-------------|---------------------------------------------------------|
-| Dilithium | LWE   | CRYDI5       | in-progress | https://tches.iacr.org/index.php/TCHES/article/view/839 |
-| Dilithium | LWE   | CRYDI3       | in-progress | https://tches.iacr.org/index.php/TCHES/article/view/839 |
-| Dilithium | LWE   | CRYDI2       | in-progress | https://tches.iacr.org/index.php/TCHES/article/view/839 |
-| Falcon    | NTRU  | FALCON1024   | planned     |                                                         |
-| Falcon    | NTRU  | FALCON512    | planned     |                                                         |
-| SPHINCS+  | HASH  | SPHINCS+128s | planned     |                                                         |
-| SPHINCS+  | HASH  | SPHINCS+128f | planned     |                                                         |
-| SPHINCS+  | HASH  | SPHINCS+192s | planned     |                                                         |
-| SPHINCS+  | HASH  | SPHINCS+192f | planned     |                                                         |
-| SPHINCS+  | HASH  | SPHINCS+256s | planned     |                                                         |
-| SPHINCS+  | HASH  | SPHINCS+256f | planned     |                                                         |
-| Kyber     | TBD   | TBD          | TBD         |                                                         |
-| LMS       | TBD   | TBD          | TBD         | https://datatracker.ietf.org/doc/html/rfc8554           |
-| XMSS      | TBD   | TBD          | (1/2)       | https://datatracker.ietf.org/doc/html/rfc8391           |
+| family    | kty     | alg          | vectors     | spec                                                    |
+|-----------|---------|--------------|-------------|---------------------------------------------------------|
+| Dilithium | LWE     | CRYDI5       | in-progress | https://tches.iacr.org/index.php/TCHES/article/view/839 |
+| Dilithium | LWE     | CRYDI3       | in-progress | https://tches.iacr.org/index.php/TCHES/article/view/839 |
+| Dilithium | LWE     | CRYDI2       | in-progress | https://tches.iacr.org/index.php/TCHES/article/view/839 |
+| Falcon    | NTRU    | FALCON1024   | planned     |                                                         |
+| Falcon    | NTRU    | FALCON512    | planned     |                                                         |
+| SPHINCS+  | HASH    | SPHINCS+128s | planned     |                                                         |
+| SPHINCS+  | HASH    | SPHINCS+128f | planned     |                                                         |
+| SPHINCS+  | HASH    | SPHINCS+192s | planned     |                                                         |
+| SPHINCS+  | HASH    | SPHINCS+192f | planned     |                                                         |
+| SPHINCS+  | HASH    | SPHINCS+256s | planned     |                                                         |
+| SPHINCS+  | HASH    | SPHINCS+256f | planned     |                                                         |
+| Kyber     | TBD     | TBD          | TBD         |                                                         |
+| LMS       | HSS-LMS | HSS-LMS      | see rfc     | https://datatracker.ietf.org/doc/html/rfc8778           |
+| XMSS      | TBD     | TBD          | (1/2)       | https://datatracker.ietf.org/doc/html/rfc8391           |
 
 ## Contributing
 
