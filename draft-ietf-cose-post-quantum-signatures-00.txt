@@ -5,17 +5,17 @@
 COSE                                                          M. Prorock
 Internet-Draft                                                  mesur.io
 Intended status: Standards Track                               O. Steele
-Expires: 16 February 2023                                      Transmute
+Expires: 17 February 2023                                      Transmute
                                                              R. Misoczki
                                                                   Google
                                                               M. Osborne
                                                                      IBM
                                                          C. Cloostermans
                                                                      NXP
-                                                          15 August 2022
+                                                          16 August 2022
 
 
-           JSON and CBOR Encoding for Post Quantum Signatures
+           JOSE and COSE Encoding for Post-Quantum Signatures
                draft-ietf-cose-post-quantum-signatures-00
 
 Abstract
@@ -53,7 +53,7 @@ Status of This Memo
 
 
 
-Prorock, et al.         Expires 16 February 2023                [Page 1]
+Prorock, et al.         Expires 17 February 2023                [Page 1]
 
 Internet-Draft           post-quantum-signatures             August 2022
 
@@ -63,7 +63,7 @@ Internet-Draft           post-quantum-signatures             August 2022
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 16 February 2023.
+   This Internet-Draft will expire on 17 February 2023.
 
 Copyright Notice
 
@@ -109,7 +109,7 @@ Table of Contents
 
 
 
-Prorock, et al.         Expires 16 February 2023                [Page 2]
+Prorock, et al.         Expires 17 February 2023                [Page 2]
 
 Internet-Draft           post-quantum-signatures             August 2022
 
@@ -165,7 +165,7 @@ Internet-Draft           post-quantum-signatures             August 2022
 
 
 
-Prorock, et al.         Expires 16 February 2023                [Page 3]
+Prorock, et al.         Expires 17 February 2023                [Page 3]
 
 Internet-Draft           post-quantum-signatures             August 2022
 
@@ -221,7 +221,7 @@ Internet-Draft           post-quantum-signatures             August 2022
 
 
 
-Prorock, et al.         Expires 16 February 2023                [Page 4]
+Prorock, et al.         Expires 17 February 2023                [Page 4]
 
 Internet-Draft           post-quantum-signatures             August 2022
 
@@ -277,7 +277,7 @@ Internet-Draft           post-quantum-signatures             August 2022
 
 
 
-Prorock, et al.         Expires 16 February 2023                [Page 5]
+Prorock, et al.         Expires 17 February 2023                [Page 5]
 
 Internet-Draft           post-quantum-signatures             August 2022
 
@@ -333,7 +333,7 @@ Internet-Draft           post-quantum-signatures             August 2022
 
 
 
-Prorock, et al.         Expires 16 February 2023                [Page 6]
+Prorock, et al.         Expires 17 February 2023                [Page 6]
 
 Internet-Draft           post-quantum-signatures             August 2022
 
@@ -389,7 +389,7 @@ Internet-Draft           post-quantum-signatures             August 2022
 
 
 
-Prorock, et al.         Expires 16 February 2023                [Page 7]
+Prorock, et al.         Expires 17 February 2023                [Page 7]
 
 Internet-Draft           post-quantum-signatures             August 2022
 
@@ -445,7 +445,7 @@ Internet-Draft           post-quantum-signatures             August 2022
 
 
 
-Prorock, et al.         Expires 16 February 2023                [Page 8]
+Prorock, et al.         Expires 17 February 2023                [Page 8]
 
 Internet-Draft           post-quantum-signatures             August 2022
 
@@ -501,7 +501,7 @@ Internet-Draft           post-quantum-signatures             August 2022
 
 
 
-Prorock, et al.         Expires 16 February 2023                [Page 9]
+Prorock, et al.         Expires 17 February 2023                [Page 9]
 
 Internet-Draft           post-quantum-signatures             August 2022
 
@@ -557,7 +557,7 @@ Internet-Draft           post-quantum-signatures             August 2022
 
 
 
-Prorock, et al.         Expires 16 February 2023               [Page 10]
+Prorock, et al.         Expires 17 February 2023               [Page 10]
 
 Internet-Draft           post-quantum-signatures             August 2022
 
@@ -613,7 +613,7 @@ Internet-Draft           post-quantum-signatures             August 2022
 
 
 
-Prorock, et al.         Expires 16 February 2023               [Page 11]
+Prorock, et al.         Expires 17 February 2023               [Page 11]
 
 Internet-Draft           post-quantum-signatures             August 2022
 
@@ -669,7 +669,7 @@ Internet-Draft           post-quantum-signatures             August 2022
 
 
 
-Prorock, et al.         Expires 16 February 2023               [Page 12]
+Prorock, et al.         Expires 17 February 2023               [Page 12]
 
 Internet-Draft           post-quantum-signatures             August 2022
 
@@ -725,7 +725,7 @@ Internet-Draft           post-quantum-signatures             August 2022
 
 
 
-Prorock, et al.         Expires 16 February 2023               [Page 13]
+Prorock, et al.         Expires 17 February 2023               [Page 13]
 
 Internet-Draft           post-quantum-signatures             August 2022
 
@@ -781,7 +781,7 @@ Internet-Draft           post-quantum-signatures             August 2022
 
 
 
-Prorock, et al.         Expires 16 February 2023               [Page 14]
+Prorock, et al.         Expires 17 February 2023               [Page 14]
 
 Internet-Draft           post-quantum-signatures             August 2022
 
@@ -837,7 +837,7 @@ Internet-Draft           post-quantum-signatures             August 2022
 
 
 
-Prorock, et al.         Expires 16 February 2023               [Page 15]
+Prorock, et al.         Expires 17 February 2023               [Page 15]
 
 Internet-Draft           post-quantum-signatures             August 2022
 
@@ -893,7 +893,7 @@ Internet-Draft           post-quantum-signatures             August 2022
 
 
 
-Prorock, et al.         Expires 16 February 2023               [Page 16]
+Prorock, et al.         Expires 17 February 2023               [Page 16]
 
 Internet-Draft           post-quantum-signatures             August 2022
 
@@ -949,7 +949,7 @@ Internet-Draft           post-quantum-signatures             August 2022
 
 
 
-Prorock, et al.         Expires 16 February 2023               [Page 17]
+Prorock, et al.         Expires 17 February 2023               [Page 17]
 
 Internet-Draft           post-quantum-signatures             August 2022
 
@@ -1005,7 +1005,7 @@ Internet-Draft           post-quantum-signatures             August 2022
 
 
 
-Prorock, et al.         Expires 16 February 2023               [Page 18]
+Prorock, et al.         Expires 17 February 2023               [Page 18]
 
 Internet-Draft           post-quantum-signatures             August 2022
 
@@ -1061,7 +1061,7 @@ Internet-Draft           post-quantum-signatures             August 2022
 
 
 
-Prorock, et al.         Expires 16 February 2023               [Page 19]
+Prorock, et al.         Expires 17 February 2023               [Page 19]
 
 Internet-Draft           post-quantum-signatures             August 2022
 
@@ -1117,7 +1117,7 @@ Internet-Draft           post-quantum-signatures             August 2022
 
 
 
-Prorock, et al.         Expires 16 February 2023               [Page 20]
+Prorock, et al.         Expires 17 February 2023               [Page 20]
 
 Internet-Draft           post-quantum-signatures             August 2022
 
@@ -1173,7 +1173,7 @@ Internet-Draft           post-quantum-signatures             August 2022
 
 
 
-Prorock, et al.         Expires 16 February 2023               [Page 21]
+Prorock, et al.         Expires 17 February 2023               [Page 21]
 
 Internet-Draft           post-quantum-signatures             August 2022
 
@@ -1229,7 +1229,7 @@ Internet-Draft           post-quantum-signatures             August 2022
 
 
 
-Prorock, et al.         Expires 16 February 2023               [Page 22]
+Prorock, et al.         Expires 17 February 2023               [Page 22]
 
 Internet-Draft           post-quantum-signatures             August 2022
 
@@ -1285,7 +1285,7 @@ Internet-Draft           post-quantum-signatures             August 2022
 
 
 
-Prorock, et al.         Expires 16 February 2023               [Page 23]
+Prorock, et al.         Expires 17 February 2023               [Page 23]
 
 Internet-Draft           post-quantum-signatures             August 2022
 
@@ -1341,7 +1341,7 @@ Internet-Draft           post-quantum-signatures             August 2022
 
 
 
-Prorock, et al.         Expires 16 February 2023               [Page 24]
+Prorock, et al.         Expires 17 February 2023               [Page 24]
 
 Internet-Draft           post-quantum-signatures             August 2022
 
@@ -1397,7 +1397,7 @@ Internet-Draft           post-quantum-signatures             August 2022
 
 
 
-Prorock, et al.         Expires 16 February 2023               [Page 25]
+Prorock, et al.         Expires 17 February 2023               [Page 25]
 
 Internet-Draft           post-quantum-signatures             August 2022
 
@@ -1453,7 +1453,7 @@ Internet-Draft           post-quantum-signatures             August 2022
 
 
 
-Prorock, et al.         Expires 16 February 2023               [Page 26]
+Prorock, et al.         Expires 17 February 2023               [Page 26]
 
 Internet-Draft           post-quantum-signatures             August 2022
 
@@ -1509,7 +1509,7 @@ Internet-Draft           post-quantum-signatures             August 2022
 
 
 
-Prorock, et al.         Expires 16 February 2023               [Page 27]
+Prorock, et al.         Expires 17 February 2023               [Page 27]
 
 Internet-Draft           post-quantum-signatures             August 2022
 
@@ -1565,7 +1565,7 @@ Internet-Draft           post-quantum-signatures             August 2022
 
 
 
-Prorock, et al.         Expires 16 February 2023               [Page 28]
+Prorock, et al.         Expires 17 February 2023               [Page 28]
 
 Internet-Draft           post-quantum-signatures             August 2022
 
@@ -1621,7 +1621,7 @@ Internet-Draft           post-quantum-signatures             August 2022
 
 
 
-Prorock, et al.         Expires 16 February 2023               [Page 29]
+Prorock, et al.         Expires 17 February 2023               [Page 29]
 
 Internet-Draft           post-quantum-signatures             August 2022
 
@@ -1677,7 +1677,7 @@ Internet-Draft           post-quantum-signatures             August 2022
 
 
 
-Prorock, et al.         Expires 16 February 2023               [Page 30]
+Prorock, et al.         Expires 17 February 2023               [Page 30]
 
 Internet-Draft           post-quantum-signatures             August 2022
 
@@ -1733,7 +1733,7 @@ Internet-Draft           post-quantum-signatures             August 2022
 
 
 
-Prorock, et al.         Expires 16 February 2023               [Page 31]
+Prorock, et al.         Expires 17 February 2023               [Page 31]
 
 Internet-Draft           post-quantum-signatures             August 2022
 
@@ -1789,7 +1789,7 @@ Internet-Draft           post-quantum-signatures             August 2022
 
 
 
-Prorock, et al.         Expires 16 February 2023               [Page 32]
+Prorock, et al.         Expires 17 February 2023               [Page 32]
 
 Internet-Draft           post-quantum-signatures             August 2022
 
@@ -1845,7 +1845,7 @@ Internet-Draft           post-quantum-signatures             August 2022
 
 
 
-Prorock, et al.         Expires 16 February 2023               [Page 33]
+Prorock, et al.         Expires 17 February 2023               [Page 33]
 
 Internet-Draft           post-quantum-signatures             August 2022
 
@@ -1901,7 +1901,7 @@ Internet-Draft           post-quantum-signatures             August 2022
 
 
 
-Prorock, et al.         Expires 16 February 2023               [Page 34]
+Prorock, et al.         Expires 17 February 2023               [Page 34]
 
 Internet-Draft           post-quantum-signatures             August 2022
 
@@ -1957,7 +1957,7 @@ Internet-Draft           post-quantum-signatures             August 2022
 
 
 
-Prorock, et al.         Expires 16 February 2023               [Page 35]
+Prorock, et al.         Expires 17 February 2023               [Page 35]
 
 Internet-Draft           post-quantum-signatures             August 2022
 
@@ -2013,4 +2013,4 @@ Authors' Addresses
 
 
 
-Prorock, et al.         Expires 16 February 2023               [Page 36]
+Prorock, et al.         Expires 17 February 2023               [Page 36]

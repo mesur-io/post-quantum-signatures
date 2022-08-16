@@ -3,7 +3,7 @@
 <rfc version="3" ipr="trust200902" docName="draft-ietf-cose-post-quantum-signatures-00" submissionType="IETF" category="std" xml:lang="en" xmlns:xi="http://www.w3.org/2001/XInclude" indexInclude="true" consensus="true">
 
 <front>
-<title abbrev="post-quantum-signatures">JSON and CBOR Encoding for Post Quantum Signatures</title><seriesInfo value="draft-ietf-cose-post-quantum-signatures-00" stream="IETF" status="standard" name="Internet-Draft"></seriesInfo>
+<title abbrev="post-quantum-signatures">JOSE and COSE Encoding for Post-Quantum Signatures</title><seriesInfo value="draft-ietf-cose-post-quantum-signatures-00" stream="IETF" status="standard" name="Internet-Draft"></seriesInfo>
 <author initials="M." surname="Prorock" fullname="Michael Prorock"><organization>mesur.io</organization><address><postal><street></street>
 </postal><email>mprorock@mesur.io</email>
 </address></author><author initials="O." surname="Steele" fullname="Orie Steele"><organization>Transmute</organization><address><postal><street></street>
