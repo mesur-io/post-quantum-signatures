@@ -125,3 +125,7 @@ _Example: produce output files using `make`:_
 ```bash
 make
 ```
+
+#### Related Work
+
+- [pqc-for-engineers](https://github.com/paulehoffman/post-quantum-for-engineers/blob/main/pqc-for-engineers.md)
