@@ -29,8 +29,6 @@ If you see an incomplete row, and wish to contribute to check the open issues, a
 | SPHINCS+  | HASH    | SPHINCS+192f | planned     |                                                         |
 | SPHINCS+  | HASH    | SPHINCS+256s | planned     |                                                         |
 | SPHINCS+  | HASH    | SPHINCS+256f | planned     |                                                         |
-| LMS       | HSS-LMS | HSS-LMS      | see rfc     | https://datatracker.ietf.org/doc/html/rfc8778           |
-| XMSS      | TBD     | TBD          | (1/2)       | https://datatracker.ietf.org/doc/html/rfc8391           |
 
 ## Contributing
 
