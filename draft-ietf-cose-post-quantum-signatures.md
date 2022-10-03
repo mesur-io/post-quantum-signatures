@@ -1097,9 +1097,6 @@ The following tables map terms between JOSE and COSE for key types.
 | ---------- | ----- | ----------- | ----------- |
 | HASH       | TBD   | TBD         | No          |
 
-# CRYSTALS-Kyber
-
-TBD
 
 # Security Considerations
 
