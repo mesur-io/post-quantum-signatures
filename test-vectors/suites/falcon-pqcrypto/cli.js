@@ -16,7 +16,7 @@ const generate = async ({ input, output, format }) => {
   const jws1 = await jws.sign({ header, payload: message, privateKeyJwk })  
   const {protectedHeader, payload } = await jws.verify({ jws: jws1, publicKeyJwk })
   const verified = new TextDecoder().decode(payload) === message && protectedHeader.alg === publicKeyJwk.alg;
-  const outputJson = { input: inputJson, output: { publicKeyJwk, privateKeyJwk , verified } };
+  const outputJson = { input: inputJson, output: { publicKeyJwk, privateKeyJwk, jws: jws1, verified } };
   fs.writeFileSync(output, JSON.stringify(outputJson, null, 2));
 };
   
