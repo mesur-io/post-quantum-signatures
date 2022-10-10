@@ -1,27 +1,13 @@
 version: "3.9"
 services:
   
-  secp256k1-transmute:
-    image: secp256k1-transmute
+  dilithium-pqcrypto:
+    image: dilithium-pqcrypto
     build:
-      context: ./suites/secp256k1-transmute
+      context: ./suites/dilithium-pqcrypto
       dockerfile: Dockerfile
     volumes:
       - ./data:/data
 
-  xmss-transmute:
-    image: xmss-transmute
-    build:
-      context: ./suites/xmss-transmute
-      dockerfile: Dockerfile
-    volumes:
-      - ./data:/data
-
-  # dilithium-transmute:
-  #   image: dilithium-transmute
-  #   build:
-  #     context: ./suites/dilithium-transmute
-  #     dockerfile: Dockerfile
-  #   volumes:
-  #     - ./data:/data
+  
   

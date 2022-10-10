@@ -1,0 +1,16 @@
+{
+  "name": "falcon-pqcrypto",
+  "version": "1.0.0",
+  "description": "",
+  "main": "bin.js",
+  "scripts": {
+    "test": "./generate.sh"
+  },
+  "author": "Orie Steele",
+  "license": "ISC",
+  "dependencies": {
+    "base64url": "^3.0.1",
+    "falcon-crypto": "^1.0.3",
+    "yargs": "^17.4.1"
+  }
+}

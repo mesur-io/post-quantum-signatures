@@ -1,0 +1,16 @@
+{
+  "name": "sphincs-pqcrypto",
+  "version": "1.0.0",
+  "description": "",
+  "main": "bin.js",
+  "scripts": {
+    "test": "./generate.sh"
+  },
+  "author": "Orie Steele",
+  "license": "ISC",
+  "dependencies": {
+    "base64url": "^3.0.1",
+    "sphincs": "^3.0.1",
+    "yargs": "^17.4.1"
+  }
+}
