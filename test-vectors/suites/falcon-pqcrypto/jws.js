@@ -1,18 +1,20 @@
 
 const base64url = require('base64url');
 
-const dilithium = require('dilithium-crystals');
+const falcon = require('falcon-crypto');
+
+
 
 const jwk  = require('./jwk')
 
 
 const signRaw = async (msg, privateKey) =>{
-  const signature = await dilithium.sign(msg, privateKey)
+  const signature = await falcon.sign(msg, privateKey)
   return signature
 }
 
 const verifyRaw = async (sig, publicKey) =>{
-  const verification = await dilithium.open(sig, publicKey)
+  const verification = await falcon.open(sig, publicKey)
   return verification
 }
 
