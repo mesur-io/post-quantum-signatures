@@ -1,0 +1,17 @@
+{
+  "name": "dilithium-pqcrypto",
+  "version": "1.0.0",
+  "description": "",
+  "main": "bin.js",
+  "scripts": {
+    "test": "./generate.sh"
+  },
+  "author": "Orie Steele",
+  "license": "ISC",
+  "dependencies": {
+    "base64url": "^3.0.1",
+    "dilithium-crystals": "^1.0.3",
+    "jose": "^4.6.1",
+    "yargs": "^17.4.1"
+  }
+}
