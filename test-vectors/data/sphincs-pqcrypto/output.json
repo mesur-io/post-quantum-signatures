@@ -1,0 +1,20 @@
+{
+  "input": {
+    "name": "sphincs-pqcrypto",
+    "seed": "9085d2bef69286a6cbb51623c8fa258629945cd55ca705cc4e66700396894e0c"
+  },
+  "output": {
+    "publicKeyJwk": {
+      "kty": "HASH",
+      "alg": "SPHINCS+-SHAKE-256s-robust",
+      "x": "PSpSYy3KLoBcmuiAUWGpzCjiTwRysTPfZMIUH2YIUzcquH1g7qphneC5N6PyL6xE04OAE_6mFeaILIoIMLgS4w"
+    },
+    "privateKeyJwk": {
+      "kty": "HASH",
+      "alg": "SPHINCS+-SHAKE-256s-robust",
+      "x": "PSpSYy3KLoBcmuiAUWGpzCjiTwRysTPfZMIUH2YIUzcquH1g7qphneC5N6PyL6xE04OAE_6mFeaILIoIMLgS4w",
+      "d": "MgkIxDwAq0vEsI6r7b-ay3ttZqT7HEQIW3U_tUusYBKforjPV2-uklUGMw0-On6y5e8B58exoopGdBxcUFBu_z0qUmMtyi6AXJrogFFhqcwo4k8EcrEz32TCFB9mCFM3Krh9YO6qYZ3guTej8i-sRNODgBP-phXmiCyKCDC4EuM"
+    },
+    "verified": true
+  }
+}
