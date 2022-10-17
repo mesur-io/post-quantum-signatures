@@ -885,14 +885,14 @@ It has the following parameters:
 
 Sizes of various key and signature material is as follows
 
-| Variable    | Paramter Name | Paramter Set | Size | base64url encoded size |
-| ----------- | ------------- | ------------ | ---- | ---------------------- |
-| Signature   | sig           | 512          | 666  |                        |
-| Public Key  | x             | 512          | 897  |                        |
-| Private Key | d             | 512          | 1281 |                        |
-| Signature   | sig           | 1024         | 1280 |                        |
-| Public Key  | x             | 1024         | 1793 |                        |
-| Private Key | d             | 1024         | 2305 |                        |
+| Variable    | Paramter Name | Paramter Set | Size |
+| ----------- | ------------- | ------------ | ---- |
+| Signature   | sig           | 512          | 666  |
+| Public Key  | x             | 512          | 897  |
+| Private Key | d             | 512          | 1281 |
+| Signature   | sig           | 1024         | 1280 |
+| Public Key  | x             | 1024         | 1793 |
+| Private Key | d             | 1024         | 2305 |
 
 When calculating JWK Thumbprints [@!RFC7638], the four public key
 fields are included in the hash input in lexicographic order:
@@ -1052,15 +1052,6 @@ It has the following parameters:
   private key encoded using the base64url encoding. This parameter
   MUST NOT be present for public keys.
 
-Sizes of various key and signature material is as follows (TBD)
-
-| Variable    | Paramter Name | Paramter Set | Size | base64url encoded size |
-| ----------- | ------------- | ------------ | ---- | ---------------------- |
-| Signature   | sig           |              |      |                        |
-| Public Key  | x             |              |      |                        |
-| Private Key | d             |              |      |                        |
-
-
 When calculating JWK Thumbprints [@!RFC7638], the four public key
 fields are included in the hash input in lexicographic order:
 "kty", "alg", and "x".
@@ -1096,19 +1087,7 @@ These `alg` values are used in both key representations and signatures.
 | HASH        | SPHINCS+256s  | 256s         |
 | HASH        | SPHINCS+256f  | 256f         |
 
-#### Public Key
-
-TODO
-
-#### Private Key
-
-TODO
-
-### SPHINCS-PLUS Signature Representation
-
-TODO
-
-## Using HASH with COSE
+## Using SPHINCS-PLUS with COSE
 
 The approach taken here matches the work done to support secp256k1 in JOSE and COSE in [@!RFC8812].
 
