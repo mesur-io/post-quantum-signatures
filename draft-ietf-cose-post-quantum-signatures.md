@@ -61,7 +61,7 @@ organization = "NXP"
 .# Abstract
 
 This document describes JSON and CBOR serializations for several
-post quantum cryptography (PQC) based suites including CRYSTALS Dilithium,
+Post-Quantum Cryptography (PQC) based suites including CRYSTALS Dilithium,
 Falcon, and SPHINCS+.
 
 This document does not define any new cryptography,
@@ -73,7 +73,7 @@ Key types in this document are specified by the cryptographic algorithm family i
 a particular algorithm as discussed in RFC7517.
 
 This document registers signature algorithms types for JOSE and COSE, specifically `CRYDI3`
-and others as required for use of various post quantum signature schemes.
+and others as required for use of various post-quantum signature schemes.
 
 {mainmatter}
 
@@ -116,7 +116,7 @@ The parameter set is strategically chosen such that the signing algorithm is lar
 enough to maintain zero-knowledge properties but small enough to prevent forgery of
 signatures. An example implementation and test vectors are provided.
 
-CRYSTALS-Dilithium is a Post Quantum approach to digital signatures that is
+CRYSTALS-Dilithium is a post-quantum approach to digital signatures that is
 an algorithmic apprach that seeks to ensure key pair and signing properties
 that is a strong implementation meeting Existential Unforgeability under
 Chosen Message Attack (EUF-CMA) properties, while ensuring that the security
@@ -125,7 +125,7 @@ attacks. The algoritm itself is based on hard problems over module lattices,
 specifically Ring Learning with Errors (Ring-LWE). For all security levels
 the only operations required are variants of Keccak and number theoretic
 transforms (NTT) for the ring Zq[X]/(X256+1). This ensures that to increase
-or decrease the security level invovles only the change of parameters rather
+or decrease the security level involves only the change of parameters rather
 than re-implementation of a related algorithm.
 
 While based on Ring-LWE, CRYSTALS-Dilithium has less algebraic structure than
@@ -136,16 +136,16 @@ protection against future algebraic attacks on Ring-LWE that may be developed.
 CRYSTALS-Dilithium, brings several advantages over other approaches to
 signature suites:
 
-- Post Quantum in nature - use of lattices and other approaches that should
+- Post-quantum in nature - use of lattices and other approaches that should
   remain hard problems even when under attack utilizing quantum approaches
-- Simple implementation while maintaing security - a danger in many possible
-  approaches to cryptography is that it may be possible inadvertantly introduce
+- Simple implementation while maintaining security - a danger in many possible
+  approaches to cryptography is that it may be possible inadvertently introduce
   errors in code that lead to weakness or decreases in security level
-- Signature and Public Key Size - compared to other post quantum approaches
+- Signature and public key size - compared to other post-quantum approaches
   a reasonable key size has been achieved that also preserves desired security
   properties
 - Conservative parameter space - parameterization is utilized for the purposes
-  of defining the sizes of marices in use, and thereby the number of polynomials
+  of defining the sizes of matrices in use, and thereby the number of polynomials
   described by the key material.
 - Parameter set adjustment for greater security - increasing this matrix size
   increases the number of polynomials, and thereby the security level
@@ -163,10 +163,10 @@ Unlike certain other approaches such as Ed25519 that have a large set of
 parameters, CRYSTALS-Dilithium uses distinct numbers of paramters to
 increase or decrease the security level according to the required
 level for a particular scenario. Under CRYSTALS-Dilithium, the key
-parameter specificiation determines the size of the matrix and thereby
-the number of polynomials that describe he lattice. For use according to
+parameter specification determines the size of the matrix and thereby
+the number of polynomials that describe the lattice. For use according to
 this specification we do not recommend a parameter set of less than 3,
-which should be sufficient to maintain 128bits of security for all known
+which should be sufficient to maintain 128 bits of security for all known
 classical and quantum attacks. Under a parameter set at NIST level 3, a
 6x5 matrix is utilized that thereby consists of 30 polynomials.
 
@@ -195,11 +195,11 @@ JSON Object Signing and Encryption (JOSE)](https://datatracker.ietf.org/doc/html
 
 ### CRYDI Key Representations
 
-A new key type (kty) value "LWE" (for keys related to the family of algorithms that utilize
-Learning With Errors approaches to Post Quantum lattice based cryptography) is defined for
-public key algorithms that use base 64 encoded strings of the underlying binary materia
-as private and public keys and that support cryptographic sponge functions.
-It has the following parameters:
+A new key type (kty) value "LWE" (for keys related to the family of algorithms
+that utilize Learning With Errors approaches to Post-quantum lattice based
+cryptography) is defined for public key algorithms that use base 64 encoded
+strings of the underlying binary material as private and public keys and that
+support cryptographic sponge functions. It has the following parameters:
 
 - The parameter "kty" MUST be "LWE".
 
@@ -212,12 +212,13 @@ It has the following parameters:
 | CRYDI3        | CRYSTALS-Dilithium paramter set 3    |
 | CRYDI2        | CRYSTALS-Dilithium paramter set 2    |
 
-- The parameter "pset" MAY be specfied to indicate the not only paramter set
-  in use for the algorithm, but SHOULD also reflect the targeted NIST level for the
-  algorithm in combination with the specified paramter set.
-  For "alg" "CRYDI" one of the described parameter sets "2", "3", or "5" MUST be
-  specified. Parameter set "3" or above SHOULD be used with "CRYDI" for any situation
-  requiring at least 128bits of security against both quantum and classical attacks
+- The parameter "pset" MAY be specfied to indicate the not only paramter set in
+  use for the algorithm, but SHOULD also reflect the targeted NIST level for the
+  algorithm in combination with the specified paramter set. For "alg" "CRYDI"
+  one of the described parameter sets "2", "3", or "5" MUST be specified.
+  Parameter set "3" or above SHOULD be used with "CRYDI" for any situation
+  requiring at least 128bits of security against both quantum and classical
+  attacks
 
 - The parameter "x" MUST be present and contain the public key
   encoded using the base64url [@!RFC4648] encoding.
@@ -639,10 +640,10 @@ value of the "alg" parameter.
 The following key subtypes are defined here for use with CRYDI:
 
 | "paramter" | CRYDI Paramter Set |
-| ------ | ------------------ |
-| 5      | CRYDI5             |
-| 3      | CRYDI3             |
-| 2      | CRYDI2             |
+| ---------- | ------------------ |
+| 5          | CRYDI5             |
+| 3          | CRYDI3             |
+| 2          | CRYDI2             |
 
 The key type used with these keys is "LWE" and the algorithm used for
 signing is "CRYDI". These subtypes MUST NOT be used for key agreement.
@@ -811,14 +812,12 @@ The underlying hard problem is the short integer solution problem (SIS) over
 NTRU lattices, for which no efficient solving algorithm is currently known for
 both classical as well as quantum settings.
 
-
 The main design principle of Falcon is compactness, i.e. it was designed in a
 way that achieves minimal total memory bandwidth requirement (the sum
 of the signature size plus the public key size). This is possible due to the
 compactness of NTRU lattices. Falcon also offers very efficient signing and
 verification procedures. The main potential downsides of Falcon refer to the
 non-triviality of its algorithms and the need for floating point arithmetic support.
-
 
 The GPV framework, which underpins the Falcon design, is proven to be
 secure in the (quantum) random oracle model as long as the SIS problem
@@ -827,19 +826,20 @@ the fact it uses NTRU lattices.
 
 Falcon brings several advantages over other approaches to signature suites:
 
-- Post quantum secure as long as the NTRU-SIS problem remains intractable.
+- Post-quantum secure as long as the NTRU-SIS problem remains intractable.
 - Compactness: Falcon aims at minimum signature plus public key sizes. This
-should be contrasted with hash-based signature schemes (e.g. SPHINCS+),
-which minimizes public key sizes but suffer from long signatures, and
-multivariate quadratic schemes, which minimizes signatures sizes but suffers
-from long public keys. It also offers substantially shorter signatures than other
-lattice schemes while public keys are about the same size.
+should be contrasted with hash-based signature schemes (e.g. SPHINCS+), which
+minimizes public key sizes but suffer from long signatures, and multivariate
+quadratic schemes, which minimizes signatures sizes but suffers from long public
+keys. It also offers substantially shorter signatures than other lattice schemes
+while public keys are about the same size.
 - Efficiency: Falcon can produce thousands of signatures per second on a
 common computer, while verification is up to ten times faster. The operations
 in Falcon have O(n log n) complexity for degree n.
-- Side-channel resistance: Falcon used to have an important limitation regarding
-side-channel attacks due to the hardness of implementing discrete Gaussian sampling over
-the integers in constant-time, a gap that has been recently filled in the literature.
+- Side-channel resistance: Falcon may still have an important limitation
+regarding side-channel attacks due to the hardness of implementing discrete
+Gaussian sampling over the integers in constant-time. This gap that may have
+recently filled, but is under active investigation.
 
 ## Core Operations
 
@@ -853,11 +853,11 @@ JSON Object Signing and Encryption (JOSE)](https://datatracker.ietf.org/doc/html
 
 ### FALCON Key Representations
 
-A new key type (kty) value "NTRU" (for keys related to the family of algorithms that utilize
-NTRU based approaches to Post Quantum lattice based cryptography) is defined for
-public key algorithms that use base 64 encoded strings of the underlying binary materia
-as private and public keys and that support cryptographic sponge functions.
-It has the following parameters:
+A new key type (kty) value "NTRU" (for keys related to the family of algorithms
+that utilize NTRU based approaches to Post-quantum lattice based cryptography)
+is defined for public key algorithms that use base 64 encoded strings of the
+underlying binary material as private and public keys and that support
+cryptographic sponge functions. It has the following parameters:
 
 - The parameter "kty" MUST be "NTRU".
 
@@ -869,9 +869,9 @@ It has the following parameters:
 | FALCON512   | Falcon with parameter set 512       |
 | FALCON1024  | Falcon with parameter set 1024      |
 
-- The parameter "pset" MAY be specfied to indicate the paramter set
+- The parameter "pset" MAY be specfied to indicate the parameter set
   in use for the algorithm, but SHOULD also reflect the targeted NIST level for the
-  algorithm in combination with the specified paramter set.
+  algorithm in combination with the specified parameter set.
   For "alg" "FALCON" one of the described parameter sets "512" or "1024" MUST be
   specified. Parameter set "512" or above SHOULD be used with "FALCON" for any situation
   requiring at least 128bits of security against both quantum and classical attacks
@@ -979,7 +979,7 @@ algorithm.
 SPHINCS+ brings several advantages over other approaches to
 signature suites:
 
-- Post Quantum in nature - use of cryptographically secure hash functions and
+- Post-quantum in nature - use of cryptographically secure hash functions and
   other approaches that should remain hard problems even when under an attack
   utilizing quantum approaches
 - Minimal security assumptions - compared to other schemes does not base its
@@ -989,15 +989,18 @@ signature suites:
   calls of SHA-256, SHAKE256 or Haraka means existing (secure) SW and HW
   implementations of those hash functions can be re-used for increased
   performance
-- Private and Public Key Size - compared to other post quantum approaches
+- Private and Public Key Size - compared to other post-quantum approaches
   a very small key size is the form of hash inputs-outputs. This then has the
   drawback that either a large signature or low signing speed has to be
   accepted
 - Cryptanalysis assuarance - attacks (both pre-quantum and quantum) are easy
   to relate to existing attacks on hash functions. This allows for precise
   quantification of the security levels
-- Overlap with stateful hash-based algorithms - means there are possibilities
-  to combine implementions with those of XMSS and LMS (TODO refs)
+- Overlap with stateful hash-based algorithms - means there are possibilities to
+  combine implementions with those of XMSS and LMS. For example, both have the
+  same underlying hash functions and utilize existing HW acceleration.
+  Furthermore, an API to a XMSS implementation can be directly used by the
+  subroutines of Sphincs+
 - Inherent resistance against side-channel attacks - since its core primitive
   is a hash function, it thereby is hard to attack with side-channels.
 
@@ -1005,7 +1008,6 @@ The primary known disadvantage to SPHINCS+ is the size signatures, or the
 speed of signing, depending on the chosen parameter set. Especially in IoT
 applications this might pose a problem. Additionally hash-based schemes are
 also vulnerable to differential and fault attacks.
-
 
 ## Core Operations
 
@@ -1019,11 +1021,11 @@ JSON Object Signing and Encryption (JOSE)](https://datatracker.ietf.org/doc/html
 
 ### SPHINCS-PLUS Key Representations
 
-A new key type (kty) value "HASH" (for keys related to the family of algorithms that utilize
-hash based approaches to Post Quantum Cryptography) is defined for
-public key algorithms that use base 64 encoded strings of the underlying binary materia
-as private and public keys and that support cryptographic sponge functions.
-It has the following parameters:
+A new key type (kty) value "HASH" (for keys related to the family of algorithms
+that utilize hash based approaches to post-quantum cryptography) is defined for
+public key algorithms that use base 64 encoded strings of the underlying binary
+material as private and public keys and that support cryptographic sponge
+functions. It has the following parameters:
 
 - The parameter "kty" MUST be "HASH".
 
@@ -1074,9 +1076,14 @@ are made:
 
 ### SPHINCS-PLUS Algorithms
 
-In order to reduce the complexity of the key representation and signature representations we register a unique algorithm name per pset.
-This allows us to omit registering the `pset` term, and reduced the likelyhood that it will be misused.
-These `alg` values are used in both key representations and signatures.
+In order to reduce the complexity of the key representation and signature
+representations we register a unique algorithm name per pset. This allows us to
+omit registering the `pset` term, and reduced the likelyhood that it will be
+misused. These `alg` values are used in both key representations and signatures.
+
+Sphincs+ targets different security levels (128-, 192- and 256-bit security) and
+tradeoffs between size and speed. For each security level a small (s) and fast
+(f) parameter set is provided.
 
 | kty         | alg           | Paramter Set |
 | ----------- | ------------- | ------------ |
@@ -1108,8 +1115,6 @@ The following tables map terms between JOSE and COSE for key types.
 | ---------- | ----- | ------------------------------------ | ----------- |
 | HASH       | TBD   | kty for hash based digital signature | No          |
 
-
-
 # Security Considerations
 
 The following considerations SHOULD apply to all signature schemes described
@@ -1121,10 +1126,11 @@ related families that are used for purposes other than digital signatures.
 
 ## Falcon specific Security Considerations
 
-Falcon utilizes floating point multiplications as part of fast Fourier transforms
-in its internal operations.  This is somewhat novel and care should be taken to 
-ensure consistent implementation across hardware platforms.  Well tested underlying
-implementations should be selected for use with JOSE and COSE implementations. 
+Falcon utilizes floating point multiplications as part of fast Fourier
+transforms in its internal operations.  This is somewhat novel and care should
+be taken to ensure consistent implementation across hardware platforms.  Well
+tested underlying implementations should be selected for use with JOSE and COSE
+implementations.
 
 ## Validating public keys
 
@@ -1133,10 +1139,11 @@ For the sign, verify and proof schemes, the use of KeyValidate is REQUIRED.
 
 ## Side channel attacks
 
-Implementations of the signing algorithm SHOULD protect the secret key from side-channel attacks.
-Multiple best practices exist to protect against side-channel attacks. Any implementation
-of the the CRYSTALS-Dilithium signing algorithm SHOULD utilize the following best practices
-at a minimum:
+Implementations of the signing algorithm SHOULD protect the secret key from
+side-channel attacks. Multiple best practices exist to protect against
+side-channel attacks. Any implementation of the the CRYSTALS-Dilithium, Falcon
+or Sphincs+ signing algorithms SHOULD utilize the following best practices at a
+minimum:
 
 - Constant timing - the implementation should ensure that constant time is utilized in operations
 - Sequence and memory access persistance - the implemention SHOULD execute the exact same
@@ -1145,9 +1152,10 @@ at a minimum:
 - Uniform sampling - uniform sampling is the default in CRYSTALS-Dilithium to prevent information
   leakage, however care should be given in implementations to preserve the property of uniform
   sampling in implementation.
-- Secrecy of S1 - utmost care must be given to protection of S1 and to prevent information or
-  power leakage. As is the case with most proposed lattice based approaches to date, fogery and
-  other attacks may succeed, for example, with Dilithium through [leakage of S1](https://eprint.iacr.org/2018/821.pdf)
+- Secrecy of S1 - utmost care must be given to protection of S1 and to prevent
+  information or power leakage. As is the case with most proposed lattice based
+  approaches to date, fogery and other attacks may succeed, for example, with
+  Dilithium through [leakage of S1](https://eprint.iacr.org/2018/821.pdf)
   through side channel mechanisms.
 
 ## Randomness considerations
@@ -1160,7 +1168,7 @@ The following has NOT YET been added to the "JSON Web Key Types"
 registry:
 
 - Name: "LWE"
-- Description: LWE family post quantum signature algorithm key pairs
+- Description: LWE family post-quantum signature algorithm key pairs
 - JOSE Implementation Requirements: Optional
 - Change Controller: IESG
 - Specification Document(s): Section 3.1 of this document (TBD)
@@ -1169,7 +1177,7 @@ The following has NOT YET been added to the "JSON Web Key Types"
 registry:
 
 - Name: "NTRU"
-- Description: NTRU family post quantum signature algorithm key pairs
+- Description: NTRU family post-quantum signature algorithm key pairs
 - JOSE Implementation Requirements: Optional
 - Change Controller: IESG
 - Specification Document(s): Section 3.1 of this document (TBD)
@@ -1178,7 +1186,7 @@ The following has NOT YET been added to the "JSON Web Key Types"
 registry:
 
 - Name: "HASH"
-- Description: Hash based post quantum signature algorithm key pairs
+- Description: Hash based post-quantum signature algorithm key pairs
 - JOSE Implementation Requirements: Optional
 - Change Controller: IESG
 - Specification Document(s): Section 3.1 of this document (TBD)
