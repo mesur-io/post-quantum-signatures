@@ -644,13 +644,13 @@ The following key subtypes are defined here for use with CRYDI:
 | 3      | CRYDI3             |
 | 2      | CRYDI2             |
 
-The key type used with these keys is "PQK" and the algorithm used for
+The key type used with these keys is "LWE" and the algorithm used for
 signing is "CRYDI". These subtypes MUST NOT be used for key agreement.
 
 The CRYDI variant used is determined by the subtype of the key
 (CRYDI3 for "pset 3" and CRYDI2 for "pset 2").
 
-Implementations need to check that the key type is "PQK" for JOSE and
+Implementations need to check that the key type is "LWE" for JOSE and
 that the pset of the key is a valid subtype when creating a
 signature.
 
@@ -792,9 +792,9 @@ The following tables map terms between JOSE and COSE for signatures.
 
 The following tables map terms between JOSE and COSE for key types.
 
-| Name   | Value | Description | Recommended |
-| ------ | ----- | ----------- | ----------- |
-| PQK    | TBD   | TBD         | No          |
+| Name   | Value | Description                                   | Recommended |
+| ------ | ----- | --------------------------------------------- | ----------- |
+| LWE    | TBD   | kty for Learning with Errors based Signatures | No          |
 
 # Falcon
 
@@ -923,9 +923,9 @@ The following tables map terms between JOSE and COSE for signatures.
 
 The following tables map terms between JOSE and COSE for key types.
 
-| Name   | Value | Description | Recommended |
-| ------ | ----- | ----------- | ----------- |
-| NTRU   | TBD   | TBD         | No          |
+| Name   | Value | Description                           | Recommended |
+| ------ | ----- | ------------------------------------- | ----------- |
+| NTRU   | TBD   | kty for NTRU based digital signatures | No          |
 
 # SPHINCS-PLUS
 
@@ -1093,9 +1093,9 @@ The following tables map terms between JOSE and COSE for signatures.
 
 The following tables map terms between JOSE and COSE for key types.
 
-| Name       | Value | Description | Recommended |
-| ---------- | ----- | ----------- | ----------- |
-| HASH       | TBD   | TBD         | No          |
+| Name       | Value | Description                         | Recommended |
+| ---------- | ----- | ----------------------------------- | ----------- |
+| HASH       | TBD   | kty fo hash based digital signature | No          |
 
 
 
