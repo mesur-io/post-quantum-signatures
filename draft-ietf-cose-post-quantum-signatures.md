@@ -1140,6 +1140,13 @@ Care should be taken to ensure "kty" and intended use match, the algorithms desc
 in this document share many properties with other cryptographic approaches from
 related families that are used for purposes other than digital signatures.
 
+## Falcon specific Security Considerations
+
+Falcon utilizes floating point multiplications as part of fast Fourier transforms
+in its internal operations.  This is somewhat novel and care should be taken to 
+ensure consistent implementation across hardware platforms.  Well tested underlying
+implementations should be selected for use with JOSE and COSE implementations. 
+
 ## Validating public keys
 
 All algorithms in that operate on public keys require first validating those keys.
