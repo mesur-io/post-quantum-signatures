@@ -784,11 +784,11 @@ The approach taken here matches the work done to support secp256k1 in JOSE and C
 
 The following tables map terms between JOSE and COSE for signatures.
 
-| Name   | Value | Description | Recommended |
-| ------ | ----- | ----------- | ----------- |
-| CRYDI5 | TBD   | TBD         | No          |
-| CRYDI3 | TBD   | TBD         | No          |
-| CRYDI2 | TBD   | TBD         | No          |
+| Name   | Value | Description                             | Recommended |
+| ------ | ----- | --------------------------------------- | ----------- |
+| CRYDI5 | TBD   | CRYSTALS-Dilithium with parameter set 5 | No          |
+| CRYDI3 | TBD   | CRYSTALS-Dilithium with parameter set 3 | No          |
+| CRYDI2 | TBD   | CRYSTALS-Dilithium with parameter set 2 | No          |
 
 The following tables map terms between JOSE and COSE for key types.
 
@@ -1093,20 +1093,20 @@ The approach taken here matches the work done to support secp256k1 in JOSE and C
 
 The following tables map terms between JOSE and COSE for signatures.
 
-| Name            | Value | Description | Recommended |
-| --------------- | ----- | ----------- | ----------- |
-| SPHINCS+128s    | TBD   | TBD         | No          |
-| SPHINCS+128f    | TBD   | TBD         | No          |
-| SPHINCS+192s    | TBD   | TBD         | No          |
-| SPHINCS+192f    | TBD   | TBD         | No          |
-| SPHINCS+256s    | TBD   | TBD         | No          |
-| SPHINCS+256f    | TBD   | TBD         | No          |
+| Name            | Value | Description                      | Recommended |
+| --------------- | ----- | -------------------------------- | ----------- |
+| SPHINCS+128s    | TBD   | SPHINCS+ with parameter set 128s | No          |
+| SPHINCS+128f    | TBD   | SPHINCS+ with parameter set 128f | No          |
+| SPHINCS+192s    | TBD   | SPHINCS+ with parameter set 192s | No          |
+| SPHINCS+192f    | TBD   | SPHINCS+ with parameter set 192f | No          |
+| SPHINCS+256s    | TBD   | SPHINCS+ with parameter set 256s | No          |
+| SPHINCS+256f    | TBD   | SPHINCS+ with parameter set 256f | No          |
 
 The following tables map terms between JOSE and COSE for key types.
 
-| Name       | Value | Description                         | Recommended |
-| ---------- | ----- | ----------------------------------- | ----------- |
-| HASH       | TBD   | kty fo hash based digital signature | No          |
+| Name       | Value | Description                          | Recommended |
+| ---------- | ----- | ------------------------------------ | ----------- |
+| HASH       | TBD   | kty for hash based digital signature | No          |
 
 
 
