@@ -898,6 +898,22 @@ When calculating JWK Thumbprints [@!RFC7638], the four public key
 fields are included in the hash input in lexicographic order:
 "kty", "alg", and "x".
 
+When using a JWK for this algorithm, the following checks
+are made:
+
+- The "kty" field MUST be present, and it MUST be "NTRU" for JOSE.
+
+- The "alg" field MUST be present, and it MUST represent the
+  algorith and parameter set.
+
+- If the "key_ops" field is present, it MUST include "sign" when
+  creating an NTRU signature.
+
+- If the "key_ops" field is present, it MUST include "verify" when
+  verifying an NTRU signature.
+
+- If the JWK "use" field is present, its value MUST be "sig".
+
 
 ### FALCON Algorithms
 
@@ -1049,6 +1065,22 @@ When calculating JWK Thumbprints [@!RFC7638], the four public key
 fields are included in the hash input in lexicographic order:
 "kty", "alg", and "x".
 
+When using a JWK for this algorithm, the following checks
+are made:
+
+- The "kty" field MUST be present, and it MUST be "HASH" for JOSE.
+
+- The "alg" field MUST be present, and it MUST represent the
+  algorith and parameter set.
+
+- If the "key_ops" field is present, it MUST include "sign" when
+  creating a HASH signature.
+
+- If the "key_ops" field is present, it MUST include "verify" when
+  verifying a HASH signature.
+
+- If the JWK "use" field is present, its value MUST be "sig".
+
 ### SPHINCS-PLUS Algorithms
 
 In order to reduce the complexity of the key representation and signature representations we register a unique algorithm name per pset.
@@ -1104,6 +1136,9 @@ The following tables map terms between JOSE and COSE for key types.
 The following considerations SHOULD apply to all signature schemes described
 in this specification, unless otherwise noted.
 
+Care should be taken to ensure "kty" and intended use match, the algorithms described
+in this document share many properties with other cryptographic approaches from
+related families that are used for purposes other than digital signatures.
 
 ## Validating public keys
 
