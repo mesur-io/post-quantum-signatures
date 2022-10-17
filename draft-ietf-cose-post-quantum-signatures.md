@@ -932,10 +932,10 @@ The approach taken here matches the work done to support secp256k1 in JOSE and C
 
 The following tables map terms between JOSE and COSE for signatures.
 
-| Name       | Value | Description | Recommended |
-| ---------- | ----- | ----------- | ----------- |
-| FALCON512  | TBD   | TBD         | No          |
-| FALCON1024 | TBD   | TBD         | No          |
+| Name       | Value | Description                    | Recommended |
+| ---------- | ----- | ------------------------------ | ----------- |
+| FALCON512  | TBD   | Falcon with parameter set 512  | No          |
+| FALCON1024 | TBD   | Falcon with parameter set 1024 | No          |
 
 The following tables map terms between JOSE and COSE for key types.
 
