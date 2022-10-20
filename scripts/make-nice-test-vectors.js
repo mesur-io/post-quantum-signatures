@@ -25,15 +25,15 @@ function testWhite(x) {
 };
 
 // rfc8792
-function wordWrap(str, maxWidth = 72) {
-  var newLineStr = "\n"; done = false; res = '';
+function wordWrap(str, maxWidth = 71) {
+  var newLineStr = "\\\n"; done = false; res = '';
   while (str.length > maxWidth) {                 
       found = false;
       // Inserts new line at first whitespace of the line
       for (i = maxWidth - 1; i >= 0; i--) {
           if (testWhite(str.charAt(i))) {
               res = res + [str.slice(0, i), newLineStr].join('');
-              str = str.slice(i + 1);
+              str =  str.slice(i + 1);
               found = true;
               break;
           }
@@ -41,7 +41,7 @@ function wordWrap(str, maxWidth = 72) {
       // Inserts new line at maxWidth position, the word is too long to wrap
       if (!found) {
           res += [str.slice(0, maxWidth), newLineStr].join('');
-          str = str.slice(maxWidth);
+          str = "\\" + str.slice(maxWidth);
       }
 
   }
