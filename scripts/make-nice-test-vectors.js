@@ -25,7 +25,7 @@ function testWhite(x) {
 };
 
 // rfc8792
-function wordWrap(str, maxWidth = 71) {
+function wordWrap(str, maxWidth = 68) {
   var newLineStr = "\\\n"; done = false; res = '';
   while (str.length > maxWidth) {                 
       found = false;
