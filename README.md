@@ -2,8 +2,8 @@
 
 This is the working area for the individual Internet-Draft, "JSON Encoding for Post Quantum Signatures".
 
-* [Editor's Copy](https://mesur-io.github.io/post-quantum-signatures/#go.draft-prorock-cose-post-quantum-signatures.html)
-* [Datatracker Page](https://datatracker.ietf.org/doc/draft-prorock-cose-post-quantum-signatures)
+* [Editor's Copy](https://mesur-io.github.io/post-quantum-signatures/#go.draft-ietf-cose-post-quantum-signatures.html)
+* [Datatracker Page](https://datatracker.ietf.org/doc/draft-ietf-cose-post-quantum-signatures)
 * [Individual Draft](https://datatracker.ietf.org/doc/html/draft-prorock-cose-post-quantum-signatures)
 * [Compare Editor's Copy to Individual Draft](https://mesur-io.github.io/post-quantum-signatures/#go.draft-post-quantum-signatures.diff)
 
