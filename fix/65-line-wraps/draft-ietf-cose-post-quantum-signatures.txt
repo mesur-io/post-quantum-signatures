@@ -1,0 +1,2810 @@
+
+
+
+
+COSE                                                          M. Prorock
+Internet-Draft                                                  mesur.io
+Intended status: Standards Track                               O. Steele
+Expires: 23 April 2023                                         Transmute
+                                                             R. Misoczki
+                                                                  Google
+                                                              M. Osborne
+                                                                     IBM
+                                                         C. Cloostermans
+                                                                     NXP
+                                                         20 October 2022
+
+
+           JOSE and COSE Encoding for Post-Quantum Signatures
+             draft-ietf-cose-post-quantum-signatures-latest
+
+Abstract
+
+   This document describes JSON and CBOR serializations for several
+   Post-Quantum Cryptography (PQC) based suites including CRYSTALS
+   Dilithium, Falcon, and SPHINCS+.
+
+   This document does not define any new cryptography, only
+   seralizations of existing cryptographic systems.
+
+   This document registers key types for JOSE and COSE, specifically
+   LWE, NTRU, and HASH.
+
+   Key types in this document are specified by the cryptographic
+   algorithm family in use by a particular algorithm as discussed in
+   RFC7517.
+
+   This document registers signature algorithms types for JOSE and COSE,
+   specifically CRYDI3 and others as required for use of various post-
+   quantum signature schemes.
+
+Status of This Memo
+
+   This Internet-Draft is submitted in full conformance with the
+   provisions of BCP 78 and BCP 79.
+
+   Internet-Drafts are working documents of the Internet Engineering
+   Task Force (IETF).  Note that other groups may also distribute
+   working documents as Internet-Drafts.  The list of current Internet-
+   Drafts is at https://datatracker.ietf.org/drafts/current/.
+
+   Internet-Drafts are draft documents valid for a maximum of six months
+   and may be updated, replaced, or obsoleted by other documents at any
+   time.  It is inappropriate to use Internet-Drafts as reference
+   material or to cite them other than as "work in progress."
+
+   This Internet-Draft will expire on 23 April 2023.
+
+Copyright Notice
+
+   Copyright (c) 2022 IETF Trust and the persons identified as the
+   document authors.  All rights reserved.
+
+   This document is subject to BCP 78 and the IETF Trust's Legal
+   Provisions Relating to IETF Documents (https://trustee.ietf.org/
+   license-info) in effect on the date of publication of this document.
+   Please review these documents carefully, as they describe your rights
+   and restrictions with respect to this document.  Code Components
+   extracted from this document must include Revised BSD License text as
+   described in Section 4.e of the Trust Legal Provisions and are
+   provided without warranty as described in the Revised BSD License.
+
+Table of Contents
+
+   1.  Notational Conventions
+   2.  Terminology
+   3.  CRYSTALS-Dilithium
+     3.1.  Overview
+     3.2.  Parameters
+       3.2.1.  Parameter sets
+     3.3.  Core Operations
+     3.4.  Using CRYDI with JOSE
+       3.4.1.  CRYDI Key Representations
+       3.4.2.  CRYDI Algorithms
+       3.4.3.  CRYDI Signature Representation
+     3.5.  Using CRYDI with COSE
+   4.  Falcon
+     4.1.  Overview
+     4.2.  Core Operations
+     4.3.  Using FALCON with JOSE
+       4.3.1.  FALCON Key Representations
+       4.3.2.  FALCON Algorithms
+     4.4.  Using FALCON with COSE
+   5.  SPHINCS-PLUS
+     5.1.  Overview
+     5.2.  Core Operations
+     5.3.  Using SPHINCS-PLUS with JOSE
+       5.3.1.  SPHINCS-PLUS Key Representations
+       5.3.2.  SPHINCS-PLUS Algorithms
+     5.4.  Using SPHINCS-PLUS with COSE
+   6.  Security Considerations
+     6.1.  Falcon specific Security Considerations
+     6.2.  Validating public keys
+     6.3.  Side channel attacks
+     6.4.  Randomness considerations
+   7.  IANA Considerations
+   8.  Appendix
+     8.1.  Test Vectors
+       8.1.1.  LWE CRYDI5
+       8.1.2.  NTRU FALCON512
+       8.1.3.  HASH SPHINCS+-SHAKE-256s-robust
+   9.  Normative References
+   10. Informative References
+   Authors' Addresses
+
+1.  Notational Conventions
+
+   The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
+   "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this
+   document are to be interpreted as described in [RFC2119].
+
+2.  Terminology
+
+   The following terminology is used throughout this document:
+
+   PK : The public key for the signature scheme.
+
+   SK : The secret key for the signature scheme.
+
+   signature : The digital signature output.
+
+   message : The input to be signed by the signature scheme.
+
+   sha256 : The SHA-256 hash function defined in [RFC6234].
+
+   shake256 : The SHAKE256 hash function defined in [RFC8702].
+
+3.  CRYSTALS-Dilithium
+
+3.1.  Overview
+
+   This section of the document describes the lattice signature scheme
+   CRYSTALS-Dilithium (CRYDI).  The scheme is based on "Fiat-Shamir with
+   Aborts"[Lyu09, Lyu12] utlizing a matrix of polynomials for key
+   material, and a vector of polynomials for signatures.  The parameter
+   set is strategically chosen such that the signing algorithm is large
+   enough to maintain zero-knowledge properties but small enough to
+   prevent forgery of signatures.  An example implementation and test
+   vectors are provided.
+
+   CRYSTALS-Dilithium is a post-quantum approach to digital signatures
+   that is an algorithmic apprach that seeks to ensure key pair and
+   signing properties that is a strong implementation meeting
+   Existential Unforgeability under Chosen Message Attack (EUF-CMA)
+   properties, while ensuring that the security levels reached meet
+   security needs for resistance to both classical and quantum attacks.
+   The algoritm itself is based on hard problems over module lattices,
+   specifically Ring Learning with Errors (Ring-LWE).  For all security
+   levels the only operations required are variants of Keccak and number
+   theoretic transforms (NTT) for the ring Zq[X]/(X256+1).  This ensures
+   that to increase or decrease the security level involves only the
+   change of parameters rather than re-implementation of a related
+   algorithm.
+
+   While based on Ring-LWE, CRYSTALS-Dilithium has less algebraic
+   structure than direct Ring-LWE implementations and more closely
+   resembles the unstructured lattices used in Learning with Errors
+   (LWE).  This brings a theorectical protection against future
+   algebraic attacks on Ring-LWE that may be developed.
+
+   CRYSTALS-Dilithium, brings several advantages over other approaches
+   to signature suites:
+
+   *  Post-quantum in nature - use of lattices and other approaches that
+      should remain hard problems even when under attack utilizing
+      quantum approaches
+
+   *  Simple implementation while maintaining security - a danger in
+      many possible approaches to cryptography is that it may be
+      possible inadvertently introduce errors in code that lead to
+      weakness or decreases in security level
+
+   *  Signature and public key size - compared to other post-quantum
+      approaches a reasonable key size has been achieved that also
+      preserves desired security properties
+
+   *  Conservative parameter space - parameterization is utilized for
+      the purposes of defining the sizes of matrices in use, and thereby
+      the number of polynomials described by the key material.
+
+   *  Parameter set adjustment for greater security - increasing this
+      matrix size increases the number of polynomials, and thereby the
+      security level
+
+   *  Performance and optimization - the approach makes use of well
+      known transforms that can be highly optimized, especially with use
+      of hardware optimizations without being so large that it cannot be
+      deployed in embedded or IoT environments without some degree of
+      optimization.
+
+   The primary known disadvantage to CRYSTALS-Dilithium is the size of
+   keys and signatures, especially as compared to classical approaches
+   for digital signing.
+
+3.2.  Parameters
+
+   Unlike certain other approaches such as Ed25519 that have a large set
+   of parameters, CRYSTALS-Dilithium uses distinct numbers of paramters
+   to increase or decrease the security level according to the required
+   level for a particular scenario.  Under CRYSTALS-Dilithium, the key
+   parameter specification determines the size of the matrix and thereby
+   the number of polynomials that describe the lattice.  For use
+   according to this specification we do not recommend a parameter set
+   of less than 3, which should be sufficient to maintain 128 bits of
+   security for all known classical and quantum attacks.  Under a
+   parameter set at NIST level 3, a 6x5 matrix is utilized that thereby
+   consists of 30 polynomials.
+
+3.2.1.  Parameter sets
+
+   Parameter sets are identified by the corresponding NIST level per the
+   table below
+
+   +============+=============+================+
+   | NIST Level | Matrix Size | memory in bits |
+   +============+=============+================+
+   | 2          | 4x4         | 97.8           |
+   +------------+-------------+----------------+
+   | 3          | 6x5         | 138.7          |
+   +------------+-------------+----------------+
+   | 5          | 8x7         | 187.4          |
+   +------------+-------------+----------------+
+
+                      Table 1
+
+3.3.  Core Operations
+
+   Core operations used by the signature scheme should be implemented
+   according to the details in [CRYSTALS-Dilithium].  Core operations
+   include key generation, sign, and verify.
+
+3.4.  Using CRYDI with JOSE
+
+   This sections is based on CBOR Object Signing and Encryption (COSE)
+   and JSON Object Signing and Encryption (JOSE)
+   (https://datatracker.ietf.org/doc/html/rfc8812#section-3)
+
+3.4.1.  CRYDI Key Representations
+
+   A new key type (kty) value "LWE" (for keys related to the family of
+   algorithms that utilize Learning With Errors approaches to Post-
+   quantum lattice based cryptography) is defined for public key
+   algorithms that use base 64 encoded strings of the underlying binary
+   material as private and public keys and that support cryptographic
+   sponge functions.  It has the following parameters:
+
+   *  The parameter "kty" MUST be "LWE".
+
+   *  The parameter "alg" MUST be specified, and its value MUST be one
+      of the values specified in the table below
+
+              +========+===================================+
+              | alg    | Description                       |
+              +========+===================================+
+              | CRYDI5 | CRYSTALS-Dilithium paramter set 5 |
+              +--------+-----------------------------------+
+              | CRYDI3 | CRYSTALS-Dilithium paramter set 3 |
+              +--------+-----------------------------------+
+              | CRYDI2 | CRYSTALS-Dilithium paramter set 2 |
+              +--------+-----------------------------------+
+
+                                 Table 2
+
+   *  The parameter "pset" MAY be specfied to indicate the not only
+      paramter set in use for the algorithm, but SHOULD also reflect the
+      targeted NIST level for the algorithm in combination with the
+      specified paramter set.  For "alg" "CRYDI" one of the described
+      parameter sets "2", "3", or "5" MUST be specified.  Parameter set
+      "3" or above SHOULD be used with "CRYDI" for any situation
+      requiring at least 128bits of security against both quantum and
+      classical attacks
+
+   *  The parameter "x" MUST be present and contain the public key
+      encoded using the base64url [RFC4648] encoding.
+
+   *  The parameter "d" MUST be present for private keys and contain the
+      private key encoded using the base64url encoding.  This parameter
+      MUST NOT be present for public keys.
+
+   Sizes of various key and signature material is as follows (for "pset"
+   value "2")
+
+    +===========+===============+==============+======+==============+
+    | Variable  | Paramter Name | Paramter Set | Size | base64url    |
+    |           |               |              |      | encoded size |
+    +===========+===============+==============+======+==============+
+    | Signature | sig           | 2            | 3293 | 4393         |
+    +-----------+---------------+--------------+------+--------------+
+    | Public    | x             | 2            | 1952 | 2605         |
+    | Key       |               |              |      |              |
+    +-----------+---------------+--------------+------+--------------+
+    | Private   | d             | 2            | 4000 | 5337         |
+    | Key       |               |              |      |              |
+    +-----------+---------------+--------------+------+--------------+
+
+                                 Table 3
+
+   When calculating JWK Thumbprints [RFC7638], the four public key
+   fields are included in the hash input in lexicographic order: "kty",
+   "alg", and "x".
+
+3.4.2.  CRYDI Algorithms
+
+   In order to reduce the complexity of the key representation and
+   signature representations we register a unique algorithm name per
+   pset.  This allows us to omit registering the pset term, and reduced
+   the likelyhood that it will be misused.  These alg values are used in
+   both key representations and signatures.
+
+                      +=====+========+==============+
+                      | kty | alg    | Paramter Set |
+                      +=====+========+==============+
+                      | LWE | CRYDI5 | 5            |
+                      +-----+--------+--------------+
+                      | LWE | CRYDI3 | 3            |
+                      +-----+--------+--------------+
+                      | LWE | CRYDI2 | 2            |
+                      +-----+--------+--------------+
+
+                                  Table 4
+
+3.4.2.1.  Public Key
+
+   Per section 5.1 of [CRYSTALS-Dilithium]:
+
+   |  The public key, containing p and t1, is stored as the
+   |  concatenation of the bit-packed representations of p and t1 in
+   |  this order.  Therefore, it has a size of 32 + 288 kbytes.
+
+   The public key is represented as x and encoded using base64url
+   encoding as described in [RFC7517].
+
+   Example public key using only required fields:
+
+   =============== NOTE: '\' line wrapping per RFC 8792 ================
+
+   {
+     "kty": "LWE",
+     "alg": "CRYDI3",
+     "x": "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\
+   /8uzsSQk0AbuhxWFQpSiBP8OZ/U="
+   }
+
+   Example public key including optional fields:
+
+   =============== NOTE: '\' line wrapping per RFC 8792 ================
+
+   {
+     "kid": "key-0",
+     "kty": "LWE",
+     "alg": "CRYDI3",
+     "key_ops": ["verify"],
+     "x": "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\
+   /8uzsSQk0AbuhxWFQpSiBP8OZ/U="
+   }
+
+3.4.2.2.  Private Key
+
+   Per section 5.1 of [CRYSTALS-Dilithium]:
+
+   |  The secret key contains p,K,tr,s1,s2 and t0 and is also stored as
+   |  a bit-packed representation of these quantities in the given
+   |  order.  Consequently, a secret key requires 64 + 48 + 32((k+l) *
+   |  dlog (2n+ 1)e + 14k) bytes.  For the weak, medium and high
+   |  security level this is equal to 112 + 576k+ 128l bytes.  With the
+   |  very high security parameters one needs 112 + 544k + 96l = 3856
+   |  bytes.
+
+   The private key is represented as d and encoded using base64url
+   encoding as described in [RFC7517].
+
+   Example private key using only required fields:
+
+   =============== NOTE: '\' line wrapping per RFC 8792 ================
+
+   {
+     "kty": "LWE",
+     "alg": "CRYDI3",
+     "x": "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\
+   /8uzsSQk0AbuhxWFQpSiBP8OZ/U=",
+     "d": "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\
+   owebEJAy63htMytq+xd3cJyZR0lWBUOqvSpd/A=="
+   }
+
+   Example private key using optional fields:
+
+   =============== NOTE: '\' line wrapping per RFC 8792 ================
+
+   {
+     "kid": "key-0",
+     "kty": "LWE",
+     "alg": "CRYDI3",
+     "key_ops": ["sign"],
+     "x": "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\
+   /8uzsSQk0AbuhxWFQpSiBP8OZ/U=",
+     "d": "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\
+   owebEJAy63htMytq+xd3cJyZR0lWBUOqvSpd/A=="
+   }
+
+3.4.3.  CRYDI Signature Representation
+
+   For the purpose of using the CRYSTALS-Dilithium Signature Algorithm
+   (CRYDI) for signing data using "JSON Web Signature (JWS)" [RFC7515],
+   algorithm "CRYDI" is defined here, to be applied as the value of the
+   "alg" parameter.
+
+   The following key subtypes are defined here for use with CRYDI:
+
+                    +============+====================+
+                    | "paramter" | CRYDI Paramter Set |
+                    +============+====================+
+                    | 5          | CRYDI5             |
+                    +------------+--------------------+
+                    | 3          | CRYDI3             |
+                    +------------+--------------------+
+                    | 2          | CRYDI2             |
+                    +------------+--------------------+
+
+                                  Table 5
+
+   The key type used with these keys is "LWE" and the algorithm used for
+   signing is "CRYDI".  These subtypes MUST NOT be used for key
+   agreement.
+
+   The CRYDI variant used is determined by the subtype of the key
+   (CRYDI3 for "pset 3" and CRYDI2 for "pset 2").
+
+   Implementations need to check that the key type is "LWE" for JOSE and
+   that the pset of the key is a valid subtype when creating a
+   signature.
+
+   The CRYDI digital signature is generated as follows:
+
+   1.  Generate a digital signature of the JWS Signing Input using CRYDI
+       with the desired private key, as described in Section 3.2 (#name-
+       sign).  The signature bit string is the concatenation of a bit
+       packed representation of z and encodings of h and c in this
+       order.
+
+   2.  The resulting octet sequence is the JWS Signature.
+
+   When using a JWK for this algorithm, the following checks are made:
+
+   *  The "kty" field MUST be present, and it MUST be "LWE" for JOSE.
+
+   *  The "alg" field MUST be present, and it MUST represent the
+      algorith and parameter set.
+
+   *  If the "key_ops" field is present, it MUST include "sign" when
+      creating an CRYDI signature.
+
+   *  If the "key_ops" field is present, it MUST include "verify" when
+      verifying an CRYDI signature.
+
+   *  If the JWK "use" field is present, its value MUST be "sig".
+
+   Example signature using only required fields, represented in compact
+   form:
+
+   eyJhbGciOiJQUzM4NCIsImtpZCI6ImJpbGJvLmJhZ2dpbnNAaG9iYml0b24uZX
+   hhbXBsZSJ9
+   .
+   SXTigJlzIGEgZGFuZ2Vyb3VzIGJ1c2luZXNzLCBGcm9kbywgZ29pbmcgb3V0IH
+   lvdXIgZG9vci4gWW91IHN0ZXAgb250byB0aGUgcm9hZCwgYW5kIGlmIHlvdSBk
+   b24ndCBrZWVwIHlvdXIgZmVldCwgdGhlcmXigJlzIG5vIGtub3dpbmcgd2hlcm
+   UgeW91IG1pZ2h0IGJlIHN3ZXB0IG9mZiB0by4
+   .
+   cu22eBqkYDKgIlTpzDXGvaFfz6WGoz7fUDcfT0kkOy42miAh2qyBzk1xEsnk2I
+   pN6-tPid6VrklHkqsGqDqHCdP6O8TTB5dDDItllVo6_1OLPpcbUrhiUSMxbbXU
+   vdvWXzg-UD8biiReQFlfz28zGWVsdiNAUf8ZnyPEgVFn442ZdNqiVJRmBqrYRX
+   e8P_ijQ7p8Vdz0TTrxUeT3lm8d9shnr2lfJT8ImUjvAA2Xez2Mlp8cBE5awDzT
+   0qI0n6uiP1aCN_2_jLAeQTlqRHtfa64QQSUmFAAjVKPbByi7xho0uTOcbH510a
+   6GYmJUAfmWjwZ6oD4ifKo8DYM-X72Eaw
+
+   The same example decoded for readability:
+
+   =============== NOTE: '\\' line wrapping per RFC 8792 ===============
+
+   {
+     "header": { "alg": "CRYDI3", "kid": "did:example:123#key-0" },
+     "payload": "It's a dangerous business, Frodo, going out your door.\
+   \ You step onto the road, and if you don't keep your feet, there's\
+   \ no knowing where you might be swept off to.",
+     "signature": "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"
+   }
+
+3.5.  Using CRYDI with COSE
+
+   The approach taken here matches the work done to support secp256k1 in
+   JOSE and COSE in [RFC8812].
+
+   The following tables map terms between JOSE and COSE for signatures.
+
+          +========+=======+======================+=============+
+          | Name   | Value | Description          | Recommended |
+          +========+=======+======================+=============+
+          | CRYDI5 | TBD   | CRYSTALS-Dilithium   | No          |
+          |        |       | with parameter set 5 |             |
+          +--------+-------+----------------------+-------------+
+          | CRYDI3 | TBD   | CRYSTALS-Dilithium   | No          |
+          |        |       | with parameter set 3 |             |
+          +--------+-------+----------------------+-------------+
+          | CRYDI2 | TBD   | CRYSTALS-Dilithium   | No          |
+          |        |       | with parameter set 2 |             |
+          +--------+-------+----------------------+-------------+
+
+                                  Table 6
+
+   The following tables map terms between JOSE and COSE for key types.
+
+         +======+=======+=========================+=============+
+         | Name | Value | Description             | Recommended |
+         +======+=======+=========================+=============+
+         | LWE  | TBD   | kty for Learning with   | No          |
+         |      |       | Errors based Signatures |             |
+         +------+-------+-------------------------+-------------+
+
+                                 Table 7
+
+4.  Falcon
+
+4.1.  Overview
+
+   This section of the document describes the lattice signature scheme
+   [Falcon], the "Fast Fourier lattice-based compact signatures over
+   NTRU".  Falcon is based on the GPV hash-and-sign lattice-based
+   signature framework introduced by Gentry, Peikert and Vaikuntanathan
+   [GPV08], which is a framework that requires a class of lattices and a
+   trapdoor sampler technique.  For the class of lattices, Falcon uses
+   the well-known NTRU lattices, while for the trapdoor sampler, it uses
+   a new fast Fourier sampling technique [DP16].  The underlying hard
+   problem is the short integer solution problem (SIS) over NTRU
+   lattices, for which no efficient solving algorithm is currently known
+   for both classical as well as quantum settings.
+
+   The main design principle of Falcon is compactness, i.e. it was
+   designed in a way that achieves minimal total memory bandwidth
+   requirement (the sum of the signature size plus the public key size).
+   This is possible due to the compactness of NTRU lattices.  Falcon
+   also offers very efficient signing and verification procedures.  The
+   main potential downsides of Falcon refer to the non-triviality of its
+   algorithms and the need for floating point arithmetic support.
+
+   The GPV framework, which underpins the Falcon design, is proven to be
+   secure in the (quantum) random oracle model as long as the SIS
+   problem remains intractable.  Falcon requires an adaption of this
+   prove to account for the fact it uses NTRU lattices.
+
+   Falcon brings several advantages over other approaches to signature
+   suites:
+
+   *  Post-quantum secure as long as the NTRU-SIS problem remains
+      intractable.
+
+   *  Compactness: Falcon aims at minimum signature plus public key
+      sizes.  This should be contrasted with hash-based signature
+      schemes (e.g.  SPHINCS+), which minimizes public key sizes but
+      suffer from long signatures, and multivariate quadratic schemes,
+      which minimizes signatures sizes but suffers from long public
+      keys.  It also offers substantially shorter signatures than other
+      lattice schemes while public keys are about the same size.
+
+   *  Efficiency: Falcon can produce thousands of signatures per second
+      on a common computer, while verification is up to ten times
+      faster.  The operations in Falcon have O(n log n) complexity for
+      degree n.
+
+   *  Side-channel resistance: Falcon may still have an important
+      limitation regarding side-channel attacks due to the hardness of
+      implementing discrete Gaussian sampling over the integers in
+      constant-time.  This gap that may have recently filled, but is
+      under active investigation.
+
+4.2.  Core Operations
+
+   Core operations used by the signature scheme should be implemented
+   according to the details in [Falcon].  Core operations include key
+   generation, sign, and verify.
+
+4.3.  Using FALCON with JOSE
+
+   This sections is based on CBOR Object Signing and Encryption (COSE)
+   and JSON Object Signing and Encryption (JOSE)
+   (https://datatracker.ietf.org/doc/html/rfc8812#section-3)
+
+4.3.1.  FALCON Key Representations
+
+   A new key type (kty) value "NTRU" (for keys related to the family of
+   algorithms that utilize NTRU based approaches to Post-quantum lattice
+   based cryptography) is defined for public key algorithms that use
+   base 64 encoded strings of the underlying binary material as private
+   and public keys and that support cryptographic sponge functions.  It
+   has the following parameters:
+
+   *  The parameter "kty" MUST be "NTRU".
+
+   *  The parameter "alg" MUST be specified, and its value MUST be one
+      of the values specified the below table
+
+              +============+================================+
+              | alg        | Description                    |
+              +============+================================+
+              | FALCON512  | Falcon with parameter set 512  |
+              +------------+--------------------------------+
+              | FALCON1024 | Falcon with parameter set 1024 |
+              +------------+--------------------------------+
+
+                                  Table 8
+
+   *  The parameter "pset" MAY be specfied to indicate the parameter set
+      in use for the algorithm, but SHOULD also reflect the targeted
+      NIST level for the algorithm in combination with the specified
+      parameter set.  For "alg" "FALCON" one of the described parameter
+      sets "512" or "1024" MUST be specified.  Parameter set "512" or
+      above SHOULD be used with "FALCON" for any situation requiring at
+      least 128bits of security against both quantum and classical
+      attacks
+
+   *  The parameter "x" MUST be present and contain the public key
+      encoded using the base64url [RFC4648] encoding.
+
+   *  The parameter "d" MUST be present for private keys and contain the
+      private key encoded using the base64url encoding.  This parameter
+      MUST NOT be present for public keys.
+
+   Sizes of various key and signature material is as follows
+
+           +=============+===============+==============+======+
+           | Variable    | Paramter Name | Paramter Set | Size |
+           +=============+===============+==============+======+
+           | Signature   | sig           | 512          | 666  |
+           +-------------+---------------+--------------+------+
+           | Public Key  | x             | 512          | 897  |
+           +-------------+---------------+--------------+------+
+           | Private Key | d             | 512          | 1281 |
+           +-------------+---------------+--------------+------+
+           | Signature   | sig           | 1024         | 1280 |
+           +-------------+---------------+--------------+------+
+           | Public Key  | x             | 1024         | 1793 |
+           +-------------+---------------+--------------+------+
+           | Private Key | d             | 1024         | 2305 |
+           +-------------+---------------+--------------+------+
+
+                                  Table 9
+
+   When calculating JWK Thumbprints [RFC7638], the four public key
+   fields are included in the hash input in lexicographic order: "kty",
+   "alg", and "x".
+
+   When using a JWK for this algorithm, the following checks are made:
+
+   *  The "kty" field MUST be present, and it MUST be "NTRU" for JOSE.
+
+   *  The "alg" field MUST be present, and it MUST represent the
+      algorith and parameter set.
+
+   *  If the "key_ops" field is present, it MUST include "sign" when
+      creating an NTRU signature.
+
+   *  If the "key_ops" field is present, it MUST include "verify" when
+      verifying an NTRU signature.
+
+   *  If the JWK "use" field is present, its value MUST be "sig".
+
+4.3.2.  FALCON Algorithms
+
+   In order to reduce the complexity of the key representation and
+   signature representations we register a unique algorithm name per
+   pset.  This allows us to omit registering the pset term, and reduced
+   the likelyhood that it will be misused.  These alg values are used in
+   both key representations and signatures.
+
+                   +======+============+==============+
+                   | kty  | alg        | Paramter Set |
+                   +======+============+==============+
+                   | NTRU | FALCON512  | 512          |
+                   +------+------------+--------------+
+                   | NTRU | FALCON1024 | 1024         |
+                   +------+------------+--------------+
+
+                                 Table 10
+
+4.4.  Using FALCON with COSE
+
+   The approach taken here matches the work done to support secp256k1 in
+   JOSE and COSE in [RFC8812].
+
+   The following tables map terms between JOSE and COSE for signatures.
+
+   +============+=======+================================+=============+
+   | Name       | Value | Description                    | Recommended |
+   +============+=======+================================+=============+
+   | FALCON512  | TBD   | Falcon with parameter set 512  | No          |
+   +------------+-------+--------------------------------+-------------+
+   | FALCON1024 | TBD   | Falcon with parameter set      | No          |
+   |            |       | 1024                           |             |
+   +------------+-------+--------------------------------+-------------+
+
+                                  Table 11
+
+   The following tables map terms between JOSE and COSE for key types.
+
+            +======+=======+====================+=============+
+            | Name | Value | Description        | Recommended |
+            +======+=======+====================+=============+
+            | NTRU | TBD   | kty for NTRU based | No          |
+            |      |       | digital signatures |             |
+            +------+-------+--------------------+-------------+
+
+                                  Table 12
+
+5.  SPHINCS-PLUS
+
+   This section defines core operations used by the signature scheme, as
+   proposed in [SPHINCS-PLUS].
+
+5.1.  Overview
+
+   This section of the document describes the hash-based signature
+   scheme SPHINCS+. The scheme is based on the concept of authenticating
+   a large number or few-time signatures keypair using a combination of
+   Merkle-tree signatures, a so-called hypertree.  For each message to
+   be signed a (pseudo-)random FTS keypair is selected with which the
+   message can be signed.  Combining this signature along with an
+   authentication path through the hyper-tree consisting of hash-based
+   many-time signatures then gives the SPHINC+ signature.  The parameter
+   set is strategically chosen such that the probability of signing too
+   many messages with a specific FTS keypair to impact security is small
+   enough to prevent forgery attacks.  A trade-off in parameter set can
+   be made on security guarantees, performance and signature size.
+
+   SPHINCS+ is a post-quantum approach to digital signatures that is
+   promises Post-Quantum Existential Unforgeability under Chosen Message
+   Attack (PQ-EU-CMA), while ensuring that the security levels reached
+   meet security needs for resistance to both classical and quantum
+   attacks.  The algoritm itself is based on the hardness assumptions of
+   its underlying hash functions, which can be chosen from the set
+   Haraka, SHA-256 or SHAKE256.  For all security levels the only
+   operations required are calls to these hash functions on various
+   combinations of parameters and internal states.
+
+   Contrary to CRYSTALS-Dilithium and Falcon, SPHINCS+ is not based on
+   any algebraic structure.  This reduces the possible attack surface of
+   the algorithm.
+
+   SPHINCS+ brings several advantages over other approaches to signature
+   suites:
+
+   *  Post-quantum in nature - use of cryptographically secure hash
+      functions and other approaches that should remain hard problems
+      even when under an attack utilizing quantum approaches
+
+   *  Minimal security assumptions - compared to other schemes does not
+      base its security on a new paradigm.  The security is solely based
+      on the security of the assumptions of the underlying hash
+      function.
+
+   *  Performance and Optimization - based on combining a great many
+      hash function calls of SHA-256, SHAKE256 or Haraka means existing
+      (secure) SW and HW implementations of those hash functions can be
+      re-used for increased performance
+
+   *  Private and Public Key Size - compared to other post-quantum
+      approaches a very small key size is the form of hash inputs-
+      outputs.  This then has the drawback that either a large signature
+      or low signing speed has to be accepted
+
+   *  Cryptanalysis assuarance - attacks (both pre-quantum and quantum)
+      are easy to relate to existing attacks on hash functions.  This
+      allows for precise quantification of the security levels
+
+   *  Overlap with stateful hash-based algorithms - means there are
+      possibilities to combine implementions with those of XMSS and LMS.
+      For example, both have the same underlying hash functions and
+      utilize existing HW acceleration.  Furthermore, an API to a XMSS
+      implementation can be directly used by the subroutines of Sphincs+
+
+   *  Inherent resistance against side-channel attacks - since its core
+      primitive is a hash function, it thereby is hard to attack with
+      side-channels.
+
+   The primary known disadvantage to SPHINCS+ is the size signatures, or
+   the speed of signing, depending on the chosen parameter set.
+   Especially in IoT applications this might pose a problem.
+   Additionally hash-based schemes are also vulnerable to differential
+   and fault attacks.
+
+5.2.  Core Operations
+
+   Core operations used by the signature scheme should be implemented
+   according to the details in [SPHINCS-PLUS].  Core operations include
+   key generation, sign, and verify.
+
+5.3.  Using SPHINCS-PLUS with JOSE
+
+   This sections is based on CBOR Object Signing and Encryption (COSE)
+   and JSON Object Signing and Encryption (JOSE)
+   (https://datatracker.ietf.org/doc/html/rfc8812#section-3)
+
+5.3.1.  SPHINCS-PLUS Key Representations
+
+   A new key type (kty) value "HASH" (for keys related to the family of
+   algorithms that utilize hash based approaches to post-quantum
+   cryptography) is defined for public key algorithms that use base 64
+   encoded strings of the underlying binary material as private and
+   public keys and that support cryptographic sponge functions.  It has
+   the following parameters:
+
+   *  The parameter "kty" MUST be "HASH".
+
+   *  The parameter "alg" MUST be specified, and its value MUST be one
+      of the values specified the below table
+
+          +==============+=====================================+
+          | alg          | Description                         |
+          +==============+=====================================+
+          | SPHINCS+128s | SPHINCS+ with parameter set of 128s |
+          +--------------+-------------------------------------+
+          | SPHINCS+128f | SPHINCS+ with parameter set of 128f |
+          +--------------+-------------------------------------+
+          | SPHINCS+192s | SPHINCS+ with parameter set of 192s |
+          +--------------+-------------------------------------+
+          | SPHINCS+192f | SPHINCS+ with parameter set of 192f |
+          +--------------+-------------------------------------+
+          | SPHINCS+256s | SPHINCS+ with parameter set of 256s |
+          +--------------+-------------------------------------+
+          | SPHINCS+256f | SPHINCS+ with parameter set of 256f |
+          +--------------+-------------------------------------+
+
+                                 Table 13
+
+   *  The parameter "pset" MAY be specfied to indicate the paramter set
+      in use for the algorithm, but SHOULD also reflect the targeted
+      NIST level for the algorithm in combination with the specified
+      paramter set.  For "alg" "HAS" one of the described parameter sets
+      as listed in the section SPHINCS+ Algorithms MUST be specified.
+
+   *  The parameter "x" MUST be present and contain the public key
+      encoded using the base64url [RFC4648] encoding.
+
+   *  The parameter "d" MUST be present for private keys and contain the
+      private key encoded using the base64url encoding.  This parameter
+      MUST NOT be present for public keys.
+
+   When calculating JWK Thumbprints [RFC7638], the four public key
+   fields are included in the hash input in lexicographic order: "kty",
+   "alg", and "x".
+
+   When using a JWK for this algorithm, the following checks are made:
+
+   *  The "kty" field MUST be present, and it MUST be "HASH" for JOSE.
+
+   *  The "alg" field MUST be present, and it MUST represent the
+      algorith and parameter set.
+
+   *  If the "key_ops" field is present, it MUST include "sign" when
+      creating a HASH signature.
+
+   *  If the "key_ops" field is present, it MUST include "verify" when
+      verifying a HASH signature.
+
+   *  If the JWK "use" field is present, its value MUST be "sig".
+
+5.3.2.  SPHINCS-PLUS Algorithms
+
+   In order to reduce the complexity of the key representation and
+   signature representations we register a unique algorithm name per
+   pset.  This allows us to omit registering the pset term, and reduced
+   the likelyhood that it will be misused.  These alg values are used in
+   both key representations and signatures.
+
+   Sphincs+ targets different security levels (128-, 192- and 256-bit
+   security) and tradeoffs between size and speed.  For each security
+   level a small (s) and fast (f) parameter set is provided.
+
+                  +======+==============+==============+
+                  | kty  | alg          | Paramter Set |
+                  +======+==============+==============+
+                  | HASH | SPHINCS+128s | 128s         |
+                  +------+--------------+--------------+
+                  | HASH | SPHINCS+128f | 128f         |
+                  +------+--------------+--------------+
+                  | HASH | SPHINCS+192s | 192s         |
+                  +------+--------------+--------------+
+                  | HASH | SPHINCS+192f | 192f         |
+                  +------+--------------+--------------+
+                  | HASH | SPHINCS+256s | 256s         |
+                  +------+--------------+--------------+
+                  | HASH | SPHINCS+256f | 256f         |
+                  +------+--------------+--------------+
+
+                                 Table 14
+
+5.4.  Using SPHINCS-PLUS with COSE
+
+   The approach taken here matches the work done to support secp256k1 in
+   JOSE and COSE in [RFC8812].
+
+   The following tables map terms between JOSE and COSE for signatures.
+
+        +==============+=======+====================+=============+
+        | Name         | Value | Description        | Recommended |
+        +==============+=======+====================+=============+
+        | SPHINCS+128s | TBD   | SPHINCS+ with      | No          |
+        |              |       | parameter set 128s |             |
+        +--------------+-------+--------------------+-------------+
+        | SPHINCS+128f | TBD   | SPHINCS+ with      | No          |
+        |              |       | parameter set 128f |             |
+        +--------------+-------+--------------------+-------------+
+        | SPHINCS+192s | TBD   | SPHINCS+ with      | No          |
+        |              |       | parameter set 192s |             |
+        +--------------+-------+--------------------+-------------+
+        | SPHINCS+192f | TBD   | SPHINCS+ with      | No          |
+        |              |       | parameter set 192f |             |
+        +--------------+-------+--------------------+-------------+
+        | SPHINCS+256s | TBD   | SPHINCS+ with      | No          |
+        |              |       | parameter set 256s |             |
+        +--------------+-------+--------------------+-------------+
+        | SPHINCS+256f | TBD   | SPHINCS+ with      | No          |
+        |              |       | parameter set 256f |             |
+        +--------------+-------+--------------------+-------------+
+
+                                  Table 15
+
+   The following tables map terms between JOSE and COSE for key types.
+
+   +======+=======+======================================+=============+
+   | Name | Value | Description                          | Recommended |
+   +======+=======+======================================+=============+
+   | HASH | TBD   | kty for hash based                   | No          |
+   |      |       | digital signature                    |             |
+   +------+-------+--------------------------------------+-------------+
+
+                                  Table 16
+
+6.  Security Considerations
+
+   The following considerations SHOULD apply to all signature schemes
+   described in this specification, unless otherwise noted.
+
+   Care should be taken to ensure "kty" and intended use match, the
+   algorithms described in this document share many properties with
+   other cryptographic approaches from related families that are used
+   for purposes other than digital signatures.
+
+6.1.  Falcon specific Security Considerations
+
+   Falcon utilizes floating point multiplications as part of fast
+   Fourier transforms in its internal operations.  This is somewhat
+   novel and care should be taken to ensure consistent implementation
+   across hardware platforms.  Well tested underlying implementations
+   should be selected for use with JOSE and COSE implementations.
+
+6.2.  Validating public keys
+
+   All algorithms in that operate on public keys require first
+   validating those keys.  For the sign, verify and proof schemes, the
+   use of KeyValidate is REQUIRED.
+
+6.3.  Side channel attacks
+
+   Implementations of the signing algorithm SHOULD protect the secret
+   key from side-channel attacks.  Multiple best practices exist to
+   protect against side-channel attacks.  Any implementation of the the
+   CRYSTALS-Dilithium, Falcon or Sphincs+ signing algorithms SHOULD
+   utilize the following best practices at a minimum:
+
+   *  Constant timing - the implementation should ensure that constant
+      time is utilized in operations
+
+   *  Sequence and memory access persistance - the implemention SHOULD
+      execute the exact same sequence of instructions (at a machine
+      level) with the exact same memory access independent of which
+      polynomial is being operated on.
+
+   *  Uniform sampling - uniform sampling is the default in CRYSTALS-
+      Dilithium to prevent information leakage, however care should be
+      given in implementations to preserve the property of uniform
+      sampling in implementation.
+
+   *  Secrecy of S1 - utmost care must be given to protection of S1 and
+      to prevent information or power leakage.  As is the case with most
+      proposed lattice based approaches to date, fogery and other
+      attacks may succeed, for example, with Dilithium through leakage
+      of S1 (https://eprint.iacr.org/2018/821.pdf) through side channel
+      mechanisms.
+
+6.4.  Randomness considerations
+
+   It is recommended that the all nonces are from a trusted source of
+   randomness.
+
+7.  IANA Considerations
+
+   The following has NOT YET been added to the "JSON Web Key Types"
+   registry:
+
+   *  Name: "LWE"
+
+   *  Description: LWE family post-quantum signature algorithm key pairs
+
+   *  JOSE Implementation Requirements: Optional
+
+   *  Change Controller: IESG
+
+   *  Specification Document(s): Section 3.1 of this document (TBD)
+
+   The following has NOT YET been added to the "JSON Web Key Types"
+   registry:
+
+   *  Name: "NTRU"
+
+   *  Description: NTRU family post-quantum signature algorithm key
+      pairs
+
+   *  JOSE Implementation Requirements: Optional
+
+   *  Change Controller: IESG
+
+   *  Specification Document(s): Section 3.1 of this document (TBD)
+
+   The following has NOT YET been added to the "JSON Web Key Types"
+   registry:
+
+   *  Name: "HASH"
+
+   *  Description: Hash based post-quantum signature algorithm key pairs
+
+   *  JOSE Implementation Requirements: Optional
+
+   *  Change Controller: IESG
+
+   *  Specification Document(s): Section 3.1 of this document (TBD)
+
+   The following has NOT YET been added to the "JSON Web Key Parameters"
+   registry:
+
+   *  Parameter Name: "pset"
+
+   *  Parameter Description: The parameter set of the crypto system
+
+   *  Parameter Information Class: Public
+
+   *  Used with "kty" Value(s): "LWE", "NTRU", "HASH"
+
+   *  Change Controller: IESG
+
+   *  Specification Document(s): Section 2 of this document (TBD)
+
+   The following has NOT YET been added to the "JSON Web Key Parameters"
+   registry:
+
+   *  Parameter Name: "d"
+
+   *  Parameter Description: The private key
+
+   *  Parameter Information Class: Private
+
+   *  Used with "kty" Value(s): "LWE", "NTRU", "HASH"
+
+   *  Change Controller: IESG
+
+   *  Specification Document(s): Section 2 of RFC 8037
+
+   The following has NOT YET been added to the "JSON Web Key Parameters"
+   registry:
+
+   *  Parameter Name: "x"
+
+   *  Parameter Description: The public key
+
+   *  Parameter Information Class: Public
+
+   *  Used with "kty" Value(s): "LWE", "NTRU", "HASH"
+
+   *  Change Controller: IESG
+
+   *  Specification Document(s): Section 2 of RFC 8037
+
+   The following has NOT YET been added to the "JSON Web Signature and
+   Encryption Algorithms" registry:
+
+   *  Algorithm Name: "CRYDI2"
+
+   *  Algorithm Description: CRYDI2 signature algorithms
+
+   *  Algorithm Usage Location(s): "alg"
+
+   *  JOSE Implementation Requirements: Optional
+
+   *  Change Controller: IESG
+
+   *  Specification Document(s): Section 3.1 of this document (TBD)
+
+   *  Algorithm Analysis Documents(s): (TBD)
+
+   The following has NOT YET been added to the "JSON Web Signature and
+   Encryption Algorithms" registry:
+
+   *  Algorithm Name: "CRYDI3"
+
+   *  Algorithm Description: CRYDI3 signature algorithms
+
+   *  Algorithm Usage Location(s): "alg"
+
+   *  JOSE Implementation Requirements: Optional
+
+   *  Change Controller: IESG
+
+   *  Specification Document(s): Section 3.1 of this document (TBD)
+
+   *  Algorithm Analysis Documents(s): (TBD)
+
+   The following has NOT YET been added to the "JSON Web Signature and
+   Encryption Algorithms" registry:
+
+   *  Algorithm Name: "CRYDI5"
+
+   *  Algorithm Description: CRYDI5 signature algorithms
+
+   *  Algorithm Usage Location(s): "alg"
+
+   *  JOSE Implementation Requirements: Optional
+
+   *  Change Controller: IESG
+
+   *  Specification Document(s): Section 3.1 of this document (TBD)
+
+   *  Algorithm Analysis Documents(s): (TBD)
+
+   The following has NOT YET been added to the "JSON Web Signature and
+   Encryption Algorithms" registry:
+
+   *  Algorithm Name: "FALCON512"
+
+   *  Algorithm Description: FALCON512 signature algorithms
+
+   *  Algorithm Usage Location(s): "alg"
+
+   *  JOSE Implementation Requirements: Optional
+
+   *  Change Controller: IESG
+
+   *  Specification Document(s): Section 4.1 of this document (TBD)
+
+   *  Algorithm Analysis Documents(s): (TBD)
+
+   The following has NOT YET been added to the "JSON Web Signature and
+   Encryption Algorithms" registry:
+
+   *  Algorithm Name: "FALCON1024"
+
+   *  Algorithm Description: FALCON1024 signature algorithms
+
+   *  Algorithm Usage Location(s): "alg"
+
+   *  JOSE Implementation Requirements: Optional
+
+   *  Change Controller: IESG
+
+   *  Specification Document(s): Section 4.1 of this document (TBD)
+
+   *  Algorithm Analysis Documents(s): (TBD)
+
+   The following has NOT YET been added to the "JSON Web Signature and
+   Encryption Algorithms" registry:
+
+   *  Algorithm Name: "SPHINCS+128s"
+
+   *  Algorithm Description: SPHINCS+128s signature algorithms
+
+   *  Algorithm Usage Location(s): "alg"
+
+   *  JOSE Implementation Requirements: Optional
+
+   *  Change Controller: IESG
+
+   *  Specification Document(s): Section 5.1 of this document (TBD)
+
+   *  Algorithm Analysis Documents(s): (TBD)
+
+   The following has NOT YET been added to the "JSON Web Signature and
+   Encryption Algorithms" registry:
+
+   *  Algorithm Name: "SPHINCS+128f"
+
+   *  Algorithm Description: SPHINCS+128f signature algorithms
+
+   *  Algorithm Usage Location(s): "alg"
+
+   *  JOSE Implementation Requirements: Optional
+
+   *  Change Controller: IESG
+
+   *  Specification Document(s): Section 5.1 of this document (TBD)
+
+   *  Algorithm Analysis Documents(s): (TBD)
+
+   The following has NOT YET been added to the "JSON Web Signature and
+   Encryption Algorithms" registry:
+
+   *  Algorithm Name: "SPHINCS+192s"
+
+   *  Algorithm Description: SPHINCS+192s signature algorithms
+
+   *  Algorithm Usage Location(s): "alg"
+
+   *  JOSE Implementation Requirements: Optional
+
+   *  Change Controller: IESG
+
+   *  Specification Document(s): Section 5.1 of this document (TBD)
+
+   *  Algorithm Analysis Documents(s): (TBD)
+
+   The following has NOT YET been added to the "JSON Web Signature and
+   Encryption Algorithms" registry:
+
+   *  Algorithm Name: "SPHINCS+192f"
+
+   *  Algorithm Description: SPHINCS+192f signature algorithms
+
+   *  Algorithm Usage Location(s): "alg"
+
+   *  JOSE Implementation Requirements: Optional
+
+   *  Change Controller: IESG
+
+   *  Specification Document(s): Section 5.1 of this document (TBD)
+
+   *  Algorithm Analysis Documents(s): (TBD)
+
+   The following has NOT YET been added to the "JSON Web Signature and
+   Encryption Algorithms" registry:
+
+   *  Algorithm Name: "SPHINCS+256s"
+
+   *  Algorithm Description: SPHINCS+256s signature algorithms
+
+   *  Algorithm Usage Location(s): "alg"
+
+   *  JOSE Implementation Requirements: Optional
+
+   *  Change Controller: IESG
+
+   *  Specification Document(s): Section 5.1 of this document (TBD)
+
+   *  Algorithm Analysis Documents(s): (TBD)
+
+   The following has NOT YET been added to the "JSON Web Signature and
+   Encryption Algorithms" registry:
+
+   *  Algorithm Name: "SPHINCS+256f"
+
+   *  Algorithm Description: SPHINCS+256f signature algorithms
+
+   *  Algorithm Usage Location(s): "alg"
+
+   *  JOSE Implementation Requirements: Optional
+
+   *  Change Controller: IESG
+
+   *  Specification Document(s): Section 5.1 of this document (TBD)
+
+   *  Algorithm Analysis Documents(s): (TBD)
+
+8.  Appendix
+
+   *  JSON Web Signature (JWS) - RFC7515 (https://tools.ietf.org/html/
+      rfc7515)
+
+   *  JSON Web Encryption (JWE) - RFC7516 (https://tools.ietf.org/html/
+      rfc7516)
+
+   *  JSON Web Key (JWK) - RFC7517 (https://tools.ietf.org/html/rfc7517)
+
+   *  JSON Web Algorithms (JWA) - RFC7518 (https://tools.ietf.org/html/
+      rfc7518)
+
+   *  JSON Web Token (JWT) - RFC7519 (https://tools.ietf.org/html/
+      rfc7519)
+
+   *  JSON Web Key Thumbprint - RFC7638 (https://tools.ietf.org/html/
+      rfc7638)
+
+   *  JWS Unencoded Payload Option - RFC7797
+      (https://tools.ietf.org/html/rfc7797)
+
+   *  CFRG Elliptic Curve ECDH and Signatures - RFC8037
+      (https://tools.ietf.org/html/rfc8037)
+
+   *  CRYSTALS-Dilithium - Dilithium (https://www.pq-
+      crystals.org/dilithium/data/dilithium-specification-
+      round3-20210208.pdf)
+
+   *  SPHINCS+ - SPHINCS-PLUS (https://sphincs.org/data/sphincs+-
+      round3-specification.pdf)
+
+   [DP16]: Leo Ducas and Thomas Prest.  Fast fourier orthogonalization.
+   In Sergei A.  Abramov, Eugene V.  Zima, and Xiao-Shan Gao, editors,
+   Proceedings of the ACM on International Symposium on Symbolic and
+   Algebraic Computation, ISSAC 2016, Waterloo, ON, Canada, July 19-22,
+   2016, pages 191-198.  ACM, 2016.  [GPV08]: Craig Gentry, Chris
+   Peikert, and Vinod Vaikuntanathan.  Trapdoors for hard lattices and
+   new cryptographic constructions.  In Richard E.  Ladner and Cynthia
+   Dwork, editors, 40th ACM STOC, pages 197-206, Victoria, BC, Canada,
+   May 17-20, 2008.  ACM Press.
+
+8.1.  Test Vectors
+
+8.1.1.  LWE CRYDI5
+
+8.1.1.1.  publicKeyJwk
+
+   {"kty":"LWE","alg":"CRYDI5","x":"lgNFI62eq4YKxuvpMl2V9SVtGV5z_vQQZeiiCz\
+   \iAVcFMuUUzjpbwrd7uKHRbtxNPWsLIlfYKmM5SM-OLeoDII-GNQYJfm3QRt9l33PAOyJpb\
+   \eLidJg6e4UAIZJQx-KbKrIVqK6F42P8WmhDWxgc5xJZXUabUtMHV-irm9pMP8kjrlRFuIe\
+   \nHS_YYj3RrX9yeAZKmD6YJsROVMEprjR1B7uOQxJYX1WNNRD5AEiGL8TKFoxbOg-qDIP-M\
+   \6ubjuKZqlhd3_-z1bLJDVkN_uh9hSIlqpghWD7niDldxKBAUldyELqnWzvadJyhKTt3Kev\
+   \LOWGuPJGc927VgDnTVSvaiOW0bZu3wHEup5PxsqymxGEuJGkiY6QzL15KWzr4jdhq-_Hpk\
+   \nGUjg2LbC0Q-f5raUm27vkT8EI7A3i-ar5Jhd9lhfXpGJ4Ui6amgeTedhqJCKOzTrEF12e\
+   \cwQ9ERhjdsksC8XMDe2lQS1W-AyHfntg2oPeC7O2q0E46JMG_OUcLtMo3ShprY1VF93Obs\
+   \wsozfX6mmwqinQvYSpDAC7HHd39mp6CwJu10auoPi7HDEAb0aSO-qUgdh8WOPgyCEe0GJ_\
+   \Hpl7sokVq5dXtbV4458_zDtc-pUcX7C8J3OUgLfNKsZzeOxQhgqkk0nG56CTleN_9u4rfW\
+   \QzQZBH5ofr_biWHgr05HZ-UdjL4ezxPUIGW7M_HvwktpowTnXfV4-6HTF16jqmH-AmO5XJ\
+   \lwjP44IbRMNk5m-vHOBJj6ELGiDuNQoiathKHS_-L0AO-7d2IxcpVuNWZfz1SvHzC4XPHt\
+   \2lp0l_Rp9vu7obwGlFRrnLx1IrWcK6nR3ux8oDJTM3H8J4cdRgzKaPM9_lBMhamWnpCXFT\
+   \hwRWshaTapgnLEfEXpMjikdho-SP8DH6yddFrV-Sl_1Z8re1vD5CUXh50EcOepvnDYK5de\
+   \W-Jqh6e_wGGlrwD7d9XZK9hKQoX1cYPsfkdgRIBywrD1bMIs7pyu5PVNSR39HD5woExp1y\
+   \5bKgCaJDF-tBSl1tGQVl1UpzENPHMi6fTCsv0OtEuvPZJkDvE-osJ_3Ajj9eTdKilJDdIY\
+   \zSKu2Uodc96vaH3bXJW05iBprV6h-nG6MuQuXIrUNiG9h8nQ7MmaJ_Jdr58_cBChxYZRu1\
+   \zaJcSwpTecAtktv3R-Yp2Lc7LxebwbEa19598X7CQtyS4RoUKorLOX4FkuXplJZduQbM2Q\
+   \ftVqA6ufBkFH23Axy_fZooaz0oBM8YYBAIqJAs2Ya1iLfrdqo42rDL0K_VXmVGqctqKhM0\
+   \etvM2nfx_8VbsdoSmionB4d2Ur3no0AvzZbHcmIdHFg-EgJzfoIAhgKdHIzsN_AWEC9CFA\
+   \p0dPwdiMUs0sPhkWNAfs9hmnEX-IzxO57IyxE_iLkI9smuR6f2NkU23279NaZHBmIpmPU1\
+   \trygSZ0i8yssFqKCDpRZwVV83F1Wcg3pnGsh9HXHC7rqI3-TB0_KxbTEmgKVspoido3Tl2\
+   \Z9Dx-9Jawe6rd7g1lheMOzlBWEfHFWwDTr5TxhEOo59zATIaJu4DxWkKfFQj4iXMYP-RhA\
+   \8QxNe82yUXoJGJo04f-C7N1xXJ64dOPoW0JNeDyM7liqtAQQgR6TNzVJvOb97E4WlAAC2g\
+   \YfXGS8kOawcTyeWdytjXs8fqwOPJ3or2HZK1jnXZloGeSJILxHOQtl2PDM2k-W0KZ1CPzb\
+   \zjqQwQdg9CZ1F02b1Kusl42T2OjUylXsDGg4vaF-_IYucO7js31adyf90GZsMeoLqrwE1t\
+   \xMYJSk9SWSkjpL0csNDHH_sh5911O1ogQk6QoUIf_lMa-hg7EWKJAkP2w2NsxPqr8vIAcd\
+   \yCO_t5b6XpYCp7gkZiVxFn8tSrlofZbyW-zT1gp1gVEMhrWK5tIBZgE2ftMnG-AGekLYFD\
+   \3aMzF3YZIDa3-Fs-_-YBOjx4ptOLCa8mXMUTj9s0KTXyB3BhYAV7n8MDBRYITV17KMkLrY\
+   \9vU1uhkxzSrNnBtSewEXf8Q4sGv2wEJjRJZyNPQzGtXRHNrFKwCG3TVklCwc1d5C2Ttwh5\
+   \HBtMtCBxTkAchRgRZshMWyVjnUiPn4rcGA-5XP6n8EZMXOPo9vYkFuvb83GSB1g56jNCKG\
+   \NStA-ZP33KKw_U8zdGz1fKX5xGvWrTU1MkhTST-aXDHqpKjFTPU2M3wfraj37lfYK42rUY\
+   \R-viKHyRXVH221DI6Ke-s1rKQxzSSHjSUBl3IDeHtFb-pklL_JqIabpAKh_LkSthBvsiM1\
+   \M8PUkiw30zzKQqScYiMxl_Ns3yvoahiWDh0xO38smAiws9FjgI71mRywWBGJj4z21HTWfM\
+   \AwWbzbld0MqZ4AW4zN6e-pMSfnPl-jF92C-FcXG58UQuBociY7Jwpg1XvWrVsTo3I8Qedz\
+   \p1RYVV8qu3TQCCiCLom-UOwehbPdEhp3ugI2nYjVygbk2QwseoRISKEylUlJ_vveItZCki\
+   \nsK5Cy5g9OD59Ym4WzpdXjtRIPk1ilfyLYcFwgdnNVLSNk1hb1iHgde9rghymzaUkEDdQw\
+   \jfjXu8BsjKABdVyJwqF2r3gV5UlK300F8Etd7n36y3RBxIx1fqkpCD-G-tePQ0zkbYwRou\
+   \MC5P7Ws_Qj1WPAq9vIVFWYDmRcXN4PKLb94qOQu8Ev2MfffDKDTvuPWU33UvOd3KbzKd3J\
+   \yfpq62WbeXEr_JgJ6o442fEaWx4gh9tq1XZFQ4Wb9GzTuGz_hLkpCdOQd7snxiHPSxYqOj\
+   \d9g8lYcsQKOhw_dHCuSKyxxIAmI2MwLmGp6YnhY_JrfuUpZ1jfwcSCUqrzEvAS7CDvwzJ6\
+   \-PAi2XO43ouSP1-CGg9JS5hIiiIR5hpW3-Fqg2tOeqv7fFn_fAGyEtpHWDxkLJDTDcIzL2\
+   \eU2umYUrdbPynO9J99cEW3MU956D6LbmgRWK6lxQ5m539KMP7D4KQPPDt6CRA3YqAzZw-V\
+   \ga8zd2UxphCkORsaAs8pBihHwwe4ZhQl5qolmFKtQT2chnqVkn6nmpQmH3Th13XGf0RlBy\
+   \q-bTEcwboddD_vYorb6HHyv9ciM0qh4g7tgmiphuR5b6LiVyqwxrMAN13cU8TiNIveY9Af\
+   \bS6qJMshNi61lkux4wnM6fpENDxCvRVCCyLB4NhS57fYddsTPiGZ6w1PeS_2Be8J9hIN1g\
+   \_yLmN8C1-9dgSx3yYYJZ4MGBNzxtbQIYcdH0_1mraXouf7hkhHAvbDPEcpCfUxtmAI8hlY\
+   \y-Pq1fjQTHoaEm9XaVe0SQfN6EsrbcXF2zjrG2uJuglRRM-IoWhleeMc1lv8WCi33fB2KJ\
+   \hNo-iTKlhFYQmsO6qJyxusPu5Bmcl1EzONbBuHOeIHxzWBFoz5o4ziz3AC1sD7eTc5-bF9\
+   \enC-6J7OzRTx6mft5GwF8-FkQFJdqulPfgnr-_TYQZScKHW0Iki8kpTUTr"}
+
+8.1.1.2.  privateKeyJwk
+
+   {"kty":"LWE","alg":"CRYDI5","x":"lgNFI62eq4YKxuvpMl2V9SVtGV5z_vQQZeiiCz\
+   \iAVcFMuUUzjpbwrd7uKHRbtxNPWsLIlfYKmM5SM-OLeoDII-GNQYJfm3QRt9l33PAOyJpb\
+   \eLidJg6e4UAIZJQx-KbKrIVqK6F42P8WmhDWxgc5xJZXUabUtMHV-irm9pMP8kjrlRFuIe\
+   \nHS_YYj3RrX9yeAZKmD6YJsROVMEprjR1B7uOQxJYX1WNNRD5AEiGL8TKFoxbOg-qDIP-M\
+   \6ubjuKZqlhd3_-z1bLJDVkN_uh9hSIlqpghWD7niDldxKBAUldyELqnWzvadJyhKTt3Kev\
+   \LOWGuPJGc927VgDnTVSvaiOW0bZu3wHEup5PxsqymxGEuJGkiY6QzL15KWzr4jdhq-_Hpk\
+   \nGUjg2LbC0Q-f5raUm27vkT8EI7A3i-ar5Jhd9lhfXpGJ4Ui6amgeTedhqJCKOzTrEF12e\
+   \cwQ9ERhjdsksC8XMDe2lQS1W-AyHfntg2oPeC7O2q0E46JMG_OUcLtMo3ShprY1VF93Obs\
+   \wsozfX6mmwqinQvYSpDAC7HHd39mp6CwJu10auoPi7HDEAb0aSO-qUgdh8WOPgyCEe0GJ_\
+   \Hpl7sokVq5dXtbV4458_zDtc-pUcX7C8J3OUgLfNKsZzeOxQhgqkk0nG56CTleN_9u4rfW\
+   \QzQZBH5ofr_biWHgr05HZ-UdjL4ezxPUIGW7M_HvwktpowTnXfV4-6HTF16jqmH-AmO5XJ\
+   \lwjP44IbRMNk5m-vHOBJj6ELGiDuNQoiathKHS_-L0AO-7d2IxcpVuNWZfz1SvHzC4XPHt\
+   \2lp0l_Rp9vu7obwGlFRrnLx1IrWcK6nR3ux8oDJTM3H8J4cdRgzKaPM9_lBMhamWnpCXFT\
+   \hwRWshaTapgnLEfEXpMjikdho-SP8DH6yddFrV-Sl_1Z8re1vD5CUXh50EcOepvnDYK5de\
+   \W-Jqh6e_wGGlrwD7d9XZK9hKQoX1cYPsfkdgRIBywrD1bMIs7pyu5PVNSR39HD5woExp1y\
+   \5bKgCaJDF-tBSl1tGQVl1UpzENPHMi6fTCsv0OtEuvPZJkDvE-osJ_3Ajj9eTdKilJDdIY\
+   \zSKu2Uodc96vaH3bXJW05iBprV6h-nG6MuQuXIrUNiG9h8nQ7MmaJ_Jdr58_cBChxYZRu1\
+   \zaJcSwpTecAtktv3R-Yp2Lc7LxebwbEa19598X7CQtyS4RoUKorLOX4FkuXplJZduQbM2Q\
+   \ftVqA6ufBkFH23Axy_fZooaz0oBM8YYBAIqJAs2Ya1iLfrdqo42rDL0K_VXmVGqctqKhM0\
+   \etvM2nfx_8VbsdoSmionB4d2Ur3no0AvzZbHcmIdHFg-EgJzfoIAhgKdHIzsN_AWEC9CFA\
+   \p0dPwdiMUs0sPhkWNAfs9hmnEX-IzxO57IyxE_iLkI9smuR6f2NkU23279NaZHBmIpmPU1\
+   \trygSZ0i8yssFqKCDpRZwVV83F1Wcg3pnGsh9HXHC7rqI3-TB0_KxbTEmgKVspoido3Tl2\
+   \Z9Dx-9Jawe6rd7g1lheMOzlBWEfHFWwDTr5TxhEOo59zATIaJu4DxWkKfFQj4iXMYP-RhA\
+   \8QxNe82yUXoJGJo04f-C7N1xXJ64dOPoW0JNeDyM7liqtAQQgR6TNzVJvOb97E4WlAAC2g\
+   \YfXGS8kOawcTyeWdytjXs8fqwOPJ3or2HZK1jnXZloGeSJILxHOQtl2PDM2k-W0KZ1CPzb\
+   \zjqQwQdg9CZ1F02b1Kusl42T2OjUylXsDGg4vaF-_IYucO7js31adyf90GZsMeoLqrwE1t\
+   \xMYJSk9SWSkjpL0csNDHH_sh5911O1ogQk6QoUIf_lMa-hg7EWKJAkP2w2NsxPqr8vIAcd\
+   \yCO_t5b6XpYCp7gkZiVxFn8tSrlofZbyW-zT1gp1gVEMhrWK5tIBZgE2ftMnG-AGekLYFD\
+   \3aMzF3YZIDa3-Fs-_-YBOjx4ptOLCa8mXMUTj9s0KTXyB3BhYAV7n8MDBRYITV17KMkLrY\
+   \9vU1uhkxzSrNnBtSewEXf8Q4sGv2wEJjRJZyNPQzGtXRHNrFKwCG3TVklCwc1d5C2Ttwh5\
+   \HBtMtCBxTkAchRgRZshMWyVjnUiPn4rcGA-5XP6n8EZMXOPo9vYkFuvb83GSB1g56jNCKG\
+   \NStA-ZP33KKw_U8zdGz1fKX5xGvWrTU1MkhTST-aXDHqpKjFTPU2M3wfraj37lfYK42rUY\
+   \R-viKHyRXVH221DI6Ke-s1rKQxzSSHjSUBl3IDeHtFb-pklL_JqIabpAKh_LkSthBvsiM1\
+   \M8PUkiw30zzKQqScYiMxl_Ns3yvoahiWDh0xO38smAiws9FjgI71mRywWBGJj4z21HTWfM\
+   \AwWbzbld0MqZ4AW4zN6e-pMSfnPl-jF92C-FcXG58UQuBociY7Jwpg1XvWrVsTo3I8Qedz\
+   \p1RYVV8qu3TQCCiCLom-UOwehbPdEhp3ugI2nYjVygbk2QwseoRISKEylUlJ_vveItZCki\
+   \nsK5Cy5g9OD59Ym4WzpdXjtRIPk1ilfyLYcFwgdnNVLSNk1hb1iHgde9rghymzaUkEDdQw\
+   \jfjXu8BsjKABdVyJwqF2r3gV5UlK300F8Etd7n36y3RBxIx1fqkpCD-G-tePQ0zkbYwRou\
+   \MC5P7Ws_Qj1WPAq9vIVFWYDmRcXN4PKLb94qOQu8Ev2MfffDKDTvuPWU33UvOd3KbzKd3J\
+   \yfpq62WbeXEr_JgJ6o442fEaWx4gh9tq1XZFQ4Wb9GzTuGz_hLkpCdOQd7snxiHPSxYqOj\
+   \d9g8lYcsQKOhw_dHCuSKyxxIAmI2MwLmGp6YnhY_JrfuUpZ1jfwcSCUqrzEvAS7CDvwzJ6\
+   \-PAi2XO43ouSP1-CGg9JS5hIiiIR5hpW3-Fqg2tOeqv7fFn_fAGyEtpHWDxkLJDTDcIzL2\
+   \eU2umYUrdbPynO9J99cEW3MU956D6LbmgRWK6lxQ5m539KMP7D4KQPPDt6CRA3YqAzZw-V\
+   \ga8zd2UxphCkORsaAs8pBihHwwe4ZhQl5qolmFKtQT2chnqVkn6nmpQmH3Th13XGf0RlBy\
+   \q-bTEcwboddD_vYorb6HHyv9ciM0qh4g7tgmiphuR5b6LiVyqwxrMAN13cU8TiNIveY9Af\
+   \bS6qJMshNi61lkux4wnM6fpENDxCvRVCCyLB4NhS57fYddsTPiGZ6w1PeS_2Be8J9hIN1g\
+   \_yLmN8C1-9dgSx3yYYJZ4MGBNzxtbQIYcdH0_1mraXouf7hkhHAvbDPEcpCfUxtmAI8hlY\
+   \y-Pq1fjQTHoaEm9XaVe0SQfN6EsrbcXF2zjrG2uJuglRRM-IoWhleeMc1lv8WCi33fB2KJ\
+   \hNo-iTKlhFYQmsO6qJyxusPu5Bmcl1EzONbBuHOeIHxzWBFoz5o4ziz3AC1sD7eTc5-bF9\
+   \enC-6J7OzRTx6mft5GwF8-FkQFJdqulPfgnr-_TYQZScKHW0Iki8kpTUTr","d":"lgNFI\
+   \62eq4YKxuvpMl2V9SVtGV5z_vQQZeiiCziAVcFVyXWhRDnGPXKI-p70KAxRHm3Z7G8D21x\
+   \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\
+   \pEyJBUAJuJBRu7kh_85-NnVU1ybdxVd53EQwXd5rJr3r9DUZ9en2KzzPDgzcTPEBfQk6Js\
+   \roofVPkTLuv91Qj4vyeB31IohvBLbh8fqaYioveZBPNbp2I_J9RfRRCxdSXau28NFfYfc5\
+   \aeDMHfOM_UKqIIu-hUZNtGUNRNxS58X2hiJPFORu5EjJDMagA9tjYrRggbZuWkcpf67BUt\
+   \2NMG68zIj27rB3tb3NwPzfzr1PJ0uVn0q17uZr5HozPSJMHqUjfJFxeMLxLNpYfIyxkMjl\
+   \KT_WsvQiWacudZKFWk6IJhi8Pwp7wBXeF2zzDfZkpMtRKNeQxLGeJ5RCWqcW40FIOFzkVI\
+   \1p-fckThXER0UXJLj_5Od5_KhaZPO22eM3MM0AvDhg3ZcoKKGIOxtL9WGS3Cg5xMrtiJOw\
+   \N42YyehXxGUN8NYZL3nufSS0zslDq3SmQ6dM-SzsAB1oYw9g-DB07Y2xcPsNzH6QvcOc6o\
+   \a9t0JK9RYFBySCyH9ZSCwfij1FFD81Zgd8ociINcPU8BFV0WpnOcYdRWmzX6czabmaVWCd\
+   \GcBfCIB8kNw28PZhYmrzkgF3Ti8qDTCrZFMay1knaS0qRX3NDWIEs4fU_rYiMKsYi9dIEm\
+   \XqPjzknXYi-Sj21mjxliPWZkT1Iqbh7d14i-1C4c9WA5HCXPSPNa8VRb-dmVjdZ9ZBvlYz\
+   \UBiaRLfxwx6pbdslldHxDgFFBc8J9eDsH_-9dQgDmgGrgQgNI9ItlZwpvrTLb-n3YZmoZh\
+   \Cd0mWgTZnuMRSCmWPTj_2iHgtqX-EHj0hOjqXXfu7t54FMSgyKYMiu8q1_xm_XztgCPjE8\
+   \tkCq1bAXZ-Vw4MXTf0ks9tiiUMExVLzT7hEgTVreYOqB_oToZVd_BVJqvbCNDeGBp3Sd8q\
+   \2VdWr_X3ISmr1SBacl7loRwsVElEEa6a_unR2Cpk9M_j9wMXAR_-0pnY0sOGJKv9_1mWEM\
+   \c8393npbg5P7I7cTS6bJOpcopRX2mlwof_QB65633bf51FBpmJ7qI-9eiEz0EJ4o46RNo9\
+   \90ZEEJ6z7HLCE_IJJwnnRQbaNUPymZhoJ7ALMTxU-TODBL1jotS-_2ZJPbS_yIOnx7sD1G\
+   \k4IqF39TDWUhqEdDbXR3laEJHTfeCezn32UBDuz_Jp3yl6nSrWhtiFk-gZPfHf-6cz8C1Q\
+   \CV7ezl_HiwIflF2RSVT3ZNkkisfkvRnwJpK_RS5H8jvvMR3uVUE3MLVKznPg7Y5cbUERoC\
+   \L_6DE6FHpZqPa6H0WKg7SE3bZpXbQiTnfo17kZqpYBCoKBjDkHzQgMNnA-l1Z2Pdzkumgz\
+   \_volZO8WuK2pNg47c44Yenm2RBxvag1KsI8ZWSK_nXia9yzygQHVh2h89MV2z1bynRinC5\
+   \VysJ5KG1Zya_0jgLOmX0D1MG2m6mwmQ5OzHeJeymk87uzKJDfdCAcrUSRRlVyBFO4Fxe2f\
+   \dl58q1ofIrI6S1juh0gb0wPryCy5Izh4aaPgSpGYG7O6Eddi_8pdmIluXr7eSkwIqsQCT0\
+   \eLYtXDmOWMmh5W4QDBZHrV_iA7nNM1PWfynapnsoyiCewwqIeForRRbYEnMHUd5ksFYHlL\
+   \tAbsqvB9oIm98crCkN3V0eWg8Tztif11S8JqD5G5QY8CdvxXzh5AeOIUziedqZd0trBhsw\
+   \RDpaM7n61vPt3wurgDgHktFJn1VVQtgIEqjMFP_lWfrDWaVSCgd5ekSvuPmYdjatIp3v0N\
+   \5uyj_GqkCU0O98X7NcyWfBAgGtbTmn5yl25HFqPsLyGND0suzXjOeNX9N4e01u7d-Z57-9\
+   \baO4sEJ1sHQ3PGTwc6SaY1BR-EF79WZBES9VI0AElkSkdMHIAVAQ9-JJxxJgNbdcWLbmrd\
+   \H5-fWtEKRYRoA9LOOpe6ry1kBv3uOMqAKn7uneUrvADZmHxrVgAP1TV4OlYBdqOiz5Qfau\
+   \vgCM-V4S16D3RdNr8KWbYOuqSVI2Jc12AAbcwBTMDq1AKpIXU8xE_LYjjXXaBhKbtvtN3Q\
+   \h7l2ge-d7RDDxefPqpafrQoa4KO_-YyfNgnIEG0lVWp3sZPenUnq2tEpgDAUIXcy2zMH4G\
+   \5CmU_Ozbfh9iT97h5K3LLG7JnM_E-jneyEO6KkYIHlvEUC5J4PC84ixUWqr7xNNfE2URYm\
+   \hlE_sVX5UZObF2MYRsOfb6dtVfojyliW_IN2n3KmggYfmVnQEl1XPC7dyN9gXfheu3agxD\
+   \nwUjqbRj79oQdxmXHOhzE2JzhcglYD9BSPyfRH8o1PnP86LRAVGaYUm8HILZ0ESEJ3PYqP\
+   \8K-uVY2P4Po8lbHgnFtH9U680jlqZ65rs1K5IKLctRZ7i58mO55jXAaEMpf0g-91ZyimJk\
+   \JO9DeZ6-sI66y2hw7ofAUK9ZboFxYNtIQKulbIrncUILwvDxTCHCy4QPX1hMVgc6YF_vIr\
+   \QFINILZ8tyYgqaoJlMd9YQEnGM9fqIWkcZtj4X1zJ-wFRxg_VXoT3thIHDuokd0p5WGmuY\
+   \5kmpa0CmYG6ZZLYJMGsYzf-8OZm3t_4_AHZwCPXfui8kCFOP_0EJSvlWoX_baoet6d4-u3\
+   \42BjgHnd9a2uOHqaZY_YHwdy3LxEVrusMxUqqUhjIPZfJJGhopUVOyKRxyP6nFMY8Z4rAs\
+   \5fkrtURL2mjOfDJBAW0o6i1tBTyscVfSHBayMffby2glDPzmH21kSAffoWLRxo7pRm6TLX\
+   \AjxTr4Rk-7CLQt8zURy8rdy815xvAEvtCweMeyWqjMDzJjI3fX3jMr6Sjw_yQ7JOZ1VPBL\
+   \a5APNJKt8ilKST01W_gQMPIoVDZSAdnmjq1EytPfXfDDqCeC6l66qDuoxO7hOoHTrGZlzt\
+   \sduZsN7J8lRckp5AuBupmD3pQKeWRDKgoMxluTrt60V_7HtORNg-NCiWSejw0YGrboqySh\
+   \J5efIV9vzmh6-N1X6y5s0GShHgiWIo8xYFdshP-i1wzUoOAmPTaBiLHDjb0M7keH8HEpfm\
+   \qnRWfIDZQ3T9xHIQXHcQYa8ggRGkAhcijr_xqdYN58YmNDRR5IKAPisnfe6jRxhIQxE4Pv\
+   \phmpq4pRRTD98Ui6AXbuMEQuzqHJe25O6tgYIrvemsY2dtUZiMr5QzXDaAvWBJ2o60nlkW\
+   \n2ucFATTjHipHLfs-tsuMova-XIKYoVfJ3MeX3nxQHbMGzYhKT9YMYNRQ7Yo0nYcBraTia\
+   \3bprcStwTySZgUP3l4ybRQJrcsonwIVkl1C7XSaxKJhznwViTGpCSBwctn46yHMrlvvqNt\
+   \8TCwClKk-8_OFsNxBhSjFxZCY6zq-HaQe0HP59tDDEuUAjkcgfGNh5Aj_JGrz1WVnyDVrX\
+   \GXZ6BpzqPbJJypjXukZpvU3yCcPNYVRKIUlstKFC43rN2XMQS-_K0NwGxbrHUiG01ApRg2\
+   \1AcLNjXQuO1_H5IMPPfUMPwXZrLNIVBmJjTnylI8uNwBmU1WRF-2v_jfdVqPvdHZtw3xod\
+   \WSZuZmzgMvMVL1lsa78QCoZAqBEpqYEOxvwl99rlTPhnqHYM5Az41CWBY1co1AkCTfBpcB\
+   \xKE9QdpvpIPHU1diCScJfEq1f3A_pMr-HrWrmpnk-KXRBgogRp4Hjezk9HyhxTfQA00RcP\
+   \QPuDvxfu1EIVMhar4TdUjfA3OhQeigoXbRG9bC4fTJ6q3LiHAQRNgMzGIfwAZfgyTQXuAs\
+   \t4BvmHcS45n-dl2eeye8i7gi5V0vnfqCdhzCMGHh9gt1Vg50stA93xBPLJVudYcwUDitSH\
+   \Ss3AmakHXG8YHYOZuIJFvj_UtiMC7k4YMmF6ZTzOU2F7wmNgIdp1I-UqKPitk5BIWZbDpx\
+   \jSwyfjty5bfM4lsONII38-TFGF6cWnWC-QClBhxYsnl8cUfZwoEiShOPK4iy0pMVpYrkfi\
+   \vcXzDYPfpWBEKE4BRcfRqrs4w5TK_zqLbt9tv8V_CLnJXEYmJrIdF6tVyIf2bGPKp58YF8\
+   \QuPjJArNc4qVC1R9yyKs7hxNb4WLaWsDQPYEYlbJeTJ8TsCPM7mSvp7F3weqiAwbLAd5f8\
+   \girEKeYSjx0jlK3zWbOBL7u_O7a8kJZYkt7L9sn5jnGumeLedvabOcWP-1g6hCjHn1BvVp\
+   \I66spO4i9OZSVMEpcXWWUUMrxG373uuZlAqVbQu6mYuMJNwavv4hf53GwPRytC46rfTLID\
+   \vOBKVyTLRpGCQsWXqWw-IHAYLWoT00IZ695xePq5z03o-Sek-KxjUgGg91tIm74KuaMYIr\
+   \MQCyNDv_-Qdj_OEDAxRj2V4w5TS3c04Dy2IPftmSjOxivXS8SYJQNsncI1tXA2-di2gyvs\
+   \r6qf2ae91QpCa0P3vW9golEgeO4Mq6lo4VAzaNrmPJhelLaQyE_NsYEfJhvI9EAAAbg4Q2\
+   \8Dg1GSxErZHd4tgy82nRqlYdPFzjGUvYFzS4lePnQ"}
+
+8.1.1.3.  jws
+
+   eyJhbGciOiJDUllESTUifQ.OTA4NWQyYmVmNjkyODZhNmNiYjUxNjIzYzhmYTI1ODYyOTk0\
+   \NWNkNTVjYTcwNWNjNGU2NjcwMDM5Njg5NGUwYw.8xELcU6FTHpMyTHwLqwmHJDckZdm7J6\
+   \zLy1wT6XtW5zG9qBQoCP2dBULau1YkM7ZECnZ09h8XEa_7L8dfiIsOdWHdbOrS5-OdQlDM\
+   \bLEA8zgn8Jb12RyqH2Ehw9PsRCxp4BtyqvnZCnpV_UHykYdMVtUq2NKLT8XrZfJWXcG4dz\
+   \z-GddE6jJQPmKDzBQt0CsmaEwQl_WzN-167I0mPMmzwxOJcfjerWg6H4wcwMj_0WPeAe5i\
+   \MygAwCIIIFp72crFyLjWu3ziLojmKO65UL9_a99C_YbzagwNjYc72SJVYDcaDWiyajvnXf\
+   \GM-e9hpMO-SeX79p-U8PlKNKBb8aPzP7LSUxrwCdf_xFPS68d0QE6njannI7DbamW--LzM\
+   \cRwKI6zUvdBVn0hYpM32fg2T-aOmW3KIL-aQZZ0wWH85OEJVeUrSVX2uaGp2eFbNY6Y_C4\
+   \OwByKLmE5OtrQUsLYwzkfHu9jaTWhBfUXhkdQLGy1qO1xflJpbYfe4Doy7v0XfgDEYvGVY\
+   \O-1PZ78d7WyrYLxJCSQGuuG8K2u7_g2QW0Rc5ESND4adRMMBBG0RfRJiXMN3Fem8Si2rV5\
+   \k-eoT-sMs8lsQcLWEHWmS38hH4IuRtsUmfXnzcq-X7mljwAKB6fnnU6poZvB0ag0MFNJha\
+   \76N0fmdz3HeH4dK7f9DR2wt7pw_16h20SDxASLLMTeIYPVN4Vzi63KfZ23FsXcnqBAwaK4\
+   \ihBC7OLwUNkwfZo11OSxiVXlkO0eVqTRiJe_VgDqxRk5sSgnaKBs_wklPeEG1K_cXLWcxp\
+   \1akyC-e5kYdu3HX1g6Oo5MJdFPz0E4JX5LCNU5w5CrkoJSKHCyys3KHCT6vmnpyMesJWhy\
+   \wuGPa0iS65Q2brkwCgqg-pUCJBeyqpzSVlJ-89xPPhU2BE6XSorXXAhrO9S_FehFw8ypNh\
+   \2uS9S42Ul5vY4ccy-Jc6Twy4Pwqecsr7AlnSsvHDrUebItid2Pqa9DHa9gN_1zS6f-u9ne\
+   \7tC7_PnYS9M5warHhDtLTwm9k9z8bVtR7pHYKPWoutVtWaoI-Z0VVOvnZmKYL26gt1KJ7q\
+   \UfvUOvzxNdkDHvV_IQlAx9U_uQdrmOglz1F2Ia967tMA-x2xQtlNA0kcc6e8ZZeW40eG0x\
+   \XJgV7pYmsGtPNJvATmTCcEEqJ2rzG99PNAbNgon1UWz6-X3mRBXr5Kt75wP0I_IG3-k7Sj\
+   \qoTuOYmnOWpzaIKlsG8wL_Vk0r3x1gN3DjBxuA6_LmU5RyyCPlfPB7ZtxJKSiB7O7IGLJB\
+   \meYVnALl1-24Nvy2jXjfeQJlJ8crOMQEglVliCci6XKmjtG_T8m5kTXrRL0yP64jir4M8H\
+   \_tkLTKCW1DH51K_U7genF9auecB8ASy8Uj9X129A2ccvP58PDYsP8YHpA5wsfixDtJotfL\
+   \qj3wsA-baB4hdQnhhZ0-K5Qufa8TIiCyyyIuJ1iV04IOsKWMAuW0ePGrFQwksba8GiW-b1\
+   \5CXP8jC_DPtR6OULeaxLIBjtykIm_p0hL6JprKV8FAD6QFCMlyHapirma8ubLdyx9p5c2S\
+   \THq1UTCss8xTUyDcIz7oY_sVhk5Pelv5HFRpBRaoaVe2pcIcgAZ2uVOP8K09neWdbBOwKX\
+   \wZmlVdnCLXe-ylscsb6NyvMEdMWSrerjSv2CSFA_HHfiKCYJ8BC_DPEUedvnrAx4X0MGEn\
+   \ThIUah0AoRL41gp-AKuOp0lHftC2zBhHDxKeJpBS5UqTY7v8slTr6z1hcGbLUaNzBC7U5Q\
+   \XxiHGZVtcN2s1W4v6ilEaOJKj72FUBt6ME9v22sGphJaDJ1iGfktrLPSPAvp-6X6d0_pIb\
+   \MydMyWABd-Ch9GOE4n-WX0cPUUIepm5loRUx7-dKG1MfmmU00qdLlEw_Dwn299TGGKFyDV\
+   \wnNCnGGEDKEfmqJcvUOCD_i5JChe4QKwuM7wU3KBOtDhQagKLbIFa-4SZitqws8fn6TaH5\
+   \DCi9E8JL7r3zvsfsJwj5-951ZIKTcB057cXynNkUT6C_bucH1ReBj8n8mGp7ZtTNusV9OM\
+   \ManLzpDlizgUlwDi9Gv4rH6VqWuSndnozLKkzIdrja5iV9QuGgkuwCxkgcVC0Omixik9eB\
+   \xkGdXbiUz8xdyYh21RLPLmHHELqqUUZMMcQGGFBg_DHozNMT48-1mS4MdkA8FUAaAUOxBP\
+   \A9Qkanqh1AJQf2jnw63J-iK2A6U4l0cxpzE-S2XXu51g6sgStI8iWrA8o3Xit8HenL_SNs\
+   \NNk8tO_VwaO6Vj0poENkNqZS6MjSWR8ynbvItMz8ANt8ZLhCAlJRxsFwG9-t3CHVb6Gfsb\
+   \PSe4H6UGG91y4sJ-Sbmebl9eMzxJDay2bi07C0IrRoWkAQsawu8Vbyyb8Pm40LqBgxbaji\
+   \mBELTDSNUZNMKHFw9uR5OQKXoeYaet_LCpRzAv-tj3JpC8vJYWMdPwpcheIVjOqw2abjOo\
+   \NDNRFZNbCUAHLjeqEC01Nwxkb1Nw_cUlGo4liuREMbgr9qqBpiELsr_qk9vIEB3AcgO7TJ\
+   \u-fq21jQ9AdKLHtyxHwzjGLER3YwW7i3qqcKcoCJbv9PPaFD4Wob3tZ_OKi2mOKvHq8cIj\
+   \yEb1xGdXt73T9cima-dxshgiaayVzpMUSdVdHyvAfjK2JPpUEMJ-t3SCPN7QrPkmVhhUYC\
+   \dxot3dIQ35TR4FV9sp-52UckVckfLSPZmthJ2XAG_a2xt8Jnek8uhgYs1YhWkaCfbq-PVT\
+   \GKLLGeDgIdcW-vwzygAcMyMrH8CoSt6Zm3YLlpTaFN3eG0DJmvd7mSBcn7B_D7tQ2INEPK\
+   \9YJKfjXsJEfEIi88lp4ZkMk81Nv7k-Cs7m3Qi47HeMA6dcbLHpq30UtNCnEzgI2-S-ZIB-\
+   \m9TnoAenT3evvivdrK-B3Gg6n0N0xmhxM-jlH-Ad_9gio3Zqd0vIz6LSJZ6QbZmXewjCce\
+   \hhhiY8-iHWw3eYZ8MvxkfgcsBtkxu2jRhHYM-nftbFt6Cgd2Yu47P7lK9Als8lhG6gjaoh\
+   \h_mVLq0BaHTrgQ7DO-D-9N-BJSrXWe-Ev6hx_NAQjmDuYa2ReGJnv0J1CHxeau9BswZzRB\
+   \3EwcnlevorMhgDWSnOYmM60wGiwAswssoe17Df3wcdt-sDyPBUqVPRaXGm88GPVxEJNESK\
+   \6Zi92OH2r6u8JehAejnr2OKt3-sCEEDIpR6K8lgo-TaMTiF8WUylUWTfpym5veaDqFmp_A\
+   \ooB_OqPLDCp1TLPetVImQh1T2tg0DM5AdtJuz2eQ-jog_ENCIeofo7Og_QyTNR6RFGzlCV\
+   \StRD7YGPozz_SC0Yn_sYpMpQ39glI0I36DXjdBOX3gcMN4esHXHHpSYttwxegCuGMbOAzM\
+   \gG-ZGpC1YC5NH9VGAa2kXQwzlzuAQZP6N5YAMNbn4jJnUqbSZ0iGzN4zu7hEXlXOXvwVKL\
+   \r4UJ1oxlIcVXVYFO_AjaRn-V4g7EdBCqA-FrlcXmLcGKuN2UaX0Gj-qLn9bPOrz2GlkQy5\
+   \QXy32axxurIJRpAbA6O-yclqy54jzto7fg5gn1VRggMKfNPROZ9eyfQ_DmrH-60eoyJ1rD\
+   \Z6NafR4gRwCXQt00F0Wze7H1bGpbbfrJbeXDbr9Lns1EjHzaqyVstqpKOGcxQaDsdqNciH\
+   \To-mhKGqB2LgyQ4z4iIrcmaHEfc4NIUM_MghxPFwi9w7kB89O0y41LUs6dHdu2ea-W1T_0\
+   \mDXXdTW0fXNXQRdTKPwSSICi8vMMOBSn4k4For7n73x5Rvzv8OocHA3GeE0By8ymVxuyRq\
+   \2csGv2nAMIH2f8erKxh4Id_foQbnJyQF_sMZw1Fs6PC7UtRxLl6xgT7_Ynfhx-sgg38Ro_\
+   \qMkwmJdBbwEPY4Vv-iu-PMKWpOXxQD_oiTjS2yuf27B729ToREZc4hUUGNnhG_6cNsCn68\
+   \W-E6s-koJRg633jMcHX3Sv0IFb6DP3AggcLSaFd1s2V5zR4Y6PLUZHwg9M5kQbUl7zDpHw\
+   \sI_ANmFMyf6KQU3XLiKq0g2kcvP2RyGf5CDQk5HWVXXm7TDGv7AYPKThtU4Az00HRKN8UY\
+   \PjPJuOv73DRNDvxEEYV32hVlEyE3AYxRGrY6lOrAU1xXrATJBxJypIaaYXw-HVKwVcQYbb\
+   \GyNCROUWRaR0aZ4LFXMCLEElVs7G6I7pIguDWKCY702dpaxBKDIOKbUPlVwWF1qDdJ2sH2\
+   \iCYdfK2OZfX0FiUuK6JSaME4a2RGaT5uC7l2bGxw7zuK2n16xzH861vM_kVQzTMgYQhpS7\
+   \to2_xnEvrQ0HogrSCf6Yd215g7NtTDMjo5GgBi1TwXUdyCmGHaoFZRDCrLsyw5G0vz1oOC\
+   \29Hv28ecsXtkFohjNNi_1Mw7wqBDMTRsLLb0pQ_LTMOZRwIaJfsGpa7FuCwvaQ8QTDfNMX\
+   \1hdMzDe-gNpeW9gWU6hlw_SXEWKyqpsxOjqWNpTQLCJFW4_54HmVjQGs-0JqUoRwXEmoxQ\
+   \nEh5F5tOAepJuDeAaSnPcJHqC1G4WAPhIY4c2HiHlGHX1zjQnkMe7wmm1K5v7zsGxh1hCt\
+   \pw_yCVH7_i1fB38k8XKsq2-sVNCsUWYvqAe2hVdIwv4CVNvRohkxBn9uJ-76nTxPbL3jJg\
+   \5uUqD8kTpAv8LD0Hf3VlO7tYAMh4S6gbME7dw6I3UlcKAUmkXOs_AwbskXKL801qCnZlZR\
+   \pJoMXbL1e-nT40pAHSzDTiVb9fWWUF5d2aeylzQxW1ucbEhFTtJK1tGa0E1EVIz2_XfQu6\
+   \49ToHwsXJGiL_qLuX-v_HcO1hhm6d8_KYH1sXZm6sFVSp19QJPu5Xl6j6AwSj4A1k56nVz\
+   \CYL47fT-c087s_parbwfH0WdTEfaWflXEKRdqvIW4bhzLE08XIligw_bd26QkWXWiK0CBa\
+   \z_zNFptXbYIhjb599Ew_vN4jRRdU3k_UzUJIN6-3fMCImNgb8389KSzsx2VRQWN3vP1QQc\
+   \S3-oxTq-dks-PIA8G_GzO7bTYli9957dy3z9kO7Z6grSNu_eYpmuROVhsc0Cr3OiXWSFpo\
+   \8VkN49MAalSXlpNmQKQ9n9sYCebf1Mxz6KeTBInB4E_u5_mz7JjoinhYBUIRgmGiDFVeOk\
+   \fToZToG7Qf6F2f3M3XTMDkQBH93RJBhRWXjD4gUIjTBvMehuU1Vz57CKRo1LAbiDb4f1mC\
+   \rofTmXUvsX9zv7CWnMXnPgRmWVuHYsAoRgB6sNDEkTwf82i6yubpBo9ZAwtsz72LjdsQbs\
+   \cn35hp9-qak3ZsRhstnyApD4il6TMze7smwNbdoDnXKmi56OP6-F2AcCNRqcDTXYZFfOC9\
+   \qDVJQslKorZ8DGuwPNlIgnuozSTVzCNhQlZfpYEB19FL6SYKPe1XzgSQo6s-IKo_90KbMq\
+   \MpPaMwgNjGMfYAKcX4SxlFzeoVuvgmS5LEyJa_viB-lKbnrwbcaSj8pI_xqg8E2dBWu2YK\
+   \Jvcyxz7ZTF6YwySuVJHYIf0JVWsp_vd_LUj6ySe2NAOsMq0xceJFM6ssfhURjsUGZcQ6pr\
+   \m18tlAKeyWhnWl-c0ALCDyNyXUozNtO7kuCVFJtjEk5P9DdKdwgQaaTyErJcEA6fD3b3mf\
+   \ouZQ6PBQqTSAyEMrNARraA78_1OpZEZgone5LN3e-mhFK-NpFhteOKzV870Air3dEXVo6R\
+   \odykqYCH6dberJdzdcj6COq6YRA8mdiXXcaZE6a1fkuEwRTFPBd9LZojPTfqh2ooo_MZ8h\
+   \4qD-Ky4ixKZMWiwXFAWE7JicpFC94bZqK_XQ78n9HIytd6gLh5UwIhHrShfNwOunnT0yaV\
+   \4e_Abf73zxmV8OryQvoaDobxAnsiEBE5B-7-QjSI-2MBm3meII1GMgz-jLtz4LoT1tBKgz\
+   \xa1hS83s47Ul2S0JtOnkstYtefZjKwsQOVsn3nS4ioYDn9J49tt2MEznMOKIAY3y3bypoF\
+   \LlibeHNpXs6A9wREKkfd1wC2ytSZ_G1x-IRBtwtWoictr7U2uY_QWSYnq2yEC8xfpmhz9k\
+   \IFxxceZjN-QQna3xVZJWw3_0HDSQxatTXAA0cH3CPnLQAAAAAAAAAAAAAAAAAAAAAAAAJE\
+   \BggJCoxOWV5SmhiR2NpT2lKRFVsbEVTVFVpZlEuT1RBNE5XUXlZbVZtTmpreU9EWmhObU5\
+   \pWWpVeE5qSXpZemhtWVRJMU9EWXlPVGswTldOa05UVmpZVGN3TldOak5HVTJOamN3TURNN\
+   \U5qZzVOR1V3WXc
+
+8.1.2.  NTRU FALCON512
+
+8.1.2.1.  publicKeyJwk
+
+   {"kty":"NTRU","alg":"FALCON512","x":"CjcORWYeLyAc5OSAR5tLh2bn0KXRcAPcAs\
+   \sTZu2nYLIatsrnlb2j23yBKQNdC_ak2axFDLyj8QeWtIyNphAjVTqC8Nfz6cuoHAGIPMV7\
+   \rwWxd0WYYJTWUZUHJbJGIo75KV7-eQGQ2KUDcyQgjhcBWCxOwPxyYUN1EC138onR_xvcak\
+   \AhjagU1GNowliiWVwEoVvK8oPtE-m8Wz8u4TfQ6wRorRZ1MsQENBHesWEt5H5UIGYhyck7\
+   \hXVF4FHpLFEIvxSTjDUm3OZQXEmRM_4WARVQQnya7MM3Z6FIzJvoPV7IXGBqsaLrqwCpH9\
+   \PBkECjzK4YIilVDA5iUR9gdbjAmjJqSgpHfmFWi9OGlhARYI-j12t8f3KykkFlyqHUuhul\
+   \I7Y7Az3nAwXgePqsise7fSMIssXmtaFUag4g0k1QBklpwUiY4h9aNN4SjYKZQO7m1ZU9YJ\
+   \K7bVG3hmlaAKDiUXmas0tUTkh8Kld_oFS9BtOX15Q2oOEqYd6YAJhY5lebavuaVtWTO9U4\
+   \uzhPQtljcoRZkITdB8igKbrjxgxFdJ6mU1IuvFpE6eQqAZ4M6U6jRVmzWZRScP0C0WXSPn\
+   \lxrfJ1bEvhXNIepUmLsjjWKFuMbYcEjo2e4g85KA2bBsgfmqoUVE7M7KHrqUKdMZjkXd0n\
+   \OaEg41gRmSUC3ASK2oqlWhV1H1KlrzDF01hBpL3yErDiT_Ng4Q6yrcE9rjAv2qSdigBwK3\
+   \Jujeh50GFr5eKZR1570OlApp_Bs5v17CqJ8Q3VSUbKu0WT2HybcjOKpgnm0WM8Zn6IxeA9\
+   \AOTfc8CRNwUMwZYWoLVSmvkBTYAAUSKEGmmRy6cCXZJ9zv580TOQ5Bm-bMSnydrY4ZOlaW\
+   \thXDElEWMFK23zQyYHkPzG1JvIufAUagNCQGQUy1_iWdpNOZ5DlDSJ1CIpWHASdrvnJ5gq\
+   \UeYh-_1Bt7wVV9rknBQHQKe6c9rxgJhLq0erQ4BkyaDwWF6EDMUDJ9gLE2oDcnYJK6KuBs\
+   \TjzZRIPWi5TANMQQWgZlgCmVeZQ_Zt6wB46mHKFxMzkQgIwPLVmVLt5dWJS1Cf8Bn13yYq\
+   \c0R59cifsW61GTnmiqkLLKeU6Iu3eWo2OLhHXIUSLeGJWwYV2HzjNirrV12LdRzo9oqkb_\
+   \EiLagseRL6s4vaPqBB9uIvQYuRDXRJxJUNSj2yNREPNDCICOAiJYRx1ZHCS_46kGKkDs04\
+   \t4Z1SAdGXWAEwNs4o-GWwjKyok6EYT1pa5mc6CEdp5N3A2h6kvxRPSZcD8EfKB3cWzQsbW\
+   \kGbvoNXaxaHWkbEa0kZIDgKiRiInC-iVoRzqqXRBKFBMLG6QPJm61pK2VLxrJCjP9qw193\
+   \OOyUKifQzgswOnYwDamsekYHOAmfL2b_kciRZl6EaVSlbnCYBkLVyiU0uTrcigrWLRtG1O\
+   \JUkNiYCVF2AGx8TihI86WV3BZFCrVNjsyqucRhmOxxd6RqEZTge7i4bzWx4zAKzRZKJyov\
+   \V1VtoX8Ct36hVtXVKsFn9vxqz6OdZtaWV12PG7CFCLGVnYKCONsX2s9YHo2AhxXRE74shA\
+   \UaD2APOKPXT0laA_BvgcssHJ3Jqsdy72JTImu24-mYpFLn8PIAk0Y8AGGnYmFNXdIz6ONv\
+   \SxnH6T-oapAGJ8EYaTtsXDy25cJkaUyBanxiIW20CuoDVzu7jiPjwUuGLMUc27EpJAr2fG\
+   \T3A5okzEdXN-Iiof3iwm5GfBUNRkLiD_kbIve4nOb_RkEVkRDY2i51fRKwkBxTptO3Po6r\
+   \lZRKyr4SDgaNNwVljxc-Rcy7V9RDWkjqesoR_SkNy_e-lBev8DexEAHXcrqhqifuLCa0fz\
+   \n5GC6t-ai0my_tvMTKVsMBfW11SRfYKtw3vILELOLGJirsl1zGyZpwYHmHK9Fk0TPLnyst\
+   \G67flhWb0RM4awAyh4UZUK1QYWyEk-okmRtSmbJCCkoXFcRX5JBlElSMgWGaKGLt9AYA0f\
+   \MoRNMStBXHU9dTJ0V2oLvITAfgS3K0aHEW7kI0shtPP6SPhXyYql-ijPQ3aPBBldkhfi21\
+   \WiDBmhLA-yxUxcrVlZ2NkZtj34Qch0rzQoNLLVDpqLsmZ9yRNiXzEMxEaKmY5rXhngKhBc\
+   \XuRP2p7SUZN5L6pEqaYncYWqUi4XAD1iYHxngDBdLkKyUhqWDcRZacAKLuK5NWjcNXce5R\
+   \NDVMti5WfguGRNZ5Qu8xsK6X1Ez9k0lNKVTUnVSQtBbFbGYwIFNl3KYcgHEbMpSS5p6oYQ\
+   \hHl_8eqqIrWCvrC413ENMeFnHRsqrErnlZwSmSz4BDFA0GcuyNvVWt5_BUKx94IqY2ra_L\
+   \Q-Lz8j5JDSzNxWJORBAA2S8o3m1teTEgKANewDdZTcvsVA0"}
+
+8.1.2.2.  privateKeyJwk
+
+   {"kty":"NTRU","alg":"FALCON512","x":"CjcORWYeLyAc5OSAR5tLh2bn0KXRcAPcAs\
+   \sTZu2nYLIatsrnlb2j23yBKQNdC_ak2axFDLyj8QeWtIyNphAjVTqC8Nfz6cuoHAGIPMV7\
+   \rwWxd0WYYJTWUZUHJbJGIo75KV7-eQGQ2KUDcyQgjhcBWCxOwPxyYUN1EC138onR_xvcak\
+   \AhjagU1GNowliiWVwEoVvK8oPtE-m8Wz8u4TfQ6wRorRZ1MsQENBHesWEt5H5UIGYhyck7\
+   \hXVF4FHpLFEIvxSTjDUm3OZQXEmRM_4WARVQQnya7MM3Z6FIzJvoPV7IXGBqsaLrqwCpH9\
+   \PBkECjzK4YIilVDA5iUR9gdbjAmjJqSgpHfmFWi9OGlhARYI-j12t8f3KykkFlyqHUuhul\
+   \I7Y7Az3nAwXgePqsise7fSMIssXmtaFUag4g0k1QBklpwUiY4h9aNN4SjYKZQO7m1ZU9YJ\
+   \K7bVG3hmlaAKDiUXmas0tUTkh8Kld_oFS9BtOX15Q2oOEqYd6YAJhY5lebavuaVtWTO9U4\
+   \uzhPQtljcoRZkITdB8igKbrjxgxFdJ6mU1IuvFpE6eQqAZ4M6U6jRVmzWZRScP0C0WXSPn\
+   \lxrfJ1bEvhXNIepUmLsjjWKFuMbYcEjo2e4g85KA2bBsgfmqoUVE7M7KHrqUKdMZjkXd0n\
+   \OaEg41gRmSUC3ASK2oqlWhV1H1KlrzDF01hBpL3yErDiT_Ng4Q6yrcE9rjAv2qSdigBwK3\
+   \Jujeh50GFr5eKZR1570OlApp_Bs5v17CqJ8Q3VSUbKu0WT2HybcjOKpgnm0WM8Zn6IxeA9\
+   \AOTfc8CRNwUMwZYWoLVSmvkBTYAAUSKEGmmRy6cCXZJ9zv580TOQ5Bm-bMSnydrY4ZOlaW\
+   \thXDElEWMFK23zQyYHkPzG1JvIufAUagNCQGQUy1_iWdpNOZ5DlDSJ1CIpWHASdrvnJ5gq\
+   \UeYh-_1Bt7wVV9rknBQHQKe6c9rxgJhLq0erQ4BkyaDwWF6EDMUDJ9gLE2oDcnYJK6KuBs\
+   \TjzZRIPWi5TANMQQWgZlgCmVeZQ_Zt6wB46mHKFxMzkQgIwPLVmVLt5dWJS1Cf8Bn13yYq\
+   \c0R59cifsW61GTnmiqkLLKeU6Iu3eWo2OLhHXIUSLeGJWwYV2HzjNirrV12LdRzo9oqkb_\
+   \EiLagseRL6s4vaPqBB9uIvQYuRDXRJxJUNSj2yNREPNDCICOAiJYRx1ZHCS_46kGKkDs04\
+   \t4Z1SAdGXWAEwNs4o-GWwjKyok6EYT1pa5mc6CEdp5N3A2h6kvxRPSZcD8EfKB3cWzQsbW\
+   \kGbvoNXaxaHWkbEa0kZIDgKiRiInC-iVoRzqqXRBKFBMLG6QPJm61pK2VLxrJCjP9qw193\
+   \OOyUKifQzgswOnYwDamsekYHOAmfL2b_kciRZl6EaVSlbnCYBkLVyiU0uTrcigrWLRtG1O\
+   \JUkNiYCVF2AGx8TihI86WV3BZFCrVNjsyqucRhmOxxd6RqEZTge7i4bzWx4zAKzRZKJyov\
+   \V1VtoX8Ct36hVtXVKsFn9vxqz6OdZtaWV12PG7CFCLGVnYKCONsX2s9YHo2AhxXRE74shA\
+   \UaD2APOKPXT0laA_BvgcssHJ3Jqsdy72JTImu24-mYpFLn8PIAk0Y8AGGnYmFNXdIz6ONv\
+   \SxnH6T-oapAGJ8EYaTtsXDy25cJkaUyBanxiIW20CuoDVzu7jiPjwUuGLMUc27EpJAr2fG\
+   \T3A5okzEdXN-Iiof3iwm5GfBUNRkLiD_kbIve4nOb_RkEVkRDY2i51fRKwkBxTptO3Po6r\
+   \lZRKyr4SDgaNNwVljxc-Rcy7V9RDWkjqesoR_SkNy_e-lBev8DexEAHXcrqhqifuLCa0fz\
+   \n5GC6t-ai0my_tvMTKVsMBfW11SRfYKtw3vILELOLGJirsl1zGyZpwYHmHK9Fk0TPLnyst\
+   \G67flhWb0RM4awAyh4UZUK1QYWyEk-okmRtSmbJCCkoXFcRX5JBlElSMgWGaKGLt9AYA0f\
+   \MoRNMStBXHU9dTJ0V2oLvITAfgS3K0aHEW7kI0shtPP6SPhXyYql-ijPQ3aPBBldkhfi21\
+   \WiDBmhLA-yxUxcrVlZ2NkZtj34Qch0rzQoNLLVDpqLsmZ9yRNiXzEMxEaKmY5rXhngKhBc\
+   \XuRP2p7SUZN5L6pEqaYncYWqUi4XAD1iYHxngDBdLkKyUhqWDcRZacAKLuK5NWjcNXce5R\
+   \NDVMti5WfguGRNZ5Qu8xsK6X1Ez9k0lNKVTUnVSQtBbFbGYwIFNl3KYcgHEbMpSS5p6oYQ\
+   \hHl_8eqqIrWCvrC413ENMeFnHRsqrErnlZwSmSz4BDFA0GcuyNvVWt5_BUKx94IqY2ra_L\
+   \Q-Lz8j5JDSzNxWJORBAA2S8o3m1teTEgKANewDdZTcvsVA0","d":"WiAGIXAgz4HzCD33\
+   \-d9wvue8JPxC-AIO-EEIN-__Gx9AIg_gB3Ih-AIHfc0MQf-AL4v7L7wdfAAYOhEL__jEP4\
+   \idAXX_f_0AAmF7v9mAMpQfB8nMED7pPh173wi90IA_KIIQ-D8IRf4T_hjCLyCD58PQd98w\
+   \_A8MIwh9_wAB8QJBb___dk-Mmeh8EIwA73wwb4EXgfEUgP-8D_viEPwBg94H_hIPIfeED2\
+   \wD_7wwBAIPdDB4fggH_3wAJ8YBbCEPxc6L_fhEIASd8Dnfh__mgi__4_eEH5Q7IEiv-_4P\
+   \Q9EQBObAMBfl1_4fhGkgA_-fn_CAEBu_Frv-jDwJOeIL4_cB7g_5CH_xB-EPyC3_3RDEDg\
+   \N7FgAgb70PAj_8XSB8DwvgAHwRc8D5wDEEPQEEL5CAHwXwhH8XNgKDggE0AGi_7coP_GUG\
+   \_hFwAQCH73wcEMnh_EEZSB6QG_87_4PA7_2QfKEI--Dz3_-AIIvDDwfii2EZAB4EIyBCL-\
+   \y_IHwQh-L_ygKIg-jKDoe_-IJgB-Dvu-CEPwA-AZf_-MPvCKIBRf8YHRE8L3vAAD3Ah8Eg\
+   \-E6MPwiIH_U8OLZP-EEgAjCDvRkIMIPgBz3fC6QHA9IJCPE-EQQE6AgQ-__-wh90XvB6IQ\
+   \AEAL4Ri934Oh4MPyC30eejB_4g9D__vhGIXiE-MHwi-ARAhBsYQZ-HgO-6XwAkF04PbCAA\
+   \xfGTXdmF4IvaP4Hx8CIfOBAL4eeGAXw_H33xdGAY-A-EJRbIEYv_GAX_B_3wxhAAHRe8ER\
+   \jDDwJP_EDWwfCAwdi4Pv-k9_5fCD7XdhEEPwg-AffC7_3AcB4wQ_BwPu9F74d9JwX_eB_f\
+   \-cIHnvgF0n_AB7_tf_z_wfBv3B_7_wO9ALxfCCUJgg_35BbCHfe_4EQiD3zQ_a78HthGXZ\
+   \eB9wAsg4EYBCCIBN_wH_SB_4PieH8HBcGLwfBTvnf--IAPe_3YA-8Dge_KE4CC0X_ygyL_\
+   \h74P4ff9sOyB98AwBMIPxiMDAfjCEIvBF8HR-F8Pf9__3xc8HgPgEX3wfF7wvlED_RBB8P\
+   \-CP8HS86DwRZ5_4vn9_vuCAHQg-IMQMACIPxD8PofkFwYPfB_wPkD3_wA__2_i7zgh_-Yg\
+   \fgD_5ScH8Ht_CPQP-AHo_DAL2gh8D__dCPngc78nQAAMHwhB7f-9_wYwjEHQCDHvwPgIMY\
+   \iaEHgt8CLwc_ML_A9F0Qxl6AIyiGL3yB8APC-AEgQE93fg92EQCBH4XO-B8Ygd1sJv_GDv\
+   \-8CT4_k__aAc8DwgkD_H_i9wAPhAEAfh4D4f-CAPxBAEY-9AAHjd_zXhjELpfdAToAn-cv\
+   \wi8YYAfEUg_FH_v_gJ4Hw9AAQgCGHgej93wO-D8ohg-EXh_EMH-7GL4Q-4EAOi5sQ-hBkQ\
+   \AlHsBgg2P4x_IA397ED2xcAMWxA5sPBX9vvfACX3heCDwR_AEQ-g6P4gBwHn-94AIBi8MX\
+   \ff4EHPCDwey8H_4x95_gBe-IPxaAEYxeGHgwgCHw99J3YNgJ83wDJ4ARjJ4Oh-18exez_w\
+   \RgEAIBeAf3vjGDoffAMH_a6P_P9GP4Ph8EgwZGAofk5wfiB_3fAeMAGwi8MAOHD8HgfF8A\
+   \ehCDo_A4LYA_MHvyi_74BE70v_7AEIS_D_oAED0gPi-Mv-eCEJBhB3pC_94wMiB8ARF6AA\
+   \Oh4TwCB__RO-LDH1_h_05_8O19gT8-QaAPLq7xvz5gop5Qf--Of-JBQKDxP_8eXU-Qwl2Q\
+   \_uzO7lAObM-evnKd7lQPcCFQfsLOb-4dI0-Q0SEhPs0hsBQxTh1uwRA-QS9QYBFv8KAwIU\
+   \4er8HAAOHOALBvTnDvgK9-P3yiA48gcOCxYs2vAG9OgnGiTMEysU29r9-uIS8dX5--0E9P\
+   \71_gI2IDUK7-HZF_UE3fL80uEK7vX_1BfbASAK6QPpAwP5B-nsQOcJ7QH_MgH2ycgrQSX1\
+   \CVgn9QwAuvwi7BLdGR4f70DS-gAQ7-MQGygSJAYMAu3y8CUGDywPBSwl-xEXG_vYDv3PEQ\
+   \j8FgX60xP_9ifi1O34Dvv5CPvVEhDY-gYHEwTC7P8R6-HJENojDBMMGuks_cvoIQgP9_cA\
+   \4wYWF_T3FwbX3hznHOgpFiL03-sF7uYi-g3g6vAT59z5GAET_BzpCN0GAwkHHtgTIPr55d\
+   \0LEAwD7iME__khGQYYK93c0Cza9OEN2fHt8vM0_wT88ukP7Ov8AfU8GgjtFQPh8Qbu6gjv\
+   \8_AISA8m6iz3_w00Aesb5O8HFQ4zAegODxIMBPcCHuzm-yfbBvvr5vP0A9fewOkRAuUHBs\
+   \sYFrkjERIZ9h3r8CPo3dso9gUK9ecJ8toQ2CEe2f3hEBLz7wASDwMbBvYCFPsl-wr49tvp\
+   \9CgE-xQT8PUQGdviBxnY1xwWBdX-CAvxJu4MLgP07x7oKOzW8REIORUM-vsQEPLi9Qj94u\
+   \_3CezpABPk1AwZBAXbKOcn4O76F-4W5w4uzPfqJw4qAfcm-vLVIu3FF_H49N7CHvIJ6Azw\
+   \APkA-w_UCiz4FT4D5-IBAukSEAIR-vDr8wPpBsgKA_3_5v4LDxMX4fkbBw7wBvYNBAAC4_\
+   \UU7Q7uKM3x_g0BD_3m5xn86wQH4e786O8hAfQR4_0DDg717N_0Fd73E-sBIAP1ABH99Bcg\
+   \AyfH_-vS7uLcB-3u5fjvIfAyERbtB_8g_SEu__zvNRzrAA798TLu9RLU-BP7DRbnC-kmxA\
+   \cAQRDsFwvuGxf5A_QA3BTnAtXuFNv48ePawvi_GfHwGfHTNPL7--nj_Rzu3AnsCuoTJAX0\
+   \7Q_q-fH7BCcXHOzzHOcs-eDYE-A1J_H39t3-zPgUBx0I30oSMAUH9vMS1BAC9vob_vMRAT\
+   \HmBfv48R_ZAu7k39spBvUU5xX5ACwB-fv-Hu8JHQDoJecN7eAzJuDuDhkTE_YT-dS7-gYa\
+   \FCLg9fcO5RT-6h0WISJBAOtY5BkLsvoX4gThGTEEOPQQ-v_gA_sP9BYk_AsI_N8EGxUIHA\
+   \ny5A4J6k769_MB6-8Z5wb6BSkp8vn4FBQK9_XZ9-YUCP4AJA"}
+
+8.1.2.3.  jws
+
+   eyJhbGciOiJGQUxDT041MTIifQ.OTA4NWQyYmVmNjkyODZhNmNiYjUxNjIzYzhmYTI1ODYy\
+   \OTk0NWNkNTVjYTcwNWNjNGU2NjcwMDM5Njg5NGUwYw.9AQ6wQ1M_MmPTDw7hPx_Z905wyL\
+   \aeoXIFfI_hQr97PwDG9uzKFKZTotDdde_4_zuBTc2u25bdkf9JCm2m6QVzYzaO83MVOGzG\
+   \LiqICdSm1WxOHP_7bT9w4fMGq2PcOzMaak9wNG6pFblUnciqruqaJcv9DXq00tZs6efS2d\
+   \2LT3FSmkMzC7rSTypHF2bp3PsxJHox33Z3uVDTxxHTZt8hFW8DUJLBDNt5p2IG2Kde50a2\
+   \VIHhUnYnaSaZb9HHR2PQ4Myv5irbJfsoRjNJ5Mxe62sqGnKxOXjjq_BRfTtjKSp9V5ZGkc\
+   \cNjPTXIZZ9jCqGS-tzNoXzMDBYnmU4gqa11UFTfCOhVsSqeIl9NNVe6_8zZxaQUt5qE1cj\
+   \76P4n-onBEkb_RTE7xuhJ3Re9lGW-dRRVOJAYXVJv_bkx2QrUOZNp97TajO0bODnETJwm7\
+   \Mt1nzorVYfNBkbd5FkIPX872zJNJtyuTRNUcVCyT7mKMK7EQ1qA52yZR1HEnTg9OaffxQs\
+   \TG1_3cjnM94_NG8IsvjwxKcTO0O626pvoZ2mnysrwYhZ0C8tMlPOUrMnSLDQcIpRGDMqV5\
+   \YEltokXFdTdGrZ6Em4yXleIiZkFDzKPvDc8LOWpbBf_tcrrzuT3G_yhJFsTquL0z-bsjaK\
+   \f45tjCKw5GhoOiSi1M6hDUsm7TLSjyyyxV1Iiakh2k67tN42MWBlpcdBrKavE_ZN1VZwpj\
+   \nzNdBL0izesskTk7-UE3_hy6UyKbLegBfdusKv83Er7lp_oVdYorMQVCNzl9GPVQdnd8SA\
+   \17VpZgraUHu-aAcVKdlr4XaWLdO8FMPC1moVTny2SHKe-BK4xTPbdtpawprm1aYsWW4zaU\
+   \hMdgZNtPQnGIy06bl8UUbJEJWO0olG2Uu3cnPfIYLgUXM_FYrUetHpp2G7NG3KrwBeumir\
+   \L0D1YUnTEIsf2dRyMbBfGi9NFqziixaursfgXijDuq-q6PQqAv9h_TikSMbElHa9qi-a-V\
+   \VbmsT0UisEldN6yk5OOtTFmsqcecBiVTdukZXR8yG8SJUDt23fIb0z_Idj5TnFLiRbYLja\
+   \WgNyz-aw_hxBNOMgcQ9ughpAMjIFNarTpPTLDv_n9JHUMJe_m1abZJy9tKFaxCIIExw3cv\
+   \yaORIkN1a_r9SSIoVAjRkmATi06v10lxjy6jMlT--MN3J2RYGFuttORy5LG9WPR8fF1f76\
+   \8iVD40a80OQI7A_dd3bmFlMY5lpSW_dvW5pG4Vyc5kvvh0k59gYVoJJfJEjzpoZQUFtuzl\
+   \FI3slVza07WJo3SRopHMARrkOlwnLXD0e4iLJrx6XHav2bVT3vxqVTacIC4b461AUHQVhz\
+   \cX3TuTzGTs6kHF4jrMFNDNbXOPVDvtoGriHtu-FNYVdOjSTHBcIhn0p-fzaAxKDIvVsSSi\
+   \mpXn9hJfdJTQ0_duWWXgtZaXibdpBikU3nk90puTUttVUJJuXSxK2TTpT-JIRwkcVpBos3\
+   \7kK8myWo8Qo4b29hBs1RcClD1PjXfRvpEX7bfVuhaY9ZVu6cHmdRK_RKvwqfyMASXnMit_\
+   \doSmbnBrpWelzdcZpyOg9s7xCIUVjZhCYegS5otA4ygmvxu69BBcem00aGGJ3hfnysq4Ep\
+   \0uMzQgS6dafqdQFJwsPZmLGBocYPKgTHIRNWfZCzzrqNZ7-hYYhcNWp5AAAAAAAAAAAAAA\
+   \AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAZ\
+   \XlKaGJHY2lPaUpHUVV4RFQwNDFNVElpZlEuT1RBNE5XUXlZbVZtTmpreU9EWmhObU5pWWp\
+   \VeE5qSXpZemhtWVRJMU9EWXlPVGswTldOa05UVmpZVGN3TldOak5HVTJOamN3TURNNU5qZ\
+   \zVOR1V3WXc
+
+8.1.3.  HASH SPHINCS+-SHAKE-256s-robust
+
+8.1.3.1.  publicKeyJwk
+
+   {"kty":"HASH","alg":"SPHINCS+-SHAKE-256s-robust","x":"C_NSiMVMN6kpAv1O2\
+   \1izzVkl7cN0ls-tX3xL8VeIOHWzfwmMJ37LvTLVXZQMFyXFTilBcLjcbPNqRCMXiz_c1A"\
+   \}
+
+8.1.3.2.  privateKeyJwk
+
+   {"kty":"HASH","alg":"SPHINCS+-SHAKE-256s-robust","x":"C_NSiMVMN6kpAv1O2\
+   \1izzVkl7cN0ls-tX3xL8VeIOHWzfwmMJ37LvTLVXZQMFyXFTilBcLjcbPNqRCMXiz_c1A"\
+   \,"d":"-gEaHimlK26FRDpf33I6BKsfT3muN8xdOyonuYSgHtEoDxDBsTe30nUO8OWZrfwJ\
+   \xvKyVxo6HCThjbMJX9LqSQvzUojFTDepKQL9TttYs81ZJe3DdJbPrV98S_FXiDh1s38JjC\
+   \d-y70y1V2UDBclxU4pQXC43GzzakQjF4s_3NQ"}
+
+8.1.3.3.  jws
+
+   eyJhbGciOiJTUEhJTkNTKy1TSEFLRS0yNTZzLXJvYnVzdCJ9.OTA4NWQyYmVmNjkyODZhNm\
+   \NiYjUxNjIzYzhmYTI1ODYyOTk0NWNkNTVjYTcwNWNjNGU2NjcwMDM5Njg5NGUwYw.YHQAE\
+   \lZyZybZFn_t59KRVgl0AjA5g-Jp10exC8JGFsv8kMeyWoroy-T5ANx2lkE-czjnnGMZdyO\
+   \DF_-ykpLqGisuXJwaHjZtelsN9-XwzAHp7wUR7GMw3Y0YLlNWfRSSz7cq6Vx9IfzmVgfc3\
+   \LqG5OKJZQ0LIjliQGEoKiIm4dDZDurJgN7XJACWBFTd0Ashktv5IC_nJE8DGqDOoPuqYVc\
+   \iWmnD9ljFZKVniEM1PcFAsuQZ66OfPsEF-0ZXSMvWyHwcznw50o6RPQXlbwF0IYyOrhBit\
+   \NtoKDZ3f-hJ7NleYVLbuztFxw1ewf7iEA1oxRQq6fiE2J7YWfqQO67KdeH2f5jzsiwrKUq\
+   \odc43emKyTlW6_ckqaYfrtSp1JN6JnoE5vbKFeGD08fCW902MvGXSJKHwj8dRi8D4-JuGw\
+   \J6u04XGj3y5sBc0VnwMAFJ7nSemX1uRzr1teFp_WhRyz2u6xpMhNJudKi0aVgE2Yk3U7ae\
+   \3yabwQqi5euxLCbHVYHrr5XfJHgRTuiZcHAxERMfcpy6lEfHHtp6wQJWJz56mtovuhO8a-\
+   \H7RWjAUnIBy-I7lokJyHbFAisR730qsVDgsEFQv6CyFEcB3zvzb0C2uPXzlKOnc8tu1hSB\
+   \t4fGV1k9DOJ8Fy6YFZM780O8i0bSWdel4-F4lV7ZWfYhPSfiCYI1nasM6ghQj1DhWRY1iz\
+   \r9NHcNxS2aQmQ4BfDtfooYIsvRidfKzV8QG3p7aCoLUexS8qiQfZ86U3ROjgStSH1FZlgQ\
+   \67Dj1pUifCTlqfdoxaosE8tkYD8tIO-zYwZ2uGvWbqHevCbV2GGwJUmnjL5zkMh8ilNbDG\
+   \aK2ZJ4s-3cu0Q-NY6e9ot-IHT1whbSzWNUpvEVNd4780rRKcGRtydP-vJ8yOCqvSecWxvn\
+   \JH02ib9JzymIEtUF0mkdpnWk8KzUpX79C0snMvj0KeKp3T6aK7xZK8pxbHoqFzXPD_Jl8f\
+   \fUDVbQ-QQOT1aMqfQyMP7vn2xLdYCgBKAch8AY_UxZR1QnnfWXV70L4GenM-xW8fo6kKri\
+   \eqhb7dnId4jZyjotKNaEppowLnG-nw99EH4zrR5MLOYavvQwxi2XOOfuPeq_jjZC0Igpli\
+   \RIVoysR851W80olsvCOFY-6dWrvSQ5bPttFnfXTDkjmOpZPDUt72F2JCjb8f_Cp15s7tFl\
+   \Q0RCDYmBLXUvcqOmHrbx9vqMackDoc00FOQXAkfmDSQM3DeV7FRHASBS8tHILgVGtnY8t2\
+   \0ZaBJ98O1WVOd7bHpz0bFX9Tmx5tBqb6Vi15J-KfJtvG2iL8D8Cg5EkfaoVwA_0-tNUdKI\
+   \vMuAEPC3vdkXNHwWQ_4GOf0fSmNzfda2mLbjbMRFlKyOZvNw9OC11SP-fpo_m3pD70qtyU\
+   \gGtIs4CuQyV9-PaVelivFtuozvYgloDISDcB57oGtPr4CenMT5LZT4XpwnlFgvv0qi2--t\
+   \bxiOOrvBicACQAVZ0m-H5k7mz2fKSO7_CNCKOxD3tY75Av1Mg62qdaf_BNT3ajkbHjkOJx\
+   \53Ua9NmX3H8AFLYdvUTraQ3NtXQ016jCTniEaPwDQingrJk7F-ITKuPD0tMGSJAZDSssmo\
+   \kG_BrcMQ78cxv9jB1k_vejN298uE9blH9fs7Sjssmppt3htBQQ3nQ2KVHdzEmMcAh93qS9\
+   \09BbCVuzbm1idgzf2rQoET9I2-1840m23fP8wD8WlBTyIK0dtDM50PthrNX4CVUZBX2xTs\
+   \AoweCMcQEbJF8JRpdqpPB0VdWWzOnACUStrwRBf1DhgveQ9jQuHYNYlnvtPBITqVCFtEFy\
+   \HhI3y3a53IKfY14GVw2fheWTs92fXHzCleQ4BPxL1DnCY4NFIxuSai9Gbs_0ozowx-Ye2C\
+   \gbEq8ZSvE9xR6wntSP5ls_AUXBPlVNTxYGVT9QixqqpWLPgRQMtBnuUkgbLYMHxCzNoPEv\
+   \6qhrzRHq91VVHCgJG7AyRaLrZXPruoD7inByh1s1Q3n2Rj30WKTKfohX4hX2LDOvwIeVHH\
+   \A7Kwg1qT0-iC-CKGZ5TcWSP3kkdXN9pTMseD8-qENXBpb7KQsaFlxvE1Hx7KwAEJIojkvL\
+   \eoIQJuYWXrtsuN05LA_iNJgA36T1siC8qankLeEZpojLyYT3yeu1A0zjZlZ3-qE9kdrPqx\
+   \cDpcpO5voJgtf-SM0bkqZT-H7o6izX1ayEsLGzMNJdKZUKP18aoD8u9SpaXTZS1-feXln7\
+   \ibWQdt5khqCWSpszryb8KtJ4S1vhEnU7cYbx6X3Z6KkAH7_XTpD5jfei5_BvciIimy5cBc\
+   \sp8mxO50miNto8031ODd5d5FoBr5rxt5_6vICoC-Pu42WPIQCHx0WZljKu-6VcV-BIIA79\
+   \BOwK4RoFNRRu7J0kY_YbO3WNdrkJzj2U0UFZZLZ1FtfNMe6P3A8MlLOnYcQtHD7da03ieM\
+   \1jmA0wgB_GcngOnk93fYj2ZNT-5lllPEYke0ZDfiK205nuIbI276RlC_PrnmxvQrb1MH_f\
+   \7rDXIEV3nZ31w7M8V-P2zATU-NeUnQKdiNBoM5J7_zJWoief6--E1DBUSQqCc8qIDy1QMK\
+   \qm7frexH5hzS9pwK7YOi8LkRGDI_sVpbbZPDR4tv7xV5VZySndXbhCYzCyYsRY9N1IUvp4\
+   \iXJqhELzpRw1GBCrId4AReCqDkyoV7Byu7i86l76m-1a3YR7clsFQpTEkWxMeUdDZjCUdi\
+   \_GxQfj_2w7vHYzdIwZdxK0OxVXd9x8KlZepTXeoDqqhN0DDfEL2mbAx2l9Hi2_CHNGRKf7\
+   \560Sd_ztq7k239-cfpSwHBEYPKwJspntVvYuXxarGWc4efY1QPFvYHJtolc9DlkPQ3rP7j\
+   \HtpJEnHPJQZ2dhP2flG6NPl4cCxBzJ5aXY6a-tEbjN1sCpKexLP5LssLJ_NPUPKHPmClql\
+   \bASKlbirgVrBZ8ZhqNKeJYCgjnm8ePNtXKxcSfNuF9qinuLpiA1JymXi482eahnBWZETWH\
+   \IHdTEc6t2Tx78y6xhgjo-EhgFyZFAN56fnZNSA3LMLtd7hDmB39nR7H8pfE0MQqpKMly5H\
+   \YHjx1UgHvwOUGfBt5QVWIQoh-NE_7tdT9DLvEcibRxqQMA_b80YYrSQqtrxUf7skmtgDMQ\
+   \KbUCaTWHlZPJweG2tGHJHlSxLSy2QR0ToNydni2g9ho3GcyocB2ECFOCne2ZuIDiWxYuRQ\
+   \H-1VefZq9iQ4Piq8q-vyyTubb8ggASddroyAePF9R4fzRGtianrrQ8NR33lIjC7QcfNhjC\
+   \i0XXjvqP07xUiu8MklJDfhbjTA2ZXzKu1PkykNUBxMDtwMXt5tfYH-lrNsbvhOgFh2S8ey\
+   \zd82yAb-oFYa2bZFuVyIVFkB8xIa1huMCgQDDRBk8HjGm8mfKtc8cwh5dr9QYM6_z-id4r\
+   \ddRebN70GKwxuFqQoLSsNCjRos-xd-Es-uP-pJG21XxBVaB52IQFly587eszxddDL-k3mn\
+   \Z6tDybDI-B0_kupXZB04N4uEHlWe-3MKv833VGSbsDZoS6tOV9rrKST__MoUBmDI0AiP1p\
+   \RzKGUIeMpeiG6td1KbaRCcJS-_nhjrgGX9OrF-ADvNEUl-_gkOt0UlkcEcPED8BKFH2ZvT\
+   \zKzKYJjYdu5RS72ihlJE3TJjy1bg8SMy5CbBo5yDLF-QZ1vaZpbps3QlbF_Ch-6oHBa0-w\
+   \uUUVr6Z4SUERLVg3pqVjI5xXNY26LYWViKcf93TU0EAMjWkaVJFsWiPx8NVDBr5z-sic08\
+   \YP1188sJD8RMBB8AR5ztHOl3sEutrTQT0ifa1ni1hrn58wsmy75diavaGlhr6Illvw2qqU\
+   \TLtLNDxh7Ocwxzztw1_NG5CdpHDyie4l9aAp-DlK1NxzYRGh3jwpF46YVEegsTJsqRr2gk\
+   \ZItDSSowbG6XC6S9vcusS_mlKqPUXmmSnkKx7O4vztv_hxOOIMDYLj3UQ141QPtBqktZbY\
+   \8PeUhJFhLwYgET5opR7XEhpbs32al1Ndnf1cUvgsGitG7CCfBzpgnokj1X2J7rnNZItBrZ\
+   \FLL-VC3dU0QaEfi4Njv4GaouAo_QpahzNX2JlueYpP1Jk3alb3nPOGQSeeBfC6hxf9V9yc\
+   \MC8uTAc7ocWlXcQOOFigMK_3nVF3hxpoqggsFjHeHbSdWufdXyTWhzzHZSdgAi_HegEEjX\
+   \9z2xpjoK6wodCY--jZolJtY4v-8-Wz_Da8-KRsJZ9rm8PI_uE5f25QOsilThZxYotTDK0Y\
+   \iTMVbGOF9iu6nJmFPc0nneYcxlEKdIiQjncrkS5biy8JbOi7jzTU1BeHxEebpTYYHhg_x3\
+   \Uo6JxYywPLAlrSHQAQBu5jl_X1utf-J23FhuObJ_qsVLX_WvpIHCC-BkUZXqFVslzRoViC\
+   \W9ieM1QNVv51KqCP52fbNvqt01KUQq40l7dQY9ra-M9l-5ZtW9tGbKx7ABEHu0VSDWK0GV\
+   \Ux1Cf68EZxo7enX4cGVryI4F6XR02RID5qrKYFGC8GEi166fGYJ_5WtzP4x3sYOAfURcyf\
+   \N1AXMCwelARC0_PRjwCGi48WDCVD4vv9L89bmShz16kAFQndX23eAZFfuI2xeE3sLfZmlS\
+   \OGbCaeWKY-TUVydW7WA0QS_ZmovMxIgjGYMul07lzVPEdtduONei6chmMKVg19ih44pzfR\
+   \FInVw97IaegYTCaOIZZnrm0xacfOdP6CpnzvrIQUlL9lQpk3en9y9C7PdbOr75IKN99dRg\
+   \Qu4wLtSquAsfPs2hm3owhF9J4y1xxjrtbss0-XMV9IV4LDQ_Mcn5mbMuDXiM_537rnsjZy\
+   \TxxBLW7CQkF4SDzcEewhLIlPoDrI0cLyNjU0I9gu7imXWqHVMjwpaz5VzATGxR_t0lnIko\
+   \MtpPJpO043ySpzRd2z__SFa7K35L8j3TnQImZzwq85Q8b9NJcwu4ZeVbcUIdBaQ0ZCERdf\
+   \OhPARSjY1Ksh4hjDL2MvFRfriA6owP4pNNl4vTNDbk009Cx1rb5nAh-ZiD5ciUO0Bv2o_k\
+   \FT4v32QZATCv3uR24W4G9IMYOb4gy9ebctix4zgmMM2WNXtKAllSlBHFh_VpSh85X1dOui\
+   \owXVILy5rdopqr4UZ9UUHO_BSAkf5rshuxUUYJoyeblZOFMAWMaO_vtC12ipLetGIqBqV8\
+   \I6TxM6u-Z3fKLqFWT-kN1lnnG_0ZMcuEyG44kHoGoZy6-9S3lu7lPxNBYIJ0ZW_Gs6uJj2\
+   \pIDBJHNxoibsHXLGGdmHOPrgmiMP9ZTXav6P9woz_Xzkah4nJ7lqF_0vxGji4-u84wW0Np\
+   \AIV9E8aOuoM6kCYFbPZJgUk4SQetVAdrYVIrDGPxyz0m7SEQy7hqLLzSHCciO2uHlK8nKr\
+   \fEIVu4ksTyKCNxYUR3E762bjfiJe2xva7S-5KQAycPIAqIEmzzkVlqyE0VDX__T84oPvea\
+   \twSOoeD6bbMhn3nre-qtrznKh39D_Y5u7KZ2RZZKkHsNII8etDBQlktETHJugNXykdYVd6\
+   \JmlTzBWfXjFBL2Oty-S5I_a8R6Auanp60QmcXoguPNjGbHQnJfeCe0V4c4nhe0nED3Kv3L\
+   \ydR0VfpigcOz8-HIL_Vmft26KbqMwR85Torez0wlI8Mq1IF7ybSoKnjnpz8Mn6XTntqM-4\
+   \GMxcfgoBVliMd5WmmZFHEYgBdbddX2jtyglRwlZZdI7lc6URL9obvEgjMjEWmCXlHWxg0d\
+   \iRehr0vDvawuRyajTkXpvU7HD4fZfqNYy-JbmdEIGVpH5p5gbefzRLrZ0ljCd0enT6FM24\
+   \8h4X9MWO1XwFBpL9yJXVaiDtI-lWmT544SrD2mSzqc_XumTrFkB5c95SpYwDba6TFpLehr\
+   \tGcliZYt2t0CShjHPm0PYK4z6NUiNETHQ2LIjkHTfCcNKIf5HobmhcMk7PD8Ed_Lxv9All\
+   \TPnOyr1UHm0KFAuRz58tVhlcgmHMnpZ8V8AgEdDQ8f8ml4FzPzvseYoYHByeBCVGVYX_Dw\
+   \ZOyT_ANH9iqebJeWBjowSf0CgSZunvK_o4qOJdg70cZ6DbyKUFfhcRaS7M10ekkZpoxRLR\
+   \YEfwZ8U9OXx68Vhw9H9IPSJ1D4cp5Gxu-Hk9l23XTMsoYeGfUAy920mo3Zfw3DsxwYvSKL\
+   \MXKyqYF6yFqd60tG3OIuJvYbzD1ccQl7n2cO3AlDnN8PpJTWuBaj72dDrff2ovrKFmJrYd\
+   \7L2a4ikx9f6WY1oxvg7kJt-8SQ77oqzwJgCLT1-kiRyhBEomAantO-opEtpKJUeTFnQJD7\
+   \85M7j0P74-5kpuIBhcQ0xseXLDgSjW5XjoAs92CHE_C0n1oXtqEd6lpQuqImhEyH47EBes\
+   \knBmMQFe1O1Y808HlA81orOQS5qeJUtMxbo577joC5iHOKBZyAzJaYtGbUNc7zd7L8ZZ5A\
+   \qa_AtaRYRLyb6yQCg3QT7QsPvjg7jpyAIwdxymChBsrqArA-zYs6tEtNBMMuJsimhTmxZH\
+   \-xNfyn78FjGq73d55fCPFyPo7ImSXn0i0lTSahJIk_zjczHgUVbEwm_xEG1HdEMES5C9Gn\
+   \etuhhyW--pRyKeluIkSVtbbGnzUEUHjaLnV5B9PNbkcqP--4UhvZJGy-nSHcz4ke-bQ3El\
+   \vkHdvSWYMWlxhGgfAmUTMHqfPFuY8tylkzCTix9_28H8tkVGQjO0ag4ytYnD8eQ5b9lPwB\
+   \55E9VlnTIbAOW1J1rixK9szX1ybM-lHVWQiraVN5FQ-UkxW9Wdgx-U0Ms6FXK2J0tZFE7R\
+   \dJUQBfni1fkgkj7RUAs5gELsCgoykXUyGHt75AR2JSGSNhWBfm7PtrqO5zk7rNCOIjAyUg\
+   \Rnk0HA32satspJZb1XAagRvI2-fhWEiAmX_DM31wRTmF8rzVidudr55IjDQxUGWOkx8Hm2\
+   \jWdkZiLCeYUaTLY7aFCL05z8EZj76y4roi2tjmfoI2wPkXoSdFCTIpadCyNtR6uzHDGNy5\
+   \uOGOHJIsyT4fM9RiPs6qOGVnod-r8Gm49IP7tqjBVbHPLLJ30oFT1XM_LvW6gKYzoh1WNu\
+   \guO9Wwf3hFlFYcn3qotB8tCe4G7aPQH9bnmrGrkTQKA36wvZVcNicLba2j79iDR-nwVoah\
+   \nJSkeoUsARfTYIYWVtU__SME4mx5z75rJIglgYnxZWrLrwKfzD8piDmtHkV45cI59HJv7b\
+   \6PfTDgdlUAp-sAEv7hEQf-u92rnVHtNuvYuNovqGqQ0XERuky4dWNLGbGhjXwKtyDVSuvb\
+   \dnMjKaUaZZlZYBTY_dgM_UgvWTWV8Fo7OIZVLAXKId3RNVFFcep78JpopACIoyzxPQSxwP\
+   \YCsRR1GX7J5NVlnxzTaEIa2E8m3c00Ky1sTyIFVsuttwepiqm3l3pTm8K76IY152ugc5oF\
+   \4Gf4Ib51k-mGgnBV2OvJPV8ZmXD_OshtjWofFrwFiiOPCWfvTwuzD6az0iiZFIOGsT5lWI\
+   \Qz9eIJJg3eDZ6rJmV6SPT2mH-F2900y6v4MTpCPeItCEYMQ4LVXZ0lGSh9OcFubbhPDMZJ\
+   \1AueyhcD5CT16Xok-QuDoepyWMJILo2I_cTNdm6E9KqNXSKIBxydrQqkEYTB2MPr1UB9Hh\
+   \SAebkkJFxKKH1tom7OpSBgCRSU0GXHHOUySyElyFeaXSz9JJtHHRXlBh5S39b5JV5YClWY\
+   \O-L9CqWNa5h-dvZ0wRGcLcRjub6O9guAbo4aUrh3Rtpy6CeB0qPFiqk05giWwTKM1rwFAH\
+   \6KhEIb6NNbYeTvfIIeVZ9CfMTE6Sx-dKC4yvehO2Q1S2FC_rZW8yW7ohcc9FDg20bKK8zb\
+   \y-JrxO7NSej6LjEHwPQkkdVSGkdLD0Rwr6hC1bKEu_13VGVJUgiKe489tk4vV_2S6dA5vF\
+   \hTv9iKnyOyD7lhim0lyVCYnRry_rfLQj9qvvPQP8EasXK5ljK-Qj1BJj_D8BBgVecLiYno\
+   \vPYhe9EZ9IG17X6qOVeGcRcXDT9L7DHP_nwE5sDvHNorvHjyY13AK3yv86T1DNr9pY7Gyb\
+   \mvgaG5bYxSTOO0EemkkNUlVLX8rTTDZL7Ciml6IrGZO8wioccPHVfvGoi07bIeA5i1boda\
+   \mBiHAlWTSX4gEZQ5DX5uIAkmYa5ryt0ObkLWHYkeEaEQqv3LH5TMSRZs7dJHD0Sr9HSrX-\
+   \Kk4dOKNOe7WKsfepjkERFMEf6ndAdwCtcW9HWsPVplnW4JTUNhw1FuzBuHCQ44YHzRW-UY\
+   \LtK7gE0vYmrNjvrNfze2zWKzi7Dpt_EojM2tYZ0Otb_iTEn8kdAxGXhuguG12OwTy1JwPB\
+   \F0tv9u-EqP93OVFmiFi5LaXX-KiJACoffdrfSTlJbS0-xZJeXxUuKufNEUQebRlLOE5osY\
+   \gcPvwhLYFn9RFqR-2xre4NvQfbBLI8cc3G868Taf7NU83fXAgQg52z4qVS1VjldTZ0y3aa\
+   \6RiFqu3cVNqKuq29XCHdfjFfD2JbT8WLoUnp2VScOr0ERmnVylBRXDtcsQr4POFLA3u3iC\
+   \mMCFKRQv1s5i7EZ214GpqeHZcfu-nqODcEeOtHQHdN1ZWRXoM0ru7LukFgy24iDX0vG1Oy\
+   \BAPbgzlAIbQpju3uaXkUTGjt7NmWSXiGhQX49Gaa8-ySWm7q75Dvz4c_OnZcaLFW3Qtaky\
+   \75qS7feF1G6RB-lyH2MWvlJdUI-3q7WVagdIO4c-HzwjxVXI_SmVcOw_Pk8paUDSnWXvtM\
+   \rXYDf5fPL2xNt2OVlXNhMTuGH8z2sqt3Eij4VDQtHlwhb01OwI-yN6D45rUvTaVBoSLS-t\
+   \AwFOenPkmY9-s_Kbkep5s3lSP-D-QaUc7tInceXgusnAEz0ysJTDVmRyoqc8BvN8bBk-Mj\
+   \Q3ETSWfJ3R_UA9g_d8CKpVG3m_Vuz0A1lucYIfC6KNsCu9ATt69TZHE5VCE_GFLPiZiQGA\
+   \FTroVAYSZ-BIRd9EI-oj9jmWeoS_4LLe39h8Fb2Vd8YgGNfjVgSnWd_PzQnwFYgoRf8lYb\
+   \vb278y7leOY-Piz8_s4BKZt4eu21MRrFpcBgyy8m_1_AAv7ShqeY6Yu7HIonFzSRWJGUAi\
+   \Q2shy4Lge6N-SZr2bOU9zjnpqxM4UjqciylTLy1_xt9Dm5gLBICL4QdjbwhWktC4VSOvvN\
+   \HFKuroTRpyQKosoaN5NY80nMR5quSyfX522djGWnY-xBy274QWc57WoXUIwOYQVmhOd03v\
+   \-alAJc1pgskd3kj1EF2xlW3j3pMwTd5Z24bBcqossJ-SGmtJEFfLgTIH-rPZD9qqTqh1nS\
+   \eOuS2cpBvNfGMmCTIn2HOwIdyyOAzXeWu4YzHdkpT2fruOMpJnQdriwmB_B_PgWWJThK1D\
+   \yknoX4OeMBAv1hRvxlC1zGwkK_WyJfWrgNtFNswL2-_VMWMe_LnZGLLn4lY-vJ4CMzGA5s\
+   \WuDrjEljv2lrbXQC0rocov_kXG4KzaS-OB_GddA5woNPbRVkpo0ste0d1JRlhU4V-DOokb\
+   \5E5kKDRARy0VCYhKmxDeURqu7POGTwQchf05aQFNiGa_9d8d1pJGnUcKvALh_QjoCa3rU8\
+   \w0PnQDCXoDtGDGb79TCVjavr4A0r640fol13xUJZuwTykpffRWPd61dsiYs_HLs3sZmoES\
+   \w3kE5jrnvJ-TGcXnwf0-QouTNIjoGhwB2_cyV6I2HAjxpFpzfJY9LiBP-svHzQQxmz1Cba\
+   \5SWxAf0g4mVLTkbeMBzIltc-o7fLvQ5vbcJNTBoPVOBi9q_W8RY7PFJF9ovF9mJxy_Ya2U\
+   \PRG2kNl71yDR37RcDJMvdgXkNcXd8FyG46ygqvg7xYHdJbdrIITbBHl_JwQmooYTxULKTO\
+   \Rg1my2gFO-5Ix3MUYRRsrcn1Dj8kVdEZwYc0nSK2TG5_xCTo8IPwPlMpUOplPps9azE9BF\
+   \uVz_2lf8ckVTOc-AfFSdJfBrhITSVEhRMwqIHCR_yr6vxfomoyYVKFbilaNLEkVL9ckAmU\
+   \6WnnpksgPxUu17ifNO7POY4UYrjDAaunxbNutr0H9oBgJbATZ-PYVlHNYGSSByflN2gQ4z\
+   \ERMXDwSdPd9JGw3kB7QidWWRFa-tMjXLXye30WEpoTeV1cGDaBnB1wzq7uFfq5V19ajR8a\
+   \cLMoGepsXlm4HaDN2AE5U2mbQwwInpav8wb26RdPoPt2Bby4kWrAzOKZUONDbQeBNmGQkI\
+   \tvWkSNbKSgFEqcwEgHKbDzLZGUNFsKKZfW3HhP_oiAZCYTQ0QYBuL_6QeGZYvzmDQPDVSf\
+   \-kKGRxt2HELcfyi8FoLwgELlMCLaGB8dDovm5zbo8Y42UMP_l-ZmmgaXVNwp-tzEJRkzwY\
+   \QLwV2mvuKBJHCgueLoVGnQKoYH6JYqcphBnQgYKyfzIRxkx49rnJjKVrRoHVTmKyMjGRvk\
+   \PnOkWeO_WLrLP0jyHpnyUE2X4Ib8jqxyMnPxKb_X0t3BGNz-NRwdpqhN0m9MKa4lOU6Uif\
+   \xkRXTkhWWXH2jTWAtqihHh8GtcB8njXYZ1fRNv5YRbhMnf71bF7UHMKlBHaX4fhEet_3cL\
+   \L3uLV4tSrdHVZY7VXUShmYvkX6P37MNVzCo93tBIpfEGP1z9jzY_F5_-SoFKFY8VIxnsc2\
+   \_k5JywSZ7ZdYoJPOZXeE8T51-ySE4Cfv5DWNu1czO9ft9HQnRZhLMobhTVqAa_V8XErVIt\
+   \VVhwzR7EnK8bR3o6S7EyV5e2LSQICdMtu3fBKhijAcCU6-BeS4SlzBFKOnOY7cqRk6WvQs\
+   \r3ZkoHom1zyNeTZ2u5Zj7xTKoT458g6uajKDj0pnpboegUhMFazddWQiLhEGDgt1UfWNvV\
+   \1fJp-uCGtS38AIXhOx9NCf7jDzrVpF4LaZ1DxDy64ktZR7OSfkhVuonXswBzsC4e-u4ObO\
+   \p63pvdgnEmaUMuS15Yyrm3s8iQvl3bFXHFb7TxwbVSrRhT9EnwmcP88x7hULPGDGrqiFvz\
+   \wNHWxp7SVh_WsjhqCbaBRA0LKKWTd0Rc8xsEfjZFIHgsyIei6LS-fQL6FmruzZ8K75VKjS\
+   \kv6Q9hMfQHX-TDXQdIg67MuE2Ae7fwVOVVgNy1UHWMuESbIj6XeXDUGsGj419_7L3uoUtM\
+   \EKodXxhuidWxYpDq10ymQxRDxbCKE3CAVNPt_n0AwTXAtFaRQhHjdcgKPUsS0MXUwb3SMC\
+   \6glz5I4MkYS1sGupNLed7j7_nrv0gcvz74z6O11HGxxNqRz6TsTULxyDex9cUg8mc1uH6d\
+   \sml1kamYRiCBqN45N05UgnopgmCq3TM7Mc8TQasheAwiTyGlqmwn6-Dz-soMJBQiz3Vito\
+   \fkOQHw9PD4Z9n2krHygIvxx0-s9x0glCmjmX6r2f0ZOg57Gh5GMR_DlZAzpaENi5CqJQQE\
+   \L4kYomn1YEaiHV0iqq9j6n4FG_Z3KPRMLfHfWu7w7zdFTAto2OUBEtVSkng6lwCOiUgmqu\
+   \cVoOKRvx3SaqAJAesHXLbYuORHdTePKDtNLXciCZn-rdqPgN6OQiHX_UjakCSieFu_2LfG\
+   \ZXfiuu63UH_gIvTlGNdtDwf3q62QGCJlXxAR4ZdgeJuz9hHlg-PtgHj0aknC3QnkoYB4UO\
+   \ikmVaDoYMWXWI2ajrXWt_45YDGHRvwNQErroyd-wwz-yX7zXU6DsEVDiAEutRbgjgLN-4C\
+   \HiHv3XOnKBe0_Q7CuuQztW8PAblmfD482lGgXFQvQ6sV29v47me4S2MU-D_Wcd3eMCRQNi\
+   \_hRrJQT8F9xupJ6plYhhFfIPUDMkgqvg0ekO_hZ-M6yeVXZfSfc9micnMnkyBRViA7RpwM\
+   \0O_z_L6yBzAv5xlRm3CXE8i1pRx3ec55Ts8_EPO-38WZyIudcLuQtY1FwJX7d67zSvoN9H\
+   \0H4R3c1mra86wn0ujWgINXga_kXWn5vKP-WgGrBoviRE2ZaScSvQI_3EoxGNLraY3Z2w9w\
+   \84uP2jOe-WGzxIT3A7s-eLIq18p0fspiMsl-GDiBCQV1a5MDNV2en1EPImbCS8luUmvV9p\
+   \XDLMFRTpH1ClLeLx7aJr0SLJJC5FeO8oEHnJC-J_NPYU8aT0TYfvFtV7e2JZXAm_BoBLEp\
+   \Wn7MIGK7HrD6PgaS3xkIbToJwvpX2tSfW-yXLyaepdKptcCd-ZExlqPaY9fCJP_BKvHDa_\
+   \CTP_zrQzPQOlN7lZKPegro39XpWuLyk_DxgfCVeaWAJ_Ni6bggBWLMuVhYfZqXFcYKbLor\
+   \jG1FunwxpZqnAyjF3sqfTziHIvGY0V7SJycjBMYLetR9eenJS_GVx3g_gUX1uXfghDG2gH\
+   \m3mClr-SIOAsUBxoiUpWsHiVny9vdULRJBLAHF5F_ITUlWtuYWm6YMhrQ2SDE5lWYbdOut\
+   \g7lUGU9hN7iPTSjHNqItc182aL7YIxl0UfQTq8HyETMvfV2LzbO2UpWErVNEqkSxGfOAMs\
+   \Tt2OF05O7k1Pfko_5DkjlRmYxh8n_Vl81iiR0XXPbtpvEjssJOu-gD-OnDSCsfOdwwjoEt\
+   \aFB07Woz-33ek6RPRIRfim8hErzhbLVcgv9gN6Yk8gMUraMFZapciWAdNinfxyrpFlm-LI\
+   \2WEbqzyd2ObUnRSyTV_ijxZvU3216spIzbElzwr5RVE3UEY8s91UlAsjGlZ_75AWRWMaZ5\
+   \mo_phJEZkK31ICUJGQABPgMU0eWrs-5FWucJh6AzRe4mUqmXo8VkNEf1hAXDaIFdYlbbpr\
+   \hkdZBUN4adMl_OzMtk0mDmqO8j8AckYecZ6Io7TuyvRWDf8iMGcH9-YxeBAqBv4cvhhiUv\
+   \TsaMYlOOY0_wzj38TlSnTRAll1BFeP9D0gyi41X4L7GgScJIkGsCOt2Nme4R_hXBIruV7X\
+   \NCG0ShAIows-mkuhntGvqirH4IiCsKXpYIu8nA1eo0YRGSZVjAMMsZHY95ba6KyJImdiTl\
+   \EQYnmlwErJp9KncBBhMs7ue7SC_hyqx5jY1ezwAS4_rCFM2IkHyoagwQIiGATc0AIHvMpQ\
+   \lbbDGuwqW2xTR11jQXLcM07oO2hLQUgmJuT3pD4J4p9tLuBnmBNkKFLnRYV0PztbKM_GHV\
+   \UVPFPC4I3qr9YpHm8vZocFVkeO6ZBEuz568zsGqAiNiVu7gTR3B8o_JBi80kSJRVGA9tbJ\
+   \8ULEtGR31mKjhyfhK1sca__7Hep-6sR2vprg5cIl3xCooRa_dp--HW3KyqtqVrR4KY4LGr\
+   \fP0lu1uQpzqnn2I0nFQS1iL6pI5od1_mShLeX91JA8rTkFUKDIC4QnTzlieCqaA34rTcfq\
+   \x0kFVyV5kCOBcOXu4GxbIcuyDv4qsi3FSmFQRSxjk2Xt8sevZx3onBSXUPCWzp-cLg5TBv\
+   \W38ZxnEon3oKY1nnWM2-eR_ie80BnBUOi5GIWHw_scGJjgVeM6lxwWS8PCR7l02YzRioJZ\
+   \uSONusI_IzWg4SjiOLajwmzdjYSqeAiYJKO-BDUMt_bYggHPHNyHsYzRjvouaizrGLxMwa\
+   \mIHkPvjgDzhJ0UF0wLaAXo9ujZtk0GI9mIAOy-squRxiPc7vuoC8vJoXisKVE6d1D9fl5C\
+   \W2914DxOqoymiwZvCCg2pBe4flJAiWLAmG5h-Q6lFUc13rMdJYL679t3OmSoCQ1Xky7cIX\
+   \b1x26jSXOp4p8_yTmiBru13PYPb0n7_YJ3O3fQ63I8C4tDwRsSz_p9LcmGFemzYS9qsXA-\
+   \H5YnpsN9Rboq_ubxuOtayWrr3aN0RCu0cexQva781Ga-65w9pMxak3mfjrFWI33zJeYH68\
+   \qg-e-gYZJWvvVYmNHJ_xGOKQR4XIa3l5WI2GAilSZ1Fla5jaPcv2LUFOXYKl5In-jWC3Yg\
+   \Y5MVDO_qZ26urBZcw5btBWWTS1fFX-lP3Ai6Dx_vdo5x0cUcetsV16E7_yQFIJ8vpt15ls\
+   \d0nCI1XT7kZwtYgNvS7pADPs5xMYtM_42hrucLdMfnJHlKY3DlS0jmbIFVslmgjAuwsOrC\
+   \G1ziMkC3kOvvljgWrQWDl5jFAjQ1lX8k7l5hejynao3GeVxnne-ERVskNoIXDnEwC7xCmP\
+   \caF-f1hCnXjKTTol4o1SuN-HZdIS47zgZr2OyzyiRQVMG0pQqLPdqBLmuAFuYhlr8mqrvg\
+   \OQ8Ty25zikECnlNUMPCzCJ7O8hgna6SN4bzxq6IyB9l6ToUhhLQt79DDUahtDwZO4CqkLn\
+   \amMatp4Xlc6uLx2DCMV0__zYnfsg1Sc8TLLGBLa1OgGwQwXzZMrQn5YCzB5Q0aiJBCucHX\
+   \y3E2tu8Df0bjPv3--dUM1PcPDEEyXmA63I6j_Ib96HrYiKYXBAuvAL5yO6wrvnYHE4K5Tr\
+   \Mp4P4p7i6pVZpGsbHfp69BnQ99zEkX695RhUqh7d3CT-DmJ89JfYus_yBt70rEYXs_1fek\
+   \Y3LZjXY6ElPtqLMCpJhRtMiAEdkP6HzlbYTvS7EiRvoEjrUyh-Zv1D7lM9sWOJUYH-SCrH\
+   \ng4TNSCiYAlcJ-h-liZ6eLJhDHGZuX5ErVeiL5YoreMrWvnVXVtif7DaGxAVsMSlDFMppU\
+   \69LPKArm9y5xaeNBAjmd3Hky0i77qgXlLvVUL-L4fVK9dwXCKAocAj9rIx3k5yJCvoVtdD\
+   \WTfziip1JWYO6FzVwuu61KfpzJnlIPHtcb4He-rYCSKncs0_-vrQXXaWAHqW4Puswunvm5\
+   \ZZJqjB21IRyrMXKy3t99If3htJm41eZ3xF-dl1NUoiL3hZU_u8qf67IUSsu12MRg4BLQTF\
+   \pYkFrR85hnPW3gx7K5-WdiusiTzdMYZoCMcfhYVZDaGu5aZFvNqNsNe5fY6HuxfY33Q8nJ\
+   \BiIueZzWwCSJpay-yuzM85AWmhsY_1KBZ2rtI4Y_DpIj7mfT2i2w2xiD6Lzx0OP3mC8R2a\
+   \mjDSUNqYVY_NJOkir73PfTTf3kDg8Ip7i2KsuiZj7KoYJxhloxC1Bc-Bj8DOBUi1K_JDdv\
+   \r5KvPs_y8hb3u6ejffwkiG_R5SFV6bfGh6pgNMcSjPkO5Xai9QHlArFFmWcHukyy2VA3xf\
+   \p1wxVYTMZ5zECUl_SFF7vqRoLha2a3Qu2rm5y-qKu4ERxYA6h6te2oRzajFiaoy8vlLEoC\
+   \Koiq4d48q_naB0Hv6WM29u0ofdsgRF-E4usdN-b9BuCwgldRFGT9UzxY35O3FjrljMbMgV\
+   \Ibf-yFS_1uYqRzXV3kxW7A9MnF4UJ1TRLH2eYV7kFz6gTcBBo0YtI3jybkkf_qzil0uCzL\
+   \u_tFVk1ETUbbFR5DW0DBY2_KpOv1sw4XPZYToeIyiCGm0W3qSjnOvIvJQPsoTyn1RAKEAJ\
+   \tPHiaTEnnB0H72ZYVNbNod1UWWs5K99ED14nJeVSkiEiBQdtltJkUFzPWXdo5Y9I7NRdes\
+   \RHma6-L58s0jFaKoYryW7tO46QAcnXmBi3XTVLP78tOR0UmHqTP7kQCdIMcccyDXt_dnnj\
+   \l-C0mDyThVzYlMVmbZNIHld5TgXrnwSSZ0dO82YzOcxAANmGzFW3ZfbEloZwwqZQOpElCP\
+   \dOuE4MqO2SwXlyWXukvlaAI7pfp_ZkceNSRmQQZ3SBGRgJ2ecJoHwG1nH-1P8IhnXDuRc4\
+   \qH8VUhGoyfOELnwiyOkESEeBwodbvTGrm3nzdbk7dxkSgMOZ-EDpigq0xWA1wDJaQ1p21p\
+   \8izGroiPtkXGSkaRa5aIor8aWYPEeOG2HENAqqHp_n5MtMxAr84uxaDVQSdNyVyFzXFpBe\
+   \pE8n0Fvtn1aVcYgsa4IS71KEbBhSIEzi1BwtJUw65C5mB4p35grAouwOW0bQn1ixPbN9Lx\
+   \qUb5a_BifZ4kDeTg2IXB6NO9MEim_KTrO_mJPEldcbDNqrRCZog7uZUEW72Zh6xGWntNVo\
+   \a5TbtO2QDW5X2_QX34EPU1yvWABb-tEPmVFwcGo9PaMQhJtOlXMP_FWiy5I2Hr2BZhDD2a\
+   \mscOeTAdOw-aKMnIfZdR_zu-L2Zwga75B7v3rQ51AQvPvGkMy6b6JXIFmYFNPzSZ2oCFRQ\
+   \MVFgXT0mBf57lOt6axwubSim03ANeLOrBve6EvDFZRUGFl5VQDOXdfIzboIV0vaEkThKd9\
+   \N3AcyWwxa44rz5J86VYIWyVohlg27CNs4papd1OWMAhrLnUObaE9jBr6LK0divmfxQp_A6\
+   \oyRTcu3toDVVzq9f0Ae668DApsxNc6aUgVxyh9_I4ZHpzkoD1x6d2hWFWgJUVS_pS4qYZ0\
+   \xK1bvvEjkmDZnH2QyJxTc7arwureP5kI36_OIH2vvtu6BaNgiwnu-GyzaneGsf-6wTk3XG\
+   \J9nqfzJsbP9NJm8u5P8u-kFw2GUsVxXTA63aw_TN_S4OXTZnkW4OYr5PLF-DZNcsoLqZyP\
+   \bnv59fWys1PAGZpNKAQAkobMj1gsMQvZJc0zVIQ0Pq7o1vPZPusIwpuGilG-yhpiJdj7QL\
+   \-LUCmqROIG42wOrz2cN0TZSdBPMKAl2SY5X87Uwns8zk_v4B-qv8brqNL7C4uPBDX2_Api\
+   \5O1J1WQS_hS8iD1qCSRq0boGYE_ZvEWmFZzriaVlfsja8Ee6gyl0jI8sduABAxNsQKvqaz\
+   \_9JQY515xoH4F5DjQt7sv_RTbucpV3uGSVkQXaxs6teYEJym0Zy8_PO0qoTk52Jj9ohEwv\
+   \4ohqXNBQsimhMH0g6CLHr-5lO3-JU2H4_R5eGEmV16CWsKhmdgGLf3PshANQ_pdabw9yfW\
+   \tEVif-vBglndZ_126615okK_fadTKRVBFrGUYSpCG_b3HJpAl475rmULWV_-oYuviZ3YLa\
+   \hdlQGpOVyEhxFbFHNUPeYJ6FFlxpb1vXq-9tHvoxb-YN9DlLZl3e8kyj01m5vVY0efsFkx\
+   \9Z9qcfgzbTH353Lessv0NcprRKzSeq75QykDQuxDdJVOZrVLDuYTsj0jNFECzzzqMeQrCA\
+   \ClxOR8Ofo4CkseLHqr3BWzno4t2jLW4RpfTss2YmRbQKuJBCaehqjOVOIx7EtsPM5AuAym\
+   \ozEXUS1R7kpovI6Vm3i4OvyygG810m58bSEWr-MwRSgtgaVpe8kRFFFQ7YagIqLMuq7Byu\
+   \Y3vc00lhKdDDuqwXb003dHAmENIxY-PDseHsVTmsb2QGo2PT_L-ab5v0aWHyAi3evFK-RD\
+   \KTLXK2RRC9mE2KQpPOQXNI5ZQgZw7PmaxtSOlqSuK2xw7flJZV0ARnDD5IjFzH4V2HqZS_\
+   \G2tttE1J-EcSB76fe7wY_TFmkBAHNMc055x4a9WZ2f87aOb3thOYUHNc-zJKeyn6EHs2Um\
+   \ANY91n1F27s1SdtF8Anrfkz9NArLCGX1BZ70OJzJGZaX4ZtQ-631k25RXdBLCo-yStrSMm\
+   \Y9JYA2vJWtZceA8fkvCz5r7ZNdiPGet8nvibzahXBqvh1jzgtn7PFM7f3eI7fGArOPGGyF\
+   \PNrwmEzOIiwIUg9oVvhrVh6LeYYC0P5tXiofmqqcP4ypGuGwb48UOeYG7Ue0bVXEPeCzlu\
+   \Vh638feCnRnj2czo17oVD27ILaboIhSfa3ZVt2dsCLGBfTJ_7DtLiH_ujl2dE3SkSyE7PN\
+   \_qGpDzvJCsqb8QtNookMD0akFc33zFDi2w_mnp1OcluvuM1qT1qIPArFme8djvfEidT8Qd\
+   \V8zK0T9xbiz7znp6p4ds2I3kdc7eXs2NDUlsr8IpDo3JqJw9qf4oLVz2rBfEcDcojwWJUh\
+   \X8HVVS0_Um9lJUh94-75JdrnWBdylYlt32Vf6H-XATGg4HAIGvhfhWOrK8lnRFfY-rj4cz\
+   \TAyJizb4LwCm1bBpoHV2azTK7qcfHgWKnJxu5_FxK1ubv4kWMv2GH4R4UPUIWC6Em8ZfaK\
+   \bMZ0lo332WvBBxmHMBh-SBikvt8KAYqTJc9YyUuphfwl2rQwPFPtGg9bnaIIcijSNL7Cru\
+   \jyi2y45p92cpOY55mKunugqOXsk5B5JkZexQCPiT_XfmkDGZLj-kKP0vS6CQK0KwMRxMsK\
+   \xaEYn2v-OCoW1uTBlvwfqG0UYPvzuEfpl3vGAWPOjOYmOWBEhA0BkXgI1Qoi5dRZ0iQd3O\
+   \LmDJ1u8GK3PfqP7uKDppeyKHtQaphqXBPD6HEBRenbbWJFRBwnWLQkCSMy5zE8TdZIWqeh\
+   \blh7hWp2HiHl5r1SCNG519bc7R6JxLFSgG1fJn-u44A24VudlkYD5bmpCXjiN--dY0DBjF\
+   \z2pCcue8NMwRD9F8irXa9BBojwmpnz9hd-ZNjYn-kgxOyTXsOd5Rk2P3zily8RfbSYaGzF\
+   \35g0o7GdmzGxYaO-HqMMMxBmHoKG8tYyPx3Sj3UYxO5N2MD5uRWDdycsJk_c86FRXQt-j3\
+   \b6WxZn-Aw4Q9-_ZDzg-j8eCEJ9DSvKAvVsxSHW8bMmfSGU6pNK2dTEDdbzo-ot5EBcDaQ7\
+   \pvcXlu3yIs6BRvVuLc1jGqp6IAgCeuYxTIfpl3VkKPzsWZFZpQJMyByKPUWJdsJAw-goyR\
+   \IvpetpujbYgz6K1dEWQ71o2AWXONLm_-uBW56JiOtHe1l6jYPbuhnS9jvE_YPIByUWaN7A\
+   \H5UCVEZioodxAnTbUPYGkf9LJaM0-sdU0LHMBqAEHVQvr9zGYhjxZ5rU2AOUEZkFlKWDbi\
+   \RQlDEhxaXAJrWhYQxLdxj9vpEGMmXVvfhJknw9Wz42pYy-iERxH3AV8wrzGmuojEivGKIs\
+   \V25ILTxRCubqyzREzwoEaFIL35uXI4o6-qt1JJfnjQzomLn0_fu2Vub4EacIgEIqH7nBjc\
+   \8DXcWrFGnOVFjRTnVzHmOCEWsGZnHQaYa0_nUIQ1QFkSYHIp8ZrW9L-HsMX7ZptZUqsgFz\
+   \5lphspjAioICBmGTWsyQQAvmMJcEQlh79ediVD1wCciPecIVzFXoMNrtuhDITJJyL3EDKZ\
+   \92zC3PsrDS0TiGbXYCvyDZCH_Ffok6VszejaaDfq2TlzSE8ij5B9YwLBNBRO9glScoiPTb\
+   \5NWgmGTz1f8V_r6nnKf3LkcO3JgP6brFnp5Q3weFjf98mmoTADOa58FZEwzZG6tee21mQm\
+   \AcL1YhTTfgvLDHs6aBEy-5yyQl4orYZWLehesffzNOHrHfII7NoNBFxMWUJ8128EwpVOEC\
+   \wrpWucl9jNiMLGQEZzkmdDk7ypODLE5DR3RXEfboR6eMJsX7LshP3BQxgUYjQvSD96qlCY\
+   \mHren9y6sVzIYxSfCERonG7hj_tzUtv7KbpZvOeH4AsYgIJkmcU3RADO3FwFlepw4Ug4s-\
+   \vYQPN8Zv-7mSsvl2EpZlZWpC4Ay905G_2itedYOZZXq_aCRIrSFfrbvFCW1SIVuWRkXP78\
+   \DJkpfEtqLDW2MFo7LeZPmpizoFLrW450u4FzPEQs2HOjlIQ6usYKPatG9ERy-8RevFsO7r\
+   \yKsE5C1sd5KojQom1dmKgkqxDv12aFqFagPFKtieJOaSM9d4tdNd4vHmuUcxYNL4SRGqXb\
+   \okdvgWlvt8o7HnSSOLHJjNPLCcdb_rhT7p2OMR0JiUYlWQZzCGqN7dqg19F__NugLty6sF\
+   \NBF_86hO4DfjGsnfRzOO9QYPjgPo7ddClw2sEBEIlSspuKlqWKroRGGHY3NSyv83A7KOdA\
+   \bpxlpFz0qjYnpBrCXGSc9FP4-4q81Bhu2OBn1eFR74ND4jqZirl_0fMHAYzrpY6cN_ZhUy\
+   \AFkcaMy-eUUUWUkcFJjaxdxreVSCZaYzf8LQkzHqibP3BPD60dSN1n0YQSikgHSfY1q5Sq\
+   \Vv9xLzLT4qOxxE-LiT8V8bBdBxDJD7nHtP1UFqcFmeYn9Sjntg5P3JCD-dMhcxcDk3ZsS9\
+   \CSrsxjnvK1ocwrp9azt-0Z7KdEr2Gr4MNvi78zWTH7DIG359VALiq3Z1yntb4UwZz_SnSH\
+   \yfm_bN-GPmSrQZMH_h54yyNbIm6atI96z56V9IYbhuOoO0ujm8o5_lJ-EbOWdb4DIYw3UR\
+   \cnAIe0dqUPFIwe_HbzB0jjx9tonNrz9BeQTOdTxjgjAe3kmf_nR9DmJ6UecTkFiLb_ZstG\
+   \qWtIdMKFO4zr94ZoKnIU76oXPpidr8JHVVQKXnT8xZ3_GiVuN-N63IA95F-F7YWy4aRtQt\
+   \Lb5ESF-noSkzMzNgpwZozhafh-sm71AALQav0mh4T0iLggpHeh2EEZi97HsINF9UjDO6t9\
+   \9AvWbo9IFsV3GWR-0rSgnvg2p6yGcWdga_fuMlHtBS_hAVCf4EC3NxeCTnU9WWbehxoaZ-\
+   \2cyb1vTdPs9mUCY4bwSoEVo_IM6lORT7FVdFRrfsZXfNxEOOLgQp_uSN1LiMWAe-cEnLTx\
+   \ZERcQNdZUoXNYs3x_M-q-B28vSaKAicb2TPAeFmQo1otq7wx6YyCTlUTM8tvo6nBg5mpjW\
+   \pHoTmDpnVp7WL-clUf0r3BUFozI66v82fFZqW3R9j1AT3Z5P9nTiV_GbHHO2lK-4kX4aMO\
+   \5jKjrZd6j6TCZvfGslZU9HQedECj8erKQDgCK02t8xOHtu553JAwLjPLxkzeasYq5e_UOF\
+   \bRG6S-dfWWV7lI7vMw94k2nEQfZnHLPuKwUUe-wi_0wRX_CGUnq8CKklz8RrnNLYd8YiLq\
+   \Q3VO7iUzrYAFTzemYlf4rHencJ7xdGw6TQO97UqgMkEdUa8meRuSRsng0dd8_mJmFsvB5c\
+   \MiUwP3laEFhlH3PCtKH2-2g3tVi54fFonD-v0CDacAsfxMe2cntL6-M6BRaT5wsjFjhwQs\
+   \Kff9BQz6TCHBYat4fqLq7DGVJt97sKtNJ6xvfMUNeCoPejC04IQTjWsriDalsDo2sIpR0z\
+   \bFsJfc58N2cjI9FzZqSkw4rm1Yd9YAH3FQw9BXgPeO1LbS4Ph2-Dffdyom8gqEf_qId5xN\
+   \O43H6wmugZllGr-ZAD1E-g2HDdkwnwwQrKP_ntPLuIvFbb00B47dqQ2Vfy2Zyr1vZko3Ji\
+   \_OpJjaYOlKHJJP3JV6iHjZrdWK5MFOB0Htoumy8VTIDkPEmsj5GM5Hf53qmU3cTt4gIPEE\
+   \Hvr0q0v_rmSxQA1ejZAtskqco4UYW9zU6OSgmtolEoc2j80ZQPLdtpfJ6kRbx-3QyQmS7i\
+   \vnXiTv369Zngt_zC6t_O_rweYRZeEakSstJiibX1ncvadoNhwSKQdGSCll4MzbI8et2kBr\
+   \WoqI3zNbkPR-dyUQmiz01YKWz-_gt-ycAYyJStswspncSLLpNXACVDCzX13aPhxUk-n25X\
+   \4ZFlYlbzxwoN1TLeo2FGluc50Di1SBzyu08TiVJ9asnPw9HGuMdlyqK7gwGdUmHQr99jIe\
+   \I5aD0lJQskIuuDJcFpXiiZZqhIZjKVzTNs_WOHUGPFuBhVmqxKwcDaaDfH5cQn2Hqi_SfZ\
+   \ZH0nXC2Wyu8GtBPIoVh2jYtrUM6ltX9l3DB9yRKZkx-rZKRgvqTIpf5gPh4RmNjJ46P3KC\
+   \lUphL06qsJtQ1QXvzmA0bA-rYKwz63100imj9iAlnZadz-muL-kucY-w3R-waKbq4klttf\
+   \zvkPgLytyCcucQOAXKpomcSShduS6Z22zTC0-TSycdViTXLxFSoSWE6hMbbhBHtEzSqcbi\
+   \f7ZhEXT11Ya50jHupF2SH1Tz_BkZI9dktnwUMufsgcMoKKL_duh1TaCNSd4qDVC2x5Tgiz\
+   \KRMEQrPztild0vPePgsLeLL3GoHHtwQwKR4fHbbTTlPLb-2e-VQvZAHEdVC5qcfMbr3FrU\
+   \81pHcrFsrJ9AxVZuspAt3oRchWkdg4VjnEAvgL8S8kox7Mh8bmYbFXEguAIZjG2bd0GDYm\
+   \1i-8Pbu-BeGi4GHo1gB_lskTCSbBCh7nd1tpSQS4T-uf8GcZHLWVGlwDYfg7_PpI7XjmaI\
+   \J7yApfq46AUTxaU8sDKQYefD_zH4sP3v74ULs21ofksmcjEjZi45Pwygal9X4tjuAHAeD3\
+   \1a3ISPvllwLY3xPo_7gzZ9v0PZNcBl-o9AXeIq1Ejy5b7aTzYuLSbdAC7WPvF7Tx_ER5sW\
+   \pXPtlxaYQ0PPQdL-PEUvp6tdV52jThnsJiow5mIVasR5P-tPulwPZVF30bYr_c9pjvk5gn\
+   \8ueVx_dnhaF8eaH-SOjm6C1mvbSzIaQtSM1k_dbjnZCK6cF_xkIU25r7Z9j0otCEytHzCB\
+   \EOdLjPTaKDY7cpKUT-oiRSGc448N6GRPt_XxQPe6tReIL3TkjaOp_JXFMyJMRLTsWUC6ez\
+   \TEd3Jdl_jbD-iGtxpFMWtVA4skkKrBHS84Ph5B859jWT0KCAgKl56dR9VdC2umQIX7bsuS\
+   \3zfe_MY-y3ITdzCDcCeIMDXklGsXxIf0M4SweSKQkAwmVKB1xaZtrV9lR5a--cY2abWF3t\
+   \dPKYqeaWxH6f1kvqDdmDLihSOeQrFZLgMoKrKEvZL8aN_HS8rieM2TgZaWHFo1tD0oIOs8\
+   \KUZnXEmbk_YBxJ0PNj4DRpvGSIZn0qSymoL2zgalL_ubUQpg7XINtXwvNh4Af_jKyjnZ9A\
+   \dnLTidltRhXHMo6-Nyci-DIC9TIdhedi_Pb0JrA0R0RH6T2iItunckn7qFmEu1mBHyEHYl\
+   \eDLdcwZZdu3T-6ljqJHfm3FZ0Hc9oTg6w4x_s1OfJZ5rJvutiV_Gh9bVcJudItUw8-y8Ec\
+   \zF47w1Mrq5THUVhwSJn_dLtpARWOkRo--mnKPdFXxb7aSifHtKbgWFs61Cx3OGdaRbVyfM\
+   \GD4b1SCTO9dYxmvM_OqTpsvIynPavnNxFU5U-whJo-EYbJAaQ2DJfFwJQ-ulYFAllDQZLQ\
+   \zI9KRHxuk_JNILr0ddArcw9fqCn73z9izFHZ5ScmBzdGQE8-JUJBkuPF3mLWJkVwh5_fir\
+   \zp1CKb4hwyrjAOKQO91SXQAwHb-d9KeFGSO8a0DP_aGmbzLUfTPMpPuRi7p7KqGC9y--K5\
+   \deV-lhXf7o5UJlhXZUJWBNYMoAcdzGhQjp6Rmgotg4v5FL76vKFp9H-5iRQbnTxwFdAG_e\
+   \pJeQ6LjUc0p6-E_rBYBVRBv9Lp_ltRdlbtBTzgfl5ExVGtJzpwr_qXLLffO0R_ntfBw1oE\
+   \tAn3ZaNukVK2-0syppR8hq2CbmeX1emvDOYBZSkS2f8UQ3nT6x7WAoKARbXLVpj6YOBXh7\
+   \E5KjRpwKEb_PiixJ99I6JGUu3Jyk8A7ZGD-R0G3pI64ph3Qjq3GC466VuuNpbByTBFh3L4\
+   \Ifwe96qpL-p0Y1vN3qcZt_kukEP9JaB-RF5BCiEb55M6J_olB6gGbX_OEXSsT3KHK2t-5R\
+   \bJpna8T1tBeBo0WcV-EnOU3H3GpRQR4ZlgNUGR_UDN4EwlCrK2PV2F0PiDGmH8xKMUgKjs\
+   \K2Fg19yqB0-HbAgeELOjcgmOk3dwYZ0bR-IUt46mgxKwCDlfp5PsumjCs79lRDuWzyOo5Y\
+   \QsXF0WQewOlUmi5HFbVY0eNue9rXHql2mPjT80hXOX3miYrJU27tMKcMkhSWAmhlqHvvHH\
+   \1Jm4qMGxBOS18sB8it8RcdYy8woiheURxlU9-OZqG7nMam7R12mvvNytIfpdseHG3zrFlk\
+   \Hs3Xse1uXQiiVFooOGyb-2szxKxBtbnxbMfeyKSaLTTZyyizGEbrzoZ5RvP3CVYJ6Nh29Y\
+   \LTejagzH96aI6ackJ7pX3Q7TwIXPILEh48Qt7uxe9suhZAjHMS6CsN719axp_YZPZ67yDh\
+   \nDqOCMb_pUqiekQu-xs681Z0ZDJ_3DQeuqMBSWaL8u1AVcGOLUa9KGSa-N2VSMSUyVBHly\
+   \6pKQWhe3YmmyjJQbb3teZDSPU-AMDy0aWUbfIo8udFWdmoJrBClVdC75qYyECQHM1RfhK2\
+   \zpBdK0lCnTgrJIqRlpCl1_odx9fEuJd2UPAzH3PhmkNnluHVeHFfyDWKfiDsT1BM_oN1rW\
+   \29ds2RfdYHxZVYrlf45XAyPlUB223h7ngpai5uAjCEFkK4vzSfmwZNpMY3JhFSk_7IcEZu\
+   \ZzDs4sxWUtZosEdQQsfRNM0LhpaOgf9-kX7GV9Y7jAQczEj0vtvYK6Vj86PAcLMRfMri-S\
+   \hBEriFdltr0a_jDjVT3Bu2W8AUTh3vqMMrND_F5zT5zBws0nPIzgD8YXa39zGvBvU4fUZu\
+   \sB83IZ4AYphcxIVsF4vl7uOpk81YvZsL63wE2Zif-9dbL9L56MSJaFlASbJCb6o6p1S8_v\
+   \i9QqDQJHnjcvUdXmevexgDi_PHVrJ9bmO67licbb4G_wKt3O89bGi6WjBNBqyOSX-XoaAQ\
+   \CBYLehPa5Sf05Co_KBmPpg9P2bFPTeupYpbgxBhTAMY9hMYmCByOpQT1IULZUkJjierYiP\
+   \cKyOLcZ644iGU1yeu0zvhXja_lkuwfgoDX384d4kw2YXvdqBIQOID195lgSpOYQxvSybDv\
+   \v1NQksICu2fX0Eyi1SrpFiu_tHm_u2K0gml1Ljun5DcReIp-uq__XmH6EoyUdM3kklGyRG\
+   \o2H5VT5ub3JCJ4zKoKsj2Se_Zo8nSCc6YLgeGTqZlODmW2U_nJF2rpBU0qfSg78Bch0I9r\
+   \g9bUGjcNtVz4VT1xyKkfJc29QsvLIJ5wr_w2MY36HirFAKSHWfi-fYQmublQUEJH09MJzy\
+   \MspMYojNryviZOWx_ZBf7DbaIp3cMYCm5W1dOs5Ke7z6avkeju5ESgplAdeK_IOqCAoloi\
+   \1CWBTIMJiJ0zplulvqbaJKIJc09kX7t-3DAPLCjtjyopK1bGFArb4ot3mYHXORbmCdqjF4\
+   \MCdvY8CODrnzc17LU1w2naoWZ9FSjJtTif_OWxE9KDhKsA5ZfLwMsSmqW-Z8LEB4vLIMlo\
+   \Ps31xd2CTMhTSFRDOXKslERBu5tZvKVitP3oM5W1hBzF_WtugBnx9y22xg-BQKT9lSNzlW\
+   \XnYw1kfCET4RulAW5FdseWu_L2U7L2eNULYGNjc7atooQpI-ixvkgVtlFfKRkS1oOJ_OW2\
+   \7IOcd87KaTcPZzQigFy0kRsxDHwG4vcv3KIRto0KRKqkKsMWwIN_fJbe_8rGlt5QCUq4mw\
+   \b7QoqVOXJrUyyAypHwVKJ7sfN_U4gEXgVbADk6gPQl6w8gi-yC_oaqLVFJnxZIlUf-7iE0\
+   \_DFtup1KZNp5a7Iydv31eKZZhbKTNEhR9zDTQNzYYJPGsiAlkS9NDAzSrmo2MsALtSKLbx\
+   \4eZW8t_5aIoSYS86o6sY8D11NP-hwcGaB9qyTVsNyvDIZfF1IHpU0eq2C9EEBjaS_20u_y\
+   \aCHUuzB8hWZc4I3NERmAG5v69Tg04UZtP7AFw_Jx5Nf7HJlFoePMCYigFuEQAk67zdsZfk\
+   \gDhqE39J4NvsAjYR_jtlkkxRf9HdOT_uWuEVuVXPc3fAwOvKfdNnPjqULHa46kw_Jwj7RA\
+   \42H_Xz8McUPNQuScM87FIgiK_2TGtuK7_qiJnbv_2V6Qwp5UjqDmoQvWzfO2tH6a6m6juu\
+   \GMjS_7xhxI_rZn_oQ51cug8wiS5nFqmegAR5QECLsfjWN6iB9OxZ7rQ4QbBVZMytOTXiyt\
+   \LrxrlIzRztFRPXcuw_wSmr1O7eKG_SNbt4gv911l_uBe_qaSZknH1MEJn9DABRHJ6Vj2Gv\
+   \n4GCQnYf24ua2MpNrXZTPK7nd9wsIh9-2ZpJvBkqsSC7Ggk4_aaVy5BPXlvkIIfXCudYUA\
+   \T1_hW58sJxRCseEVju0h8exirR0E-4K0OlVLjq4NQ6DqICrZrkgNnlseckaH1O5l_Vbnuu\
+   \MBiZBpCkqgH3K3jByZDskgr7dHWnGXl-Vo6v0rklSWmaR98I6EyasgqlFTw7CmhMRvTT8D\
+   \b0Ei8ZPQPmCN1voLVRgN-d9s4gvehLoOd65g1vCjmZHjUc-PK7tkC0d8ru8OUqBRXQwfvK\
+   \QwSRk68g5JGnsZKFbw7kdaJTnK6gOcDbwd9ToTS_MrT7SUX6pZdVVg7yIrxhYSdZvOjxLC\
+   \63KLRnPrrTBPFdSsqLupE-TuhaXBLGtGSw-n4RUBftih99-xUP811D2HO1WewPLdBU7o4W\
+   \J42hVe9V1999SUrfR_yyB_9FkoAvnTOtFKYnHg3BH4x-8XTu2t4R6DjPlNJfMWd6yvIwbM\
+   \70k42B2WCxrl-FnEBe9r0Ty--Zid12pWbZPuS0BV_kFPwqK0NYs25m617GhXr4LcTWwXwA\
+   \sHYSdW96KDkVsufFY6euC88ycsx94_QuaF6IttLw51AGaloW0YkmKntxchM2tnAZQM7OAt\
+   \xwWJDyyPlfizm6OHNKI-RJY9_g3BdCawdaEvxwsEIicWD1rsXz1Q-kMmqnkPGJ31Tk6b28\
+   \v1aldIgg8nvHIevKq-MZnQtrclREqconaKwlLKd9RPu-bI6N3DiEamcEDNh-xOS-0-94V3\
+   \7F0LTs6O6Q6L-U6RuH79I7zlShkoFWK4Yd1X-go3BMpEPLlDr1xAU8HAJAeKqkkuAPz_DH\
+   \E3sb65_3XOduvtnylRUwBX6N-ELAA-Mt0kC1H4D35UaG2x3iEPa0EbE9KDU-i9dCIxmu_e\
+   \MQrXT859EqAQnSq-U1nrQkLRMEr3caxH9X1iaVoT1cfuphDQmZGL_L2XRRBGABF-NMklA9\
+   \kkrpPUyPQBvnROFFQgNvg_JXIN-lm4IFCnq93EewrlWUdSpleIuY2Qsd2jdOsWFpLsRMek\
+   \cPCJ9QYtB_J3lmDwkk1175eZnNfLVC-ePuZMv5Sq8o31OI1PWi1nolQD6eh1FFVRF0Ea-f\
+   \JxB7Fc1LBkcj4tetS-ZG5W6BefiB9t2EdM6-eK6f_UZWmMnvhwkh0lKYHDedKXX9fkXqxv\
+   \FjKQMymhExPyPmyyQlHV3KrfRylV7Fl0HuBzRiWCq5z_ngmM3YQ_Z8uIbH0U4UfRjSSYbV\
+   \Sem9qkR96qf5mI_-5Lz_3cTYdBTm4sNOBhzD3NIJeADfoHoS8n_2XoM1YSsG3EOVzyArmd\
+   \HCnzPo7btBMUXTVXXg6LGJVf3Kw6P4kzSVZ9NShdQCWnMB13DWhELPiNtyGng-77SrpOQG\
+   \PEFSbvHpYzA7Uj2HD6BNTgbEBgl8-Ij5zNytfgJxhhRgAzm2DKkUZ2XzPt-640uSUjbLBZ\
+   \ttPFr_eCvuqpLMOLM2CX70nssnjToKDzbTLPMynp1j3u0jKqRdCTc_bkfRnt1mfYRMiOjR\
+   \B6qg8PP9J5yn15Y1VXwkSDx--DTJgsvtTddK4ftHaNpz6YXbx0SxHPufykzFpJkoBjKKTW\
+   \sOAYOsR08HgfF2TuaDXLhXroXaxqFLBqKOb_7FVYpY4_U0sl7mGpscnWXwotKKTxKllFzE\
+   \0B2Cu6vnPPczOVLsWCPpqjs2ZmpTEo2EH_06VTe-1KXej64RzJAmfBJoEBs2i3oNrPkYC-\
+   \h39ZkeGzJpnc19TgMwlS6omC4uXKoqoODJ_1XLt113q9n58XHOmypOWtjHLTc7HivhmB8O\
+   \DIAkfNMmdhODc_Z2wlpPhSY_sdaidKoYpTOU7pSQrA1uvvRJQMYoO5dD18JtBumMaRNqRR\
+   \43aKrtykYBNxkYA0x3out1_8THkYChvdC2HALtXdgP5tY4sOS7CS_W4XZhwDNZYlsobAqQ\
+   \J2MuEQayjHaUDlJIeaz1bDYEJa9lcZrmzqfTz4nFeWk6PUzeQuc3YkLqOo_qOiuaJDO-sR\
+   \CPPacaDM4N3RsTIQZJrcf8R2qGaOUB8umNVo8rbfzf7H9IoBGLkNfruUkrLqzoGtsoj2-T\
+   \b7zGrQRyIO5pmVlKfp7QEj21Xx1rJLUyzElnG8hsLiKMsC-PJP54bDt1RRESxHYLi2Okj_\
+   \rA7hUQYpgupjkVQv2MhirZbgwdPKcVNn1le14DripW_E884rvUJdt_-dyWLnDuDq03kZzR\
+   \qqlPpXTXkidXlRvJyKthIyFxZRlqKTFIfCHdQ8yixO94RYqz9nw6cchCo4ecuT1uzs4qlH\
+   \mri3ymn6vjBGJxwFNRXUdV_OryVW7cSePzm8-5Vrd5F1qYYINA_etael5dnbafJ5KeEbMx\
+   \x4R6cJA0FirFdAB7C1P6wiEfGfiBerHkyrcx8Bij5_yrirAGxi-RLzqAK-hcoeWaSg9kIe\
+   \Ku0zjD_-NqUKODwWq31hR0YPOXeprujIDrSKpRmnsTIYu8hh95haPwEMcd7wCo0ahvh9Eg\
+   \OgvoN7KGVZcS8PxksBZBbeP3Mpl0J6nEZMWAF8Y3BKpBRZkb_NUbLFHk8QRER6VwO8yBuv\
+   \TQWr5Z_F9S7vcLIvmpxfXRLz5aPIKiL4WkaRHXHbX0YaHcxXyqp4RjqNJ3BaWYBr0x78_E\
+   \KdmEfTzOeQ41SKNRlY-dOGP7ApzsRYtrzsQYA9d1n-Tb_2badRN7_YN5ki4qgFooL-e_bK\
+   \p6iM11KJhP-xE8nsbblZbK_MlW5120YppurXjupEXAzEJSTI6vbCvOhWsrWJpUjU1WOkFm\
+   \C-IZHL8X-HfCJ_CzxMcGoVXHMgyYKed3bR4Dx7WTFsvWfxYxHde0x8qAg1w2q5V3CoAaCA\
+   \ou2DqOGKBILIRNVsX0MR-16FsjLzhSMibxYDSUUPso1UnrWlyuOWOLZE9itvMCZVz9lUU6\
+   \CcI3CBuFbyxJsla99cKf-plqtZdIR8vcdJOBvfCagr9I-7ylpwVMl_9BMf_SgZK36W23yH\
+   \ObSa1yFd35LAurL15SsQuUR0w6K4nuAqvNql7pEXOt5g_tq39t2y_Hf5UjCT49Q_HVWYcE\
+   \BTgX-KukrpVVuLRvp6ktlpJjBX-Bcx12hAs6IQn_K8lUVoVlS4hlOECKAqab6n6qA1ClQL\
+   \130b3XdhWke00QTLkyxWeqpKB_aBISKu-2S1YN7l7KsYs82o1l0ZqaVWIfx9oHobxxFZM2\
+   \PB_zGqyf28oZJmruIeT-V0SRYEhlmNVH2-rovSWmzQWbtMniCCXWCeXcUGJCa7un1eWFAx\
+   \q6fb6x5AzD9NYDaPSE254VIBQ3P0rDLyo77FojwVY42REbWM4NdqCw0uOGVIMryoH5C-Q4\
+   \USFg54kcKg5I0otL_wm0Pc7wAVXrl6v3PwIvoEGVmJEax9pqy1HEbhcXSwGzaiF-T1L2XW\
+   \8w18jFfNa5UdC3My_zhp-icGG7f8-BcN4mgbsuJfHDRxULSXsPlglnLbzNYk_DaEXIwkEO\
+   \fLkHk8rbnPrdXINt78w0WJbGbB9tx8unaFdRPS2bqBYpelgBqySYI0qjdoFNSwakEjZKkB\
+   \IQhHrjPcOGqj4tFUiyeqKZ42S-Qoj-hbYNC8b0UAjMoUTU8KqfUug_t4wGevV6U8CkD-W0\
+   \0sMB22RWl_DOAKMiu40dpFGYlqGqbzzchiMg48plc0uk2JTXrRX2uV-2mbBqeGpKSRR_cf\
+   \lgcpberly7sqfFMBEMZzJ6lPP0K0KH64FdBB6eMgLrRx6VemABHl2A7XiKRdIbP6H7cPeT\
+   \oqqhnXtgZwrVSaWzFU3qKnrzXaZFeHK39VbuSdbM3raZmRhPRdeYQ1Q6joRqDhZxFdwyKh\
+   \cEsiHaZjBEZ_6A39KpJVqsoJ1TEV9zQLuPaxqO9hno-xQ0wCfWIhg59hW0MpoG227adyBV\
+   \YSIh8jT7VhVEFcgNIbSC16fZAuXgvPM5_uEEPnRLtMtz8pZMQ8qghXmwYCHCzHO8gCkPSN\
+   \lAMQX8llEjwHuyoNDB29vILGaANHFhBfcU7dtntpcYH7ZQZtVlwbwE3xW2qJSe8j7PX0pS\
+   \wbT9IOxcMapkAZ8B1fLzYk2QH1sLHKVnCSnI_KqJFrL1FhBsthS1qrehWspH5t6EI6wZyc\
+   \i0deX4S48lgTTgoKeEiXzBmSd16bea8V_-ORS3jc2SD-USwx5CAxsfmPvNeyhMZVw6ORWR\
+   \pUZXXe5lYS0MxriK1yVoeaKYfvYDD7nr4VjfK5SZckMM1h0ZBvXeIHTY_icNRTyWqfXkDP\
+   \RICq3wqWpjk22iIZZv-M4Z_pjI8e7af8R6Y8ZnIKNGcI1QNmo0BxXV0_oKKeUeCZwqRDjO\
+   \Fu3EwcwFIuGdexvseqJ4nj7NFw_33AVQwEN2ubxxMFEmg5kOlnDCMBrre4W8rZTBWck6CS\
+   \jgpQLbwBPRT7Th8q3KH3-rS2gdFQPQio7719gYjiJTcSUKMkA7OlAuH7FIYf0gd01FMwVj\
+   \rCLu6SXkXKajL1n3-MTXvLwAiegOTZ2i1Y063b24AwS9I8GEpwzk4zG0BanqQaTmBxotjb\
+   \iD_9j1L3MTSNGBk7KJXCn52ShPEpwHabpBCHlsH3vCgdd_tMVbLBjudv5b6sNKdqMjMLsT\
+   \DZZmgh9V0v8R2lfLfZq0LOsFyvmWS145AI_rGEd3LC02S0_BMDrVL6OxZRR8GbxLYfxPAB\
+   \IwmKcVR42I-lQp4-ZHpO9Y46fb0JUxXRUclzm4Q9zKUEHG-QsDmVRDm019FFG-vTkUG3n2\
+   \GXbc4muLSvHtd3k4D04eCvB1O85DxtJYQr4Yb-_UOdxdmSc7MIRfknb0I0CtofY5Nr_-dL\
+   \x6_i4Uq-06n2Ke7FzuXspeLY1RmO_L9vEc3GN-YQDgDShu_1OE9qg31dZ9KoUffgDhPJj8\
+   \f77dTB5IibGgzAwK4zOuwTVc6Q8EfvFNCzea4F9YI7qfNp4-4hLRyL2KKxseHra-qwYT-J\
+   \iUIrHoG6Ld4-Cx30jhZmq6xhTCpm1zExjWD3XUglCKEHLHiI1oc8oFgfqZ1bXjXyYN5P00\
+   \CtsVHZglfDUwsLFP2v7yES1gK006pRIYTIRAGZ0AMd86PeLn4HhQffNj5JouKfexh8VwYd\
+   \RUcDTP22vVP4MFH9sk4ZfLQJkDdDhWTSSvdfYYsUmJ5jGMHMVwojHHkCg5HA1q97-ywX7B\
+   \nWFUdqjUVBeFP65Jy9vgze4tbfbmj7MiR38COrIeKtO4mREs8CK9z3kqHdvAfe-TzRaCHl\
+   \jpeffQVLwO9fFHaQvL4IT2snCUB4No5_8EviyLHP2PfLHbMrcAIxzEnxeXC4yNDwrXQrLS\
+   \KF3EEY7JOBsVde1HOeVkfELoeiwXVte-A9Z3cOUR5gAJ2pag2BVjBOidKV1R6y_N10ZRGy\
+   \lXjIKrL-a1QUZpjQqFZk3TGWZ4c20zcHi_hfmh_H3Wf4ErPDj6Al08wsb6hdtZw5f1VQKX\
+   \eFgEkxukNQUKKvr9t3Ic7W9_rdGVtJwq4hyACFjytsKDfdFkcRm_PgMOPh3NR8DDleR2b4\
+   \FDDLkfhQYUZabgwpdUWBrkiOzBXPX96l2iJ3Y4sWjfwJc5WsvjCfyYhvX_a6CDa7t00hOU\
+   \VPm1mxdfLa1nfPMrHdcUZCBh3g19I56NYXbJvnr6l8qKLwo8wEw_Q1dNNkxcdGsCxJiBjb\
+   \ak9UY_qYECBM2UYCTE8jmX9U0TcE_RqmmCQ64JuZs88NAm-9r90_1HTt728VcIH3CUFpzv\
+   \pgmNbT1r6rM-t4Ej3iR-3Cs61PAOHDYB0uIPvMINgOjQBTvTaQl5Q17nXBzuypSjfHNiRw\
+   \uXCG1mMxinMMNfms7VkHesP88vQmrGkMHOfjHxu__u3FM7xC9AjIQu7x5omXmUpi-9A8oC\
+   \L739lASAa3-XqcCXOilPjK8mJnapnwoEp9X-qkHVa26qcyVfZoIwQFyo2FtHNkE_KnpgHN\
+   \qbghP7sHMkH-eYwnLpEQtafg7Y1rQc0ZE8H9kcjmQEwkS6dE-ZrIsVFkxOfIEEDQBzXG1Z\
+   \s3rKxXb3uaskzsoeo1UGr3v9rUfn7v2uc5vVPcyoT6Yq9tmLU0CDQdfDIONDa_olOnoUg3\
+   \C5cCIiSFU8kWOkiwcYoEwNbycKoar8FfBTMpI5ft2_Wjb_PUBZ4_yiyY3NGHy7TwMvyq8w\
+   \rjyJ4PjjmMlATHzuBNi253PlKyhhn1r2DDBXood_CY03vdoSblbnPH5RNbnfeuLi_NJFRD\
+   \XP9aRmJkefU0wMnuMk7vocS4Bsneh0x-jEjh5-bZMwC9PMHoXkHp5ujXcZd5pEgLMOjMkp\
+   \i3MC-4tfzzt0YqiLhw2RRItOOs_Y8URrtzNF9HHEUOwijaXenns89MeU1M0lJhvc6m9QiB\
+   \WGbq8_X1DlqqA2e0_Ue5cqbON37Nz8rK7OZlC--iusEJOT4UoiMIWO0VS_LyRsAMJdIMwe\
+   \1LhdVvmElyX3lQAfAYbilpv_A9nwnarwJUApfuteCwgvMBQvxyUbXJ-vVyjOx1KASIBfwN\
+   \P3uG13xb4bANzhlLj5Hrw_8Q8TT4WzOFsLBgcg66rFHG7B15lvHNRU860cqAeES6NEVtSO\
+   \7GrrbpP3HBSFBHbQZ_zaf4D22xvqjUTdf6SbMiCsJuJlAlW2NfvLJSeV8mrz_h2PTGT_SN\
+   \MIyC8cmmmvf79R8RWtXFAfUl0PoLA58u1z-wEnHRk-DSa8_8JzP5tv6GJ5Vv1G9FyfENMq\
+   \FkEziLgHfE7UtP56gREQ4aGk7ASXQKMvXfnRYuArz8tXmyX2gOdggYeFputGv_NRv56JoB\
+   \BVO-uDZAMa7qbOkuTWm51u_BykQWbxDbsFX5Mmb-3dz9Hd_sdz82BaBl1KJEHBaFWsAOec\
+   \00Z8uJZpJUr6xTQZHm1Bhn_dsKQnlOUiPhk5XNVyHXUHMRy0Kn2mDbKituReiKldXC9BIQ\
+   \ADfpcrQQRo0ePnTKGuXoq9zsTV0seXtIMC6_suHYx2Vpiq5Fl7iuhmUhUHTghuqy3o2-Rq\
+   \L98bORQhXPddwMfpzk3FxMmCytLzMcJJdySW7RbCMaA0opnGnV27-EIKGqk6WSZd8y_mY9\
+   \PvUVk1K4q9fSRug_cKyVY4NY8EoM9KKKSl6RytPvMlUVhjbTOWnoy7VkTNAW929AUfFkMj\
+   \em6_3DtGjdSG_hx5Fq7Qd7c-m3nG25BHidK-lQ5-tuVq5lE48pBBFgMUYpFHLZ-GL-IdCH\
+   \1_lW1K6714iHfAd7ishSvuLEn-hZdXdUW7FJ_A7tUzPb5cbqDV5Lna7Hlc7Z-zh76yoG69\
+   \3OgDxGTqUCH34nnPFRKxJi6CrQC1P0i45IxHDc8fgvDncuFPeqC_RueKQwLBA45t29xgJi\
+   \tmeiYLDcMRQmO5qVlpUKuve_pNhH3b7bE3VNXCVk6q9Y-vqnF2yV9tatk1-8Kko1fFt1a4\
+   \QCTtoej2DAcGXRk7hBNrDavF4QBF1AK-aBxJdT2g9F54V8MwAv6BCEZOfaeb91gTGslxB5\
+   \nO5pkSALNi4221zaBE_HGt1vxTaOQCFEAg0Ul4969JY4TzzyVxvWKNZsg_CbKJkmTnEmQI\
+   \Jg8ZqcygcTHpGMi_P6eYbAdhXBprviF8lMYG53WSGgWkrQwXLSjY2QQhKsYkTS4Su8IKy7\
+   \O7sxweAXuQqKIp55reMIOUrrE5FcdI_3A_EKEAFgfh96J5A8DJ8yyMKVDLGmkE6LC2FgBx\
+   \3VlZDzfNA2HB4oDTN1vu1LuJ0ynxQh2kvX3bxUyxZ1qsAA6TDEM2C08aurXRh243NMQ7y3\
+   \436P9DQ5qe0WMF9CxWV8grSr3hhA6FvHpNcHBVa29LFpPH6Gtd5l9302MM4sumcrlBdRPK\
+   \N6nF79lAfPOE2LO2_pZy3qxRjosk0cPP0YRD1YFbnIZExoHB9YgaUCT6pze5IRD_uX54qb\
+   \wpxImfmC_aQZyoB1b29svP7ECiw9HVHuzDPHiFfJBYSxSqGpVEMb0bzpnfGzPm7ER6BRzp\
+   \KQknRIzFsmneU5oe4Lg2ZJuPxHkvvIE1QdUQZkTnbhgRzAUkJfwcKcKDlMm82CWkLMTpV4\
+   \wEHT5u_mmrvoFSV7l-mbeTAINnmzRyPP7WWlNlj34Fr0NCJY8ebubsP0NqGFgRVrKT7a-P\
+   \TfkBbvU1vtAJIwHang2vg3MuEook0IQlqKUpnJHzLMeeSWCRurs3ohjzy32v6TpVKmcJ3_\
+   \4Q-LBjgU07whZ9ccvy9c6hekU9yP4PKkGlx-M_WIZYCvgIdc16vEELIclgqx3ujrqjwvrW\
+   \0l1GXjASniBfDvtK6opheMgAtB3Q-H4Xq4SECIPygYhjNbsQNkixrKbHrvNBe-TxCd1_T4\
+   \m9E2YzVZm0B-vgtzih8oQoidXWA4HlfDJtU4O-diQnxc7QeVP0zZFTX83aQOKz4YFQRtQu\
+   \wHILq_BXZJ0qIisIcskEOVeOcETGJrdKSlQxtxfOPEf8zL3eUKnZrpq_66IFQGdSqer-pm\
+   \CpIakTGe9vZ3GN1I7z7eiGEOJ7_XRhV1Qy0vUp4-ivE4W811eyH_Gfytuj332NtQd8Nw4u\
+   \6L4Jh3yURCCtA7MQONEPQXmTS2NIfK2n1qVcGtBSJmSuDFAOvbZcxao4bgZ_YCBm55Y1Ic\
+   \R8LMv6Dp-MSatk0R2Mo3CBkrVyA9V6yfezXfW4MlSKfiliuIu3OLgX2-ma0VEm6Ix6Czy0\
+   \sXjzFiM08SRq040XwfhNox5RgdqEc_3gG4lXSt_DKQqH-2n7DpBAsUTuCdh0fs3WTCgVLY\
+   \tljqyAlwzuycmB8z3f937ZN1bkxwCAqG2ccASm5Ksg5N1TW574rIqOREZ1D-S4Eugfk7YS\
+   \EqjkylZu-djPU4EECHzI05hibJbOy-8e02Dvgthoy5KJTJdlFBkb5rd8COTVMocueqVs8c\
+   \42LGTBOC8d9Fy7qiwVikg4aERNRVVO-Oh0yo_LJTfD_7fZnTyscuqkRajMjpD8sF5w09Lt\
+   \K0y9MMNdi4v9j0Oqo0YwxWh-9iM4i2FqLLC9j-erur1O3xwP3KsTg9EnE8Gle6RVZJKdS_\
+   \IQfSy6Y85M2yGRRUkfdeVCFPQNFSM3vY6e3tywcJHJjZr2BPleySTBNMvZb3pEDBhNycr0\
+   \HHTnu2a50HEufel1pj4goFrFAyKPDRE3FrYbQGafVaT3y__n2BMjIvxEueIpuZwBa3MiV2\
+   \TEvuiAYQ_K8aIZNYVS7mWBigzBWgKDFBqBTtwUWwaUvTMYKnPYijJ2XeBgKk6Jephx3NvZ\
+   \ESnkYEU5nYnEtNotOQWO-9KZbzyPynWlP9GzD5N9mwnVuYpe1fsTSebEwha9vsqj3sJuCr\
+   \ILzkJNnCofNby2SkoTJ_TGycNlYFQdVy1hvFU7jKHqBpTF2etgz_o6LJtitCbmKS0_fkvW\
+   \sGstxyoOmmHBKY02eqcwWtJlUoaKZmAtn10caxfm8uxUY5UG-yEAqbny55ThLVB-jxreJr\
+   \c614tK4niXZpPbTHNKfWswXbCjOsFAy3FyrrYsLJPkIbSCbeoU-Ftjn_7kCMnKDUkk0bI8\
+   \HfMyFMdYQ-nZRt0TIcjN_kXnE92qFoBlfzQmzRQyZREuwz2-dXdw2B_AlOri3Mey2sf61x\
+   \5fB8WML7i01umB8VZ7Cr5GecsLiEC1fewgwIKJcxlhumWBMblgpJ7CaXmFBEn_W7dTAbos\
+   \jrpXHJhnw4JbniZgvb4zFFLXz5hCv-v70o0uhxca36cEwIiBDIPTbFYpvqUwYEMwFN3d24\
+   \6Ma4-23XDoV6S5lk62TSZaSY39_3j8lAkhVQDUn-19WECv06kjF7SgJoSWtRXV9UMuk38M\
+   \XlU9AKbkgeK6JrLjl6hXM8RWXoO6TNuXJ6gL1HwgG-hIctTkkwUQywnqe9Nh6MrO1jFYDm\
+   \n43YTogkamC3nMqHOOt8Nq6EfdPxOxsmTq-ADjt4NjsRnrhNNOu3MjCzUEFZGhNOykpeOf\
+   \SqWI7sWyYMbMen5YqnnGh9UWzb1BK_TiG-jH6tFhpABVr7OCEjnVIIDjSLMdEwl46TB32p\
+   \WPoyH9zxyleGp8QSEJcWAdMVLibE1kIJZno95tbyVtSuiMa3eTr3w9izk0c1iNA3AJWezB\
+   \SqvI4Q8A5q3w3vE5AJmK2Yng6HAW3p-gjRYEQHzKs8zlpg_r5eQi0uulks5zBZRJqquHnL\
+   \MeCf_JKRUpHBwZ9r0Gd7FbHaiNPzZtyzBjqEjOCfbLp6BBXhqQ366gwNwTcLgh2aM0U6L-\
+   \mK4FiYN_S7SjNtDnBIgLVpPPwIlPHNCSdwGaLTobR_Un2xXW8y382CF98ViaieTGysigI6\
+   \mrDsZ26HYWqvr2q93afswz9jW4daIsAyjgLV-oM6w7u85nZKyyxLa9nIwAlNuw77D0YRY7\
+   \ez-RMiJf8XJGOkxyUxDb4CW3iSPNqg5YXPzIuBsVXAHcds-IgLzvxWDViit6g2vKVBOE_h\
+   \xGkd4oME2TMAd6fZP5QF2vzcnFOAGBp3H9WzpIU2dwRrMpKq2dGJDlWBPjMx3Jkj-Y3O8Q\
+   \p-QkNXxe29OSDGgDmhbDc46WmSwLC3ApdiWxUF6qKTSujWMzSkr9eEVrErO8PWDrqBXHPu\
+   \eYPTCZ9A0J4SSGPt_ARI3WKRzc_VyDNJV4PTp3O8IK_qRh8Aok3SCDYQM21pt29__-AWaC\
+   \t5lwsgb4L7no5F8jvmzhbLnCpZaHkAC6Byt6gUDCJf297FN03r6H35rG1X-O6KQLh_3dpO\
+   \BUehE725405XrnhG2crIBX1XoAkZRbfyuoZgOsxv-aGvmDLDkoa05R9AOpK_LIUg9hM4uy\
+   \U95JA7KN4wUtjHvc8BM7I3sWNxk4XIUwRGNY-TlwXE19oOSf2Dz6X9dbLHbCPKd1KzyPF3\
+   \SRhN7FivY9DPJXCl95KEZcLRf72-VMLNkn2drA8JeHyHmRHyHoU9xC0Nd-XVf08liELyva\
+   \fkTHf8C5WbRwPYLPTU0KceUaPzGEcwQ7hXOFE7Ki2ST2YTSU-1Txg-c3lD88pxNys9BTgq\
+   \30jwTr_vbEJCxJrgeFUBsqAV3Ljvpq_AT1_8ur2eY87AzKnfaVXiBhuAVIdNBev2gdSsC7\
+   \vi3yN9qqBxqXh1LUOsgHbmV9_1KWmIXs_G4r7TmYIvhKTovaup3H4IvP36imfJPhGso40-\
+   \WqsONOyzQ594C_XlQPaVW5GSACQATxIgxhD-WIl9ohZ5mm3XLDpHAxCUu3ruUO1VTtwbp7\
+   \bS0PbHYoClqdjLMSjwmNdWLyaY1Z6-OBjlNcRM2Yjh7e_YRRtWd7Esslf1AJrX8LfBj_gK\
+   \D_OeUfcy6jYKu6qL9eMn3ATQPSSxNYzIyWVFgNeVjzLwBuo7q414aomVP0PdlpI3VKQqGB\
+   \hcJP_eq08UqD6hwxlnGrLsX7B4bF0Tn6Fr2Q0CxoXv2gHjH-95yFbF08ai1oV59IU3wrrA\
+   \kFBF7yHpYA5M3Q2tAXwju3DWKxuKSiEjFblcxjokhRPe-7MLH6E-WBUklf2HvU0v7zNsm9\
+   \eBMfhKDQJR8XCM4YMcs01P57ggcoW_Tkfk66fymtg3LCRpJ4IVYuLmbqVUVzS2FJiBTiAS\
+   \G9sXgKsmMuJL6TrgoEI5yHq-KXBqKz8R2vVC4zYxPnLm46mSzYaKnfDoha5KawNO6Z1DjX\
+   \TN0Bdr19U2yoGOEJwDcfGfswqeEyGJPHExQJ5ssu65LPMHBmco95R6xqLMWkGGiEkFNMMl\
+   \q_T8-xGZiL9VA8WDHpMtVGMynFBYnTLSXjrxQG7Qwq69OGzkTKuBx8i8_mrN4Z2SYwR5Jf\
+   \EUiNS5XRnVHF-zaNIgKzZzkh4SYAeiPGSl2r-Os5ayVP7ju02Bioz0sCvLKa2ZZhP6BDlC\
+   \KrgIe9k-wWOrGaijui3vgMLtK0IUDJlar6TTbPiNmpT29o87ATtuvjz-rGSrBwGWjum1_l\
+   \Gxk1y9o_KSCACvBQDxVj9tWqsQt28Si2KpcDdBG3ZlkjzzX42NwD_CgYZO8Rq9oGaEELXG\
+   \EaEVUvfvXDo-ziVFNtBUD81w-qG6YutK3zxhQ1SHPl2NmEH7C6gXIg2BpdQugkxHFOkJao\
+   \e-87OiGIIgJStc_RHYeg_pgckz1pihA0uvIC1hHmkICCfDw_MTAmhhiLHBVAAZ4qyp3YG1\
+   \2xXJ5MlTPOf1-ylTsFXxo6eviH-zcfq-B3CdMDH9GGngVcLMDC0NRuu5Y6Z6a4B4wFeOc_\
+   \GlgABg2IJuve99AcfsTcYQep1PcB_nQBnuO9pPEHP2Z6KeClEdEF05Ar1w0zh58a_gLyqf\
+   \F5By024x-lnBUotaLDnUF6rV1JXSnVPqwV-7P1n7fBqrrIFdQ9ojrIe0cwI0jt_nj5YdcO\
+   \9aqS3SveOl22prjPjo1GAxAb0V2oPVqTQEhAtzA68LiHjzpGgt7AuRaQCOR3Jo7yDc27XJ\
+   \lq7PK9UEWfx-MzdCG6ehtFcpnPxgqs4KbSZEJD_hsoqJkfEAP3cO8vCUECB_dVjQj5zXCq\
+   \eHwMd15ue8ATLdJMAla6kQ9uD_GeUTghiDVOk3QxWjy1qwKUOgodkRpdOfW8npNDH4l8s3\
+   \GixQ6LBn8b47iVyKIMPl2pICdz747h1MgQv2Wr3y_97DysfbghM-iewTKOI-JaRcPVf0eH\
+   \9ZAWORTVq9P6QXUVFcmUxTB3-4K_kWQykU1aIPerjVGo_ooju2yty1-1CtInuvLMzl7dxf\
+   \sHu4OZ6AS5Fh9OaNkhPHfzAUw9D43ZJKnGibhxaxFpbhie4Sf9p51kDBP_NoA_AVfS-jG7\
+   \WXvpBbwAmJeeDlyeXcZBwFyW0HXcPRFhkodNhviOffaj8px5KpxMAI4qgxdSrL27C4pmlZ\
+   \56NWMvuBA6So0BkOzGeXyNKyhp9ehEDcyKVgIToZcdy09EA4nOUl6CnVATCX9G13tfELJq\
+   \cOx530SMQMLj0KX9jdYC-iYPBpBhMfbjFp5h7zFg7lP5agqXAqxOB5enrD1uIHfgjaoKMp\
+   \tEBIPb2vP7q21_pJkPYUJBAa_bsXyNjlJrU2ds6VL42aqzBd9fwk6gLJLTxXzz_w5vJAbI\
+   \4laktZLu337e0tSt6zviSwdJ-z7az18F46Q1l2H6nUi3Mcpv0dU9A-6WokWHZB7Tm8v6xm\
+   \ImfShdvpZzZDl2_p3mwxiK8j0GuMiS6kD8Lognv-wwSvX7w6NCC2spzTofbbeDh6h_-AGX\
+   \r0sxq__XCZrqQebAqo2w6KiUimp6HOPD19yOzuDj187W3_pE39TZyQgRu4OKXrph6hURGe\
+   \vqf2udj9Vk4aPtk3sm-bGLD65z-qMfDvUwKqve1utKi8le0oTqDiVT92KgG4uTdbLdNZAO\
+   \yCoNYVLNCm-IBGAmS4pHqdbsz-p77MNdanXVQgPyLRZzxy5CKPQvgTUoi8Y9CcBa9dhxN9\
+   \_M88jIlJs1282BB05dYJVnYupsEhx_HBENzOpCEF2coLEZPEmy6CFLEtEgtq9k4Soq3hAE\
+   \pFlN_nd3RBqv0M4Q4Uve5egNMr3RHghbJsovrs1bHdNDHjZ7xsacW_aSlyEuIyvDajCLsl\
+   \-GTDqb1rbarlV55zamBekyFYZzP6Demcoi7jWSlZmvvlThpZCCXtJF2n_7ozxxf-L9Boi2\
+   \9Cx0fsiJ5z36xhOReXVpyWw4xkMJ2ybt_zt9XqsmVZ4v3RunJ025PjWcd80hND6H1w2O0G\
+   \qsUrQ8kFwwEIVS95oFXQ2ZTtaTp-XO7Dz9pTmF1pnHnefFTK4tC6SUF7dvpFiUsYU8bwI-\
+   \Zwix9S7Boeksx43NOBtGxBr3l-1WBr4qx4JLxcXptoT-vqaeRnix40kpBgxBfWvkr5w9pZ\
+   \5AbL4wl42nLnTw33K6mqdW1DxVQNDTTmBuX6CjI1tTlxw8QdF9KnESRSNp-d-2O0AvDcYg\
+   \DCHSr7flegjQqQIQ7Nk9CJWXzFXp6vC7-bYAAGjhkabSFevP97o-eIzfVDZZd3hp9IgnF2\
+   \heMtZb9BAzy0R_XJ5W0H7tK_B9VWfrghJ9wGhQ51e77-o67okVQ8iwSkiSrs0_njVroSrv\
+   \b563wy5N-SGnbA0-V4AYeDyteZ2RTdr7ouzihoU7jOHERvWFGpegIDyUOKJ4rj9_W9XznU\
+   \lnzHjmIX47Wfybdn0fU3N-j9f9ZsT9YYfBSudXWoa12F8ngJc8QT6zBmnCysBwRTlcjfZd\
+   \WJTaLDC0gMRXezq59U1ahXKvYwlnXiWV5SmhiR2NpT2lKVFVFaEpUa05US3kxVFNFRkxSU\
+   \zB5TlRaekxYSnZZblZ6ZENKOS5PVEE0TldReVltVm1Oamt5T0RaaE5tTmlZalV4TmpJell\
+   \6aG1ZVEkxT0RZeU9UazBOV05rTlRWallUY3dOV05qTkdVMk5qY3dNRE01TmpnNU5HVXdZd\
+   \w
+
+9.  Normative References
+
+   [CRYSTALS-Dilithium]
+              Ducas, L., Kiltz, E., Lepoint, T., Lyubashevsky, V.,
+              Schwabe, P., Seiler, G., and D. Stehle, "CRYSTALS-
+              Dilithium: A Lattice-Based Digital Signature Scheme",
+              2018, <https://doi.org/10.13154/tches.v2018.i1.238-268>.
+
+   [Falcon]   Fouque, P., Hoffstein, J., Kirchner, P., Lyubashevsky, V.,
+              Pornin, T., Prest, T., Ricosset, T., Seiler, G., Whyte,
+              W., and Z. Zhang, "Fast-Fourier Lattice-based Compact
+              Signatures over NTRU", 2017, <https://falcon-sign.info/>.
+
+   [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
+              Requirement Levels", BCP 14, RFC 2119,
+              DOI 10.17487/RFC2119, March 1997,
+              <https://www.rfc-editor.org/info/rfc2119>.
+
+   [RFC4648]  Josefsson, S., "The Base16, Base32, and Base64 Data
+              Encodings", RFC 4648, DOI 10.17487/RFC4648, October 2006,
+              <https://www.rfc-editor.org/info/rfc4648>.
+
+   [RFC7515]  Jones, M., Bradley, J., and N. Sakimura, "JSON Web
+              Signature (JWS)", RFC 7515, DOI 10.17487/RFC7515, May
+              2015, <https://www.rfc-editor.org/info/rfc7515>.
+
+   [RFC7517]  Jones, M., "JSON Web Key (JWK)", RFC 7517,
+              DOI 10.17487/RFC7517, May 2015,
+              <https://www.rfc-editor.org/info/rfc7517>.
+
+   [RFC7638]  Jones, M. and N. Sakimura, "JSON Web Key (JWK)
+              Thumbprint", RFC 7638, DOI 10.17487/RFC7638, September
+              2015, <https://www.rfc-editor.org/info/rfc7638>.
+
+   [RFC8702]  Kampanakis, P. and Q. Dang, "Use of the SHAKE One-Way Hash
+              Functions in the Cryptographic Message Syntax (CMS)",
+              RFC 8702, DOI 10.17487/RFC8702, January 2020,
+              <https://www.rfc-editor.org/info/rfc8702>.
+
+   [RFC8812]  Jones, M., "CBOR Object Signing and Encryption (COSE) and
+              JSON Object Signing and Encryption (JOSE) Registrations
+              for Web Authentication (WebAuthn) Algorithms", RFC 8812,
+              DOI 10.17487/RFC8812, August 2020,
+              <https://www.rfc-editor.org/info/rfc8812>.
+
+   [SPHINCS-PLUS]
+              Hulsing, A., "Sphincs+ Stateless Hash-based Signatures",
+              2017, <https://sphincs.org>.
+
+10.  Informative References
+
+   [RFC6234]  Eastlake 3rd, D. and T. Hansen, "US Secure Hash Algorithms
+              (SHA and SHA-based HMAC and HKDF)", RFC 6234,
+              DOI 10.17487/RFC6234, May 2011,
+              <https://www.rfc-editor.org/info/rfc6234>.
+
+Authors' Addresses
+
+   Michael Prorock
+   mesur.io
+   Email: mprorock@mesur.io
+
+
+   Orie Steele
+   Transmute
+   Email: orie@transmute.industries
+
+
+   Rafael Misoczki
+   Google
+   Email: rafaelmisoczki@google.com
+
+
+   Michael Osborne
+   IBM
+   Email: osb@zurich.ibm.com
+
+
+   Christine Cloostermans
+   NXP
+   Email: christine.cloostermans@nxp.com
