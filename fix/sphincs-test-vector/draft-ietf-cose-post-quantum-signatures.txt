@@ -5,14 +5,14 @@
 COSE                                                          M. Prorock
 Internet-Draft                                                  mesur.io
 Intended status: Standards Track                               O. Steele
-Expires: 12 May 2023                                           Transmute
+Expires: 27 September 2023                                     Transmute
                                                              R. Misoczki
                                                                   Google
                                                               M. Osborne
                                                                      IBM
                                                          C. Cloostermans
                                                                      NXP
-                                                         8 November 2022
+                                                           26 March 2023
 
 
            JOSE and COSE Encoding for Post-Quantum Signatures
@@ -53,11 +53,11 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 12 May 2023.
+   This Internet-Draft will expire on 27 September 2023.
 
 Copyright Notice
 
-   Copyright (c) 2022 IETF Trust and the persons identified as the
+   Copyright (c) 2023 IETF Trust and the persons identified as the
    document authors.  All rights reserved.
 
    This document is subject to BCP 78 and the IETF Trust's Legal
