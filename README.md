@@ -18,17 +18,17 @@ If you see an incomplete row, and wish to contribute to check the open issues, a
 
 | family    | kty     | alg          | vectors     | spec                                                    |
 |-----------|---------|--------------|-------------|---------------------------------------------------------|
-| Dilithium | LWE     | CRYDI5       | in-progress | https://tches.iacr.org/index.php/TCHES/article/view/839 |
-| Dilithium | LWE     | CRYDI3       | in-progress | https://tches.iacr.org/index.php/TCHES/article/view/839 |
-| Dilithium | LWE     | CRYDI2       | in-progress | https://tches.iacr.org/index.php/TCHES/article/view/839 |
-| Falcon    | NTRU    | FALCON1024   | in-progress |                                                         |
-| Falcon    | NTRU    | FALCON512    | in-progress |                                                         |
-| SPHINCS+  | HASH    | SPHINCS+128s | planned     |                                                         |
-| SPHINCS+  | HASH    | SPHINCS+128f | planned     |                                                         |
-| SPHINCS+  | HASH    | SPHINCS+192s | planned     |                                                         |
-| SPHINCS+  | HASH    | SPHINCS+192f | planned     |                                                         |
-| SPHINCS+  | HASH    | SPHINCS+256s | in-progress |                                                         |
-| SPHINCS+  | HASH    | SPHINCS+256f | planned     |                                                         |
+| Dilithium | LWE     | CRYDI5       | in-progress | https://pq-crystals.org/dilithium/                      |
+| Dilithium | LWE     | CRYDI3       | in-progress | https://pq-crystals.org/dilithium/                      |
+| Dilithium | LWE     | CRYDI2       | in-progress | https://pq-crystals.org/dilithium/                      |
+| Falcon    | NTRU    | FALCON1024   | in-progress | https://falcon-sign.info/                               |
+| Falcon    | NTRU    | FALCON512    | in-progress | https://falcon-sign.info/                               |
+| SPHINCS+  | HASH    | SPHINCS+128s | planned     | https://sphincs.org/                                    |
+| SPHINCS+  | HASH    | SPHINCS+128f | planned     | https://sphincs.org/                                    |
+| SPHINCS+  | HASH    | SPHINCS+192s | planned     | https://sphincs.org/                                    |
+| SPHINCS+  | HASH    | SPHINCS+192f | planned     | https://sphincs.org/                                    |
+| SPHINCS+  | HASH    | SPHINCS+256s | in-progress | https://sphincs.org/                                    |
+| SPHINCS+  | HASH    | SPHINCS+256f | planned     | https://sphincs.org/                                    |
 
 ## Contributing
 
