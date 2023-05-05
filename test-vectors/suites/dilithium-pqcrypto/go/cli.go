@@ -14,7 +14,7 @@ const (
 
 func main() {
 	if len(os.Args) < 2 {
-		panic("must supply input type arguments")
+		panic("must supply command, input and output arguments")
 	}
 
 	var input, output, format string

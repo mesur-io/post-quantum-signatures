@@ -2,14 +2,15 @@ echo "\n🌱 building test vector generators..."
 
 docker-compose build --remove-orphans
 
-echo "\n🌱 dilithium-pqcrypto..."
+echo "\n🌱 dilithium-pqcrypto-go..."
 
-IMPLEMENTATION=dilithium-pqcrypto
+IMPLEMENTATION=dilithium-pqcrypto-go
+EXECUTABLE=/dilithium
 INPUT=/data/dilithium-pqcrypto/input.json
 OUTPUT=/data/dilithium-pqcrypto/output.json
 
 docker-compose run $IMPLEMENTATION \
-dilithium-pqcrypto generate \
+$EXECUTABLE \
+generate \
 --input $INPUT \
 --output $OUTPUT
-
