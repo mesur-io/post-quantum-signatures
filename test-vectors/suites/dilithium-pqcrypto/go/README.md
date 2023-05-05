@@ -23,5 +23,5 @@ docker build -t dilithium-test-vectors-go .
 Next run the image and generate the vectors.
 
 ```bash
-docker run -v $(pwd)/../../../data/dilithium-pqcrypto:/data dilithium-test-vectors-go ./dilithium generate --input /data/input.json --output /data/out.json
+docker run -v $(pwd)/../../../data/dilithium-pqcrypto:/data dilithium-test-vectors-go /dilithium generate --input /data/input.json --output /data/out.json
 ```
