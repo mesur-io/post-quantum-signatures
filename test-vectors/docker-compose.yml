@@ -4,7 +4,7 @@ services:
   dilithium-pqcrypto:
     image: dilithium-pqcrypto
     build:
-      context: ./suites/dilithium-pqcrypto
+      context: ./suites/go/dilithium-pqcrypto
       dockerfile: Dockerfile
     volumes:
       - ./data:/data
