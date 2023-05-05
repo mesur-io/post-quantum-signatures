@@ -3,8 +3,9 @@ module github.com/mesur-io/post-quantum-signatures
 go 1.20
 
 require (
-	github.com/TBD54566975/ssi-sdk v0.0.3-alpha.0.20230502000433-da47a51770b5
+	github.com/TBD54566975/ssi-sdk v0.0.3-alpha.0.20230505162639-9a70a020cdbf
 	github.com/cloudflare/circl v1.3.3
+	github.com/lestrrat-go/jwx/v2 v2.0.9-0.20230429214153-5090ec1bd2cd
 	github.com/pkg/errors v0.9.1
 )
 
@@ -18,11 +19,7 @@ require (
 	github.com/lestrrat-go/httpcc v1.0.1 // indirect
 	github.com/lestrrat-go/httprc v1.0.4 // indirect
 	github.com/lestrrat-go/iter v1.0.2 // indirect
-	github.com/lestrrat-go/jwx/v2 v2.0.9-0.20230429214153-5090ec1bd2cd // indirect
 	github.com/lestrrat-go/option v1.0.1 // indirect
-	github.com/magefile/mage v1.14.0 // indirect
-	github.com/sirupsen/logrus v1.9.0 // indirect
 	golang.org/x/crypto v0.8.0 // indirect
 	golang.org/x/sys v0.7.0 // indirect
-	golang.org/x/term v0.7.0 // indirect
 )

@@ -16,7 +16,7 @@ type inputFile struct {
 func getInputFile(filePath string) (*inputFile, error) {
 	bytes, err := os.ReadFile(filePath)
 	if err != nil {
-		return nil, errors.Wrapf(err, "could not read input from file: %s", filePath)
+		return nil, errors.Wrapf(err, "could not read input from file: %supportedModes", filePath)
 	}
 	var input inputFile
 	if err = json.Unmarshal(bytes, &input); err != nil {
@@ -47,7 +47,7 @@ func writeGenerateResult(o outputFile, filePath string) error {
 
 func writeOutputToFile(data []byte, filePath string) error {
 	if err := os.WriteFile(filePath, data, 0755); err != nil {
-		return errors.Wrapf(err, "could not write %d bytes to file: %s", len(data), filePath)
+		return errors.Wrapf(err, "could not write %d bytes to file: %supportedModes", len(data), filePath)
 	}
 	return nil
 }

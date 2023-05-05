@@ -17,24 +17,29 @@ func init() {
 	jws.RegisterVerifier(jwx.DilithiumMode5Alg, jws.VerifierFactoryFn(jwx.NewDilithiumMode5Verifier))
 }
 
+const (
+	keyID    = "#0"
+	issuerID = "dilithium-test-vector"
+)
+
 func generateTestVector(inputFilePath, outputFilePath string) error {
 	inFile, err := getInputFile(inputFilePath)
 	if err != nil {
 		return errors.Wrap(err, "could not get inputFile from input file")
 	}
-	outputs := make([]output, 0, len(SupportedModes()))
-	for _, m := range SupportedModes() {
+	outputs := make([]output, 0, len(supportedModes()))
+	for _, m := range supportedModes() {
 		pubKey, privKey, err := m.GenerateKey(nil)
 		if err != nil {
 			return errors.Wrap(err, "could not generate key")
 		}
-		pubKeyJWK, privKeyJWK, err := jwx.PrivateKeyToPrivateKeyJWK(privKey)
+		pubKeyJWK, privKeyJWK, err := jwx.PrivateKeyToPrivateKeyJWK(keyID, privKey)
 		if err != nil {
 			return errors.Wrap(err, "could not convert private key to JWK")
 		}
 
 		// sign jws
-		signer, err := jwx.NewJWXSigner("dilithium-test-vector", "#0", privKey)
+		signer, err := jwx.NewJWXSigner(issuerID, keyID, privKey)
 		if err != nil {
 			return errors.Wrap(err, "could not create signer")
 		}
@@ -44,7 +49,7 @@ func generateTestVector(inputFilePath, outputFilePath string) error {
 		}
 
 		// verify jws
-		verifier, err := jwx.NewJWXVerifier("dilithium-test-vector", pubKey)
+		verifier, err := jwx.NewJWXVerifier(issuerID, keyID, pubKey)
 		if err != nil {
 			return errors.Wrap(err, "could not create verifier")
 		}
@@ -62,12 +67,13 @@ func generateTestVector(inputFilePath, outputFilePath string) error {
 		InputFile: *inFile,
 		Output:    outputs,
 	}
-	if err := writeGenerateResult(o, outputFilePath); err != nil {
+	if err = writeGenerateResult(o, outputFilePath); err != nil {
 		return errors.Wrap(err, "could not write output to file")
 	}
 	return nil
 }
 
-func SupportedModes() []dilithium.Mode {
-	return []dilithium.Mode{dilithium.Mode5}
+// if you wish to generate vectors for specific modes remove the unnecessary modes here
+func supportedModes() []dilithium.Mode {
+	return []dilithium.Mode{dilithium.Mode2, dilithium.Mode3, dilithium.Mode5}
 }

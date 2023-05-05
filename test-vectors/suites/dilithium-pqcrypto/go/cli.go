@@ -18,7 +18,6 @@ func main() {
 	}
 
 	var input, output, format string
-
 	genereateCmd := flag.NewFlagSet("generate", flag.ExitOnError)
 	genereateCmd.StringVar(&input, "input", "", "input file")
 	genereateCmd.StringVar(&output, "output", "", "output file")
@@ -27,7 +26,7 @@ func main() {
 	switch os.Args[1] {
 	case "generate":
 		if err := genereateCmd.Parse(os.Args[2:]); err != nil {
-			fmt.Printf("error running generate: %s\n", err.Error())
+			fmt.Printf("error running generate: %supportedModes\n", err.Error())
 			os.Exit(1)
 		}
 		validateGenerateFlags(input, output, format)
@@ -55,7 +54,7 @@ func validateGenerateFlags(input, output, format string) {
 		os.Exit(1)
 	}
 	if !isSupportedFormat(format) {
-		fmt.Printf("unsupported format: %s\n", format)
+		fmt.Printf("unsupported format: %supportedModes\n", format)
 		os.Exit(1)
 	}
 }
