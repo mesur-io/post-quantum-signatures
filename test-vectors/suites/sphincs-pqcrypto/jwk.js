@@ -17,7 +17,7 @@ const importJwk = (jwk)=>{
 const exportPublicKeyJwk = ({ publicKey })=>{
   const publicKeyJwk = {
     kty: 'HASH', 
-    alg: 'SPHINCS+-SHAKE-256s-robust', 
+    alg: 'SPHINCS+256s', 
     x: base64url.encode(publicKey) 
   }
   return publicKeyJwk;
