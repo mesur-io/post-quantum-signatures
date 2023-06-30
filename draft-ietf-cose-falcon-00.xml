@@ -1,0 +1,671 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- name="GENERATOR" content="github.com/mmarkdown/mmark Mmark Markdown Processor - mmark.miek.nl" -->
+<rfc version="3" ipr="trust200902" docName="draft-ietf-cose-falcon-00" submissionType="IETF" category="std" xml:lang="en" xmlns:xi="http://www.w3.org/2001/XInclude" indexInclude="true" consensus="true">
+
+<front>
+<title abbrev="jose-cose-falcon">JOSE and COSE Encoding for Falcon</title><seriesInfo value="draft-ietf-cose-falcon-00" stream="IETF" status="standard" name="Internet-Draft"></seriesInfo>
+<author initials="M." surname="Prorock" fullname="Michael Prorock"><organization>mesur.io</organization><address><postal><street></street>
+</postal><email>mprorock@mesur.io</email>
+</address></author><author initials="O." surname="Steele" fullname="Orie Steele"><organization>Transmute</organization><address><postal><street></street>
+</postal><email>orie@transmute.industries</email>
+</address></author><author initials="R." surname="Misoczki" fullname="Rafael Misoczki"><organization>Google</organization><address><postal><street></street>
+</postal><email>rafaelmisoczki@google.com</email>
+</address></author><author initials="M" surname="Osborne" fullname="Michael Osborne"><organization>IBM</organization><address><postal><street></street>
+</postal><email>osb@zurich.ibm.com</email>
+</address></author><author initials="C" surname="Cloostermans" fullname="Christine Cloostermans"><organization>NXP</organization><address><postal><street></street>
+</postal><email>christine.cloostermans@nxp.com</email>
+</address></author><date/>
+<area>Internet</area>
+<workgroup>COSE</workgroup>
+<keyword>JOSE</keyword>
+<keyword>COSE</keyword>
+<keyword>PQC</keyword>
+<keyword>FALCON</keyword>
+
+<abstract>
+<t>This document describes JSON and CBOR serializations for Falcon,
+a Post-Quantum Cryptography (PQC) signature suite.</t>
+<t>This document does not define any new cryptography, only seralizations
+of existing cryptographic systems.</t>
+<t>This document registers key types for JOSE and COSE, specifically <tt>NTRU</tt>.</t>
+<t>Key types in this document are specified by the cryptographic algorithm
+family in use by a particular algorithm as discussed in RFC7517.</t>
+<t>This document registers signature algorithms types for JOSE and COSE,
+specifically <tt>FALCON1024</tt> and others as required for use of various
+parameterizations of the Falcon post-quantum signature scheme.</t>
+</abstract>
+
+</front>
+
+<middle>
+
+<section anchor="notational-conventions"><name>Notational Conventions</name>
+<t>The key words &quot;<bcp14>MUST</bcp14>&quot;, &quot;<bcp14>MUST NOT</bcp14>&quot;, &quot;<bcp14>REQUIRED</bcp14>&quot;, &quot;<bcp14>SHALL</bcp14>&quot;, &quot;<bcp14>SHALL NOT</bcp14>&quot;, &quot;<bcp14>SHOULD</bcp14>&quot;,
+&quot;<bcp14>SHOULD NOT</bcp14>&quot;, &quot;<bcp14>RECOMMENDED</bcp14>&quot;, &quot;<bcp14>MAY</bcp14>&quot;, and &quot;<bcp14>OPTIONAL</bcp14>&quot; in this
+document are to be interpreted as described in <xref target="RFC2119"></xref>.</t>
+</section>
+
+<section anchor="terminology"><name>Terminology</name>
+<t>The following terminology is used throughout this document:</t>
+<t>PK : The public key for the signature scheme.</t>
+<t>SK : The secret key for the signature scheme.</t>
+<t>signature : The digital signature output.</t>
+<t>message : The input to be signed by the signature scheme.</t>
+<t>sha256 : The SHA-256 hash function defined in <xref target="RFC6234"></xref>.</t>
+<t>shake256 : The SHAKE256 hash function defined in <xref target="RFC8702"></xref>.</t>
+</section>
+
+<section anchor="falcon"><name>Falcon</name>
+
+<section anchor="overview"><name>Overview</name>
+<t>This section of the document describes the lattice signature scheme
+<xref target="Falcon"></xref>, the &quot;Fast Fourier lattice-based compact signatures over
+NTRU&quot;. Falcon is based on the GPV hash-and-sign lattice-based signature
+framework introduced by Gentry, Peikert and Vaikuntanathan [GPV08],
+which is a framework that requires a class of lattices and a trapdoor
+sampler technique. For the class of lattices, Falcon uses the well-known
+NTRU lattices, while for the trapdoor sampler, it uses a new fast
+Fourier sampling technique [DP16]. The underlying hard problem is the
+short integer solution problem (SIS) over NTRU lattices, for which no
+efficient solving algorithm is currently known for both classical as
+well as quantum settings.</t>
+<t>The main design principle of Falcon is compactness, i.e. it was designed
+in a way that achieves minimal total memory bandwidth requirement (the
+sum of the signature size plus the public key size). This is possible
+due to the compactness of NTRU lattices. Falcon also offers very
+efficient signing and verification procedures. The main potential
+downsides of Falcon refer to the non-triviality of its algorithms and
+the need for floating point arithmetic support.</t>
+<t>The GPV framework, which underpins the Falcon design, is proven to be
+secure in the (quantum) random oracle model as long as the SIS problem
+remains intractable. Falcon requires an adaption of this prove to
+account for the fact it uses NTRU lattices.</t>
+<t>Falcon brings several advantages over other approaches to signature
+suites:</t>
+
+<ul spacing="compact">
+<li>Post-quantum secure as long as the NTRU-SIS problem remains
+intractable.</li>
+<li>Compactness: Falcon aims at minimum signature plus public key sizes.
+This should be contrasted with hash-based signature schemes (e.g.
+SPHINCS+), which minimizes public key sizes but suffer from long
+signatures, and multivariate quadratic schemes, which minimizes
+signatures sizes but suffers from long public keys. It also offers
+substantially shorter signatures than other lattice schemes while public
+keys are about the same size.</li>
+<li>Efficiency: Falcon can produce thousands of signatures per second on a
+common computer, while verification is up to ten times faster. The
+operations in Falcon have O(n log n) complexity for degree n.</li>
+<li>Side-channel resistance: Falcon may still have an important limitation
+regarding side-channel attacks due to the hardness of implementing
+discrete Gaussian sampling over the integers in constant-time. This gap
+that may have recently filled, but is under active investigation.</li>
+</ul>
+</section>
+
+<section anchor="core-operations"><name>Core Operations</name>
+<t>Core operations used by the signature scheme should be implemented
+according to the details in <xref target="Falcon"></xref>. Core operations include key
+generation, sign, and verify.</t>
+</section>
+
+<section anchor="using-falcon-with-jose"><name>Using FALCON with JOSE</name>
+<t>This sections is based on <eref target="https://datatracker.ietf.org/doc/html/rfc8812#section-3">CBOR Object Signing and Encryption (COSE) and
+JSON Object Signing and Encryption
+(JOSE)</eref></t>
+
+<section anchor="falcon-key-representations"><name>FALCON Key Representations</name>
+<t>A new key type (kty) value &quot;NTRU&quot; (for keys related to the family of
+algorithms that utilize NTRU based approaches to Post-quantum lattice
+based cryptography) is defined for public key algorithms that use base
+64 encoded strings of the underlying binary material as private and
+public keys and that support cryptographic sponge functions. It has the
+following parameters:</t>
+
+<ul>
+<li><t>The parameter &quot;kty&quot; MUST be &quot;NTRU&quot;.</t>
+</li>
+<li><t>The parameter &quot;alg&quot; MUST be specified, and its value MUST be one of
+the values specified the below table</t>
+</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>alg</th>
+<th>Description</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>FALCON512</td>
+<td>Falcon with parameter set 512</td>
+</tr>
+
+<tr>
+<td>FALCON1024</td>
+<td>Falcon with parameter set 1024</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><t>The parameter &quot;pset&quot; MAY be specfied to indicate the parameter set in
+use for the algorithm, but SHOULD also reflect the targeted NIST level
+for the algorithm in combination with the specified parameter set. For
+&quot;alg&quot; &quot;FALCON&quot; one of the described parameter sets &quot;512&quot; or &quot;1024&quot;
+MUST be specified. Parameter set &quot;512&quot; or above SHOULD be used with
+&quot;FALCON&quot; for any situation requiring at least 128bits of security
+against both quantum and classical attacks</t>
+</li>
+<li><t>The parameter &quot;x&quot; MUST be present and contain the public key encoded
+using the base64url <xref target="RFC4648"></xref> encoding.</t>
+</li>
+<li><t>The parameter &quot;d&quot; MUST be present for private keys and contain the
+private key encoded using the base64url encoding. This parameter MUST
+NOT be present for public keys.</t>
+</li>
+</ul>
+<t>Sizes of various key and signature material is as follows</t>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Paramter Name</th>
+<th>Paramter Set</th>
+<th>Size</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>Signature</td>
+<td>sig</td>
+<td>512</td>
+<td>666</td>
+</tr>
+
+<tr>
+<td>Public Key</td>
+<td>x</td>
+<td>512</td>
+<td>897</td>
+</tr>
+
+<tr>
+<td>Private Key</td>
+<td>d</td>
+<td>512</td>
+<td>1281</td>
+</tr>
+
+<tr>
+<td>Signature</td>
+<td>sig</td>
+<td>1024</td>
+<td>1280</td>
+</tr>
+
+<tr>
+<td>Public Key</td>
+<td>x</td>
+<td>1024</td>
+<td>1793</td>
+</tr>
+
+<tr>
+<td>Private Key</td>
+<td>d</td>
+<td>1024</td>
+<td>2305</td>
+</tr>
+</tbody>
+</table><t>When calculating JWK Thumbprints <xref target="RFC7638"></xref>, the four public key fields
+are included in the hash input in lexicographic order: &quot;kty&quot;, &quot;alg&quot;, and
+&quot;x&quot;.</t>
+<t>When using a JWK for this algorithm, the following checks are made:</t>
+
+<ul>
+<li><t>The &quot;kty&quot; field MUST be present, and it MUST be &quot;NTRU&quot; for JOSE.</t>
+</li>
+<li><t>The &quot;alg&quot; field MUST be present, and it MUST represent the algorith
+and parameter set.</t>
+</li>
+<li><t>If the &quot;key_ops&quot; field is present, it MUST include &quot;sign&quot; when
+creating an NTRU signature.</t>
+</li>
+<li><t>If the &quot;key_ops&quot; field is present, it MUST include &quot;verify&quot; when
+verifying an NTRU signature.</t>
+</li>
+<li><t>If the JWK &quot;use&quot; field is present, its value MUST be &quot;sig&quot;.</t>
+</li>
+</ul>
+</section>
+
+<section anchor="falcon-algorithms"><name>FALCON Algorithms</name>
+<t>In order to reduce the complexity of the key representation and
+signature representations we register a unique algorithm name per pset.
+This allows us to omit registering the <tt>pset</tt> term, and reduced the
+likelyhood that it will be misused. These <tt>alg</tt> values are used in both
+key representations and signatures.</t>
+<table>
+<thead>
+<tr>
+<th>kty</th>
+<th>alg</th>
+<th>Paramter Set</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>NTRU</td>
+<td>FALCON512</td>
+<td>512</td>
+</tr>
+
+<tr>
+<td>NTRU</td>
+<td>FALCON1024</td>
+<td>1024</td>
+</tr>
+</tbody>
+</table></section>
+</section>
+
+<section anchor="using-falcon-with-cose"><name>Using FALCON with COSE</name>
+<t>The approach taken here matches the work done to support secp256k1 in
+JOSE and COSE in <xref target="RFC8812"></xref>.</t>
+<t>The following tables map terms between JOSE and COSE for signatures.</t>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Value</th>
+<th>Description</th>
+<th>Recommended</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>FALCON512</td>
+<td>TBD</td>
+<td>Falcon with parameter set 512</td>
+<td>No</td>
+</tr>
+
+<tr>
+<td>FALCON1024</td>
+<td>TBD</td>
+<td>Falcon with parameter set 1024</td>
+<td>No</td>
+</tr>
+</tbody>
+</table><t>The following tables map terms between JOSE and COSE for key types.</t>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Value</th>
+<th>Description</th>
+<th>Recommended</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>NTRU</td>
+<td>TBD</td>
+<td>kty for NTRU based digital signatures</td>
+<td>No</td>
+</tr>
+</tbody>
+</table></section>
+</section>
+
+<section anchor="security-considerations"><name>Security Considerations</name>
+<t>The following considerations SHOULD apply to all parmeter sets described
+in this specification, unless otherwise noted.</t>
+<t>Care should be taken to ensure &quot;kty&quot; and intended use match, the
+algorithms described in this document share many properties with other
+cryptographic approaches from related families that are used for
+purposes other than digital signatures.</t>
+
+<section anchor="falcon-specific-security-considerations"><name>Falcon specific Security Considerations</name>
+<t>Falcon utilizes floating point multiplications as part of fast Fourier
+transforms in its internal operations.  This is somewhat novel and care
+should be taken to ensure consistent implementation across hardware
+platforms.  Well tested underlying implementations should be selected
+for use with JOSE and COSE implementations.</t>
+</section>
+
+<section anchor="validating-public-keys"><name>Validating public keys</name>
+<t>All algorithms in that operate on public keys require first validating
+those keys. For the sign, verify and proof schemes, the use of
+KeyValidate is REQUIRED.</t>
+</section>
+
+<section anchor="side-channel-attacks"><name>Side channel attacks</name>
+<t>Implementations of the signing algorithm SHOULD protect the secret key
+from side-channel attacks. Multiple best practices exist to protect
+against side-channel attacks. Any implementation of the the
+Falcon signing algorithm SHOULD utilize the following best practices at
+a minimum:</t>
+
+<ul spacing="compact">
+<li>Constant timing - the implementation should ensure that constant time
+is utilized in operations</li>
+<li>Sequence and memory access persistance - the implemention SHOULD
+execute the exact same sequence of instructions (at a machine level)
+with the exact same memory access independent of which polynomial is
+being operated on.</li>
+<li>Uniform sampling - care should be given in implementations to preserve
+the property of uniform sampling in implementation.</li>
+</ul>
+</section>
+
+<section anchor="randomness-considerations"><name>Randomness considerations</name>
+<t>It is recommended that the all nonces are from a trusted source of
+randomness.</t>
+</section>
+</section>
+
+<section anchor="iana-considerations"><name>IANA Considerations</name>
+<t>The following has NOT YET been added to the &quot;JSON Web Key Types&quot;
+registry:</t>
+
+<ul spacing="compact">
+<li>Name: &quot;NTRU&quot;</li>
+<li>Description: NTRU family post-quantum signature algorithm key pairs</li>
+<li>JOSE Implementation Requirements: Optional</li>
+<li>Change Controller: IESG</li>
+<li>Specification Document(s): Section 3.1 of this document (TBD)</li>
+</ul>
+<t>The following has NOT YET been added to the &quot;JSON Web Key Parameters&quot;
+registry:</t>
+
+<ul spacing="compact">
+<li>Parameter Name: &quot;pset&quot;</li>
+<li>Parameter Description: The parameter set of the crypto system</li>
+<li>Parameter Information Class: Public</li>
+<li>Used with &quot;kty&quot; Value(s): &quot;NTRU&quot;</li>
+<li>Change Controller: IESG</li>
+<li>Specification Document(s): Section 2 of this document (TBD)</li>
+</ul>
+<t>The following has NOT YET been added to the &quot;JSON Web Key Parameters&quot;
+registry:</t>
+
+<ul spacing="compact">
+<li>Parameter Name: &quot;d&quot;</li>
+<li>Parameter Description: The private key</li>
+<li>Parameter Information Class: Private</li>
+<li>Used with &quot;kty&quot; Value(s): &quot;NTRU&quot;</li>
+<li>Change Controller: IESG</li>
+<li>Specification Document(s): Section 2 of RFC 8037</li>
+</ul>
+<t>The following has NOT YET been added to the &quot;JSON Web Key Parameters&quot;
+registry:</t>
+
+<ul spacing="compact">
+<li>Parameter Name: &quot;x&quot;</li>
+<li>Parameter Description: The public key</li>
+<li>Parameter Information Class: Public</li>
+<li>Used with &quot;kty&quot; Value(s): &quot;NTRU&quot;</li>
+<li>Change Controller: IESG</li>
+<li>Specification Document(s): Section 2 of RFC 8037</li>
+</ul>
+<t>The following has NOT YET been added to the &quot;JSON Web Signature and
+Encryption Algorithms&quot; registry:</t>
+
+<ul spacing="compact">
+<li>Algorithm Name: &quot;FALCON512&quot;</li>
+<li>Algorithm Description: FALCON512 signature algorithms</li>
+<li>Algorithm Usage Location(s): &quot;alg&quot;</li>
+<li>JOSE Implementation Requirements: Optional</li>
+<li>Change Controller: IESG</li>
+<li>Specification Document(s): Section 4.1 of this document (TBD)</li>
+<li>Algorithm Analysis Documents(s): (TBD)</li>
+</ul>
+<t>The following has NOT YET been added to the &quot;JSON Web Signature and
+Encryption Algorithms&quot; registry:</t>
+
+<ul spacing="compact">
+<li>Algorithm Name: &quot;FALCON1024&quot;</li>
+<li>Algorithm Description: FALCON1024 signature algorithms</li>
+<li>Algorithm Usage Location(s): &quot;alg&quot;</li>
+<li>JOSE Implementation Requirements: Optional</li>
+<li>Change Controller: IESG</li>
+<li>Specification Document(s): Section 4.1 of this document (TBD)</li>
+<li>Algorithm Analysis Documents(s): (TBD)</li>
+</ul>
+</section>
+
+<section anchor="appendix"><name>Appendix</name>
+
+<ul spacing="compact">
+<li>JSON Web Signature (JWS) - <eref target="https://tools.ietf.org/html/rfc7515">RFC7515</eref></li>
+<li>JSON Web Encryption (JWE) - <eref target="https://tools.ietf.org/html/rfc7516">RFC7516</eref></li>
+<li>JSON Web Key (JWK) - <eref target="https://tools.ietf.org/html/rfc7517">RFC7517</eref></li>
+<li>JSON Web Algorithms (JWA) - <eref target="https://tools.ietf.org/html/rfc7518">RFC7518</eref></li>
+<li>JSON Web Token (JWT) - <eref target="https://tools.ietf.org/html/rfc7519">RFC7519</eref></li>
+<li>JSON Web Key Thumbprint - <eref target="https://tools.ietf.org/html/rfc7638">RFC7638</eref></li>
+<li>JWS Unencoded Payload Option - <eref target="https://tools.ietf.org/html/rfc7797">RFC7797</eref></li>
+<li>CFRG Elliptic Curve ECDH and Signatures - <eref target="https://tools.ietf.org/html/rfc8037">RFC8037</eref></li>
+</ul>
+<t>[DP16]: Leo Ducas and Thomas Prest. Fast fourier orthogonalization. In
+    Sergei A. Abramov, Eugene V. Zima, and Xiao-Shan Gao, editors,
+    Proceedings of the ACM on International Symposium on Symbolic and
+    Algebraic Computation, ISSAC 2016, Waterloo, ON, Canada, July 19-22,
+    2016, pages 191-198. ACM, 2016.
+[GPV08]: Craig Gentry, Chris Peikert, and Vinod Vaikuntanathan.
+    Trapdoors for hard lattices and new cryptographic constructions. In
+    Richard E. Ladner and Cynthia Dwork, editors, 40th ACM STOC, pages
+    197-206, Victoria, BC, Canada, May 17-20, 2008. ACM Press.</t>
+
+<section anchor="test-vectors"><name>Test Vectors</name>
+
+<section anchor="ntru-falcon512"><name>NTRU FALCON512</name>
+
+<section anchor="publickeyjwk"><name>publicKeyJwk</name>
+
+<sourcecode type="json">{&quot;kty&quot;:&quot;NTRU&quot;,&quot;alg&quot;:&quot;FALCON512&quot;,&quot;x&quot;:&quot;CjcORWYeLyAc5OSAR5tLh2bn0KXRcAP\
+\cAssTZu2nYLIatsrnlb2j23yBKQNdC_ak2axFDLyj8QeWtIyNphAjVTqC8Nfz6cuoHA\
+\GIPMV7rwWxd0WYYJTWUZUHJbJGIo75KV7-eQGQ2KUDcyQgjhcBWCxOwPxyYUN1EC138\
+\onR_xvcakAhjagU1GNowliiWVwEoVvK8oPtE-m8Wz8u4TfQ6wRorRZ1MsQENBHesWEt\
+\5H5UIGYhyck7hXVF4FHpLFEIvxSTjDUm3OZQXEmRM_4WARVQQnya7MM3Z6FIzJvoPV7\
+\IXGBqsaLrqwCpH9PBkECjzK4YIilVDA5iUR9gdbjAmjJqSgpHfmFWi9OGlhARYI-j12\
+\t8f3KykkFlyqHUuhulI7Y7Az3nAwXgePqsise7fSMIssXmtaFUag4g0k1QBklpwUiY4\
+\h9aNN4SjYKZQO7m1ZU9YJK7bVG3hmlaAKDiUXmas0tUTkh8Kld_oFS9BtOX15Q2oOEq\
+\Yd6YAJhY5lebavuaVtWTO9U4uzhPQtljcoRZkITdB8igKbrjxgxFdJ6mU1IuvFpE6eQ\
+\qAZ4M6U6jRVmzWZRScP0C0WXSPnlxrfJ1bEvhXNIepUmLsjjWKFuMbYcEjo2e4g85KA\
+\2bBsgfmqoUVE7M7KHrqUKdMZjkXd0nOaEg41gRmSUC3ASK2oqlWhV1H1KlrzDF01hBp\
+\L3yErDiT_Ng4Q6yrcE9rjAv2qSdigBwK3Jujeh50GFr5eKZR1570OlApp_Bs5v17CqJ\
+\8Q3VSUbKu0WT2HybcjOKpgnm0WM8Zn6IxeA9AOTfc8CRNwUMwZYWoLVSmvkBTYAAUSK\
+\EGmmRy6cCXZJ9zv580TOQ5Bm-bMSnydrY4ZOlaWthXDElEWMFK23zQyYHkPzG1JvIuf\
+\AUagNCQGQUy1_iWdpNOZ5DlDSJ1CIpWHASdrvnJ5gqUeYh-_1Bt7wVV9rknBQHQKe6c\
+\9rxgJhLq0erQ4BkyaDwWF6EDMUDJ9gLE2oDcnYJK6KuBsTjzZRIPWi5TANMQQWgZlgC\
+\mVeZQ_Zt6wB46mHKFxMzkQgIwPLVmVLt5dWJS1Cf8Bn13yYqc0R59cifsW61GTnmiqk\
+\LLKeU6Iu3eWo2OLhHXIUSLeGJWwYV2HzjNirrV12LdRzo9oqkb_EiLagseRL6s4vaPq\
+\BB9uIvQYuRDXRJxJUNSj2yNREPNDCICOAiJYRx1ZHCS_46kGKkDs04t4Z1SAdGXWAEw\
+\Ns4o-GWwjKyok6EYT1pa5mc6CEdp5N3A2h6kvxRPSZcD8EfKB3cWzQsbWkGbvoNXaxa\
+\HWkbEa0kZIDgKiRiInC-iVoRzqqXRBKFBMLG6QPJm61pK2VLxrJCjP9qw193OOyUKif\
+\QzgswOnYwDamsekYHOAmfL2b_kciRZl6EaVSlbnCYBkLVyiU0uTrcigrWLRtG1OJUkN\
+\iYCVF2AGx8TihI86WV3BZFCrVNjsyqucRhmOxxd6RqEZTge7i4bzWx4zAKzRZKJyovV\
+\1VtoX8Ct36hVtXVKsFn9vxqz6OdZtaWV12PG7CFCLGVnYKCONsX2s9YHo2AhxXRE74s\
+\hAUaD2APOKPXT0laA_BvgcssHJ3Jqsdy72JTImu24-mYpFLn8PIAk0Y8AGGnYmFNXdI\
+\z6ONvSxnH6T-oapAGJ8EYaTtsXDy25cJkaUyBanxiIW20CuoDVzu7jiPjwUuGLMUc27\
+\EpJAr2fGT3A5okzEdXN-Iiof3iwm5GfBUNRkLiD_kbIve4nOb_RkEVkRDY2i51fRKwk\
+\BxTptO3Po6rlZRKyr4SDgaNNwVljxc-Rcy7V9RDWkjqesoR_SkNy_e-lBev8DexEAHX\
+\crqhqifuLCa0fzn5GC6t-ai0my_tvMTKVsMBfW11SRfYKtw3vILELOLGJirsl1zGyZp\
+\wYHmHK9Fk0TPLnystG67flhWb0RM4awAyh4UZUK1QYWyEk-okmRtSmbJCCkoXFcRX5J\
+\BlElSMgWGaKGLt9AYA0fMoRNMStBXHU9dTJ0V2oLvITAfgS3K0aHEW7kI0shtPP6SPh\
+\XyYql-ijPQ3aPBBldkhfi21WiDBmhLA-yxUxcrVlZ2NkZtj34Qch0rzQoNLLVDpqLsm\
+\Z9yRNiXzEMxEaKmY5rXhngKhBcXuRP2p7SUZN5L6pEqaYncYWqUi4XAD1iYHxngDBdL\
+\kKyUhqWDcRZacAKLuK5NWjcNXce5RNDVMti5WfguGRNZ5Qu8xsK6X1Ez9k0lNKVTUnV\
+\SQtBbFbGYwIFNl3KYcgHEbMpSS5p6oYQhHl_8eqqIrWCvrC413ENMeFnHRsqrErnlZw\
+\SmSz4BDFA0GcuyNvVWt5_BUKx94IqY2ra_LQ-Lz8j5JDSzNxWJORBAA2S8o3m1teTEg\
+\KANewDdZTcvsVA0&quot;}
+</sourcecode>
+</section>
+
+<section anchor="privatekeyjwk"><name>privateKeyJwk</name>
+
+<sourcecode type="json">{&quot;kty&quot;:&quot;NTRU&quot;,&quot;alg&quot;:&quot;FALCON512&quot;,&quot;x&quot;:&quot;CjcORWYeLyAc5OSAR5tLh2bn0KXRcAP\
+\cAssTZu2nYLIatsrnlb2j23yBKQNdC_ak2axFDLyj8QeWtIyNphAjVTqC8Nfz6cuoHA\
+\GIPMV7rwWxd0WYYJTWUZUHJbJGIo75KV7-eQGQ2KUDcyQgjhcBWCxOwPxyYUN1EC138\
+\onR_xvcakAhjagU1GNowliiWVwEoVvK8oPtE-m8Wz8u4TfQ6wRorRZ1MsQENBHesWEt\
+\5H5UIGYhyck7hXVF4FHpLFEIvxSTjDUm3OZQXEmRM_4WARVQQnya7MM3Z6FIzJvoPV7\
+\IXGBqsaLrqwCpH9PBkECjzK4YIilVDA5iUR9gdbjAmjJqSgpHfmFWi9OGlhARYI-j12\
+\t8f3KykkFlyqHUuhulI7Y7Az3nAwXgePqsise7fSMIssXmtaFUag4g0k1QBklpwUiY4\
+\h9aNN4SjYKZQO7m1ZU9YJK7bVG3hmlaAKDiUXmas0tUTkh8Kld_oFS9BtOX15Q2oOEq\
+\Yd6YAJhY5lebavuaVtWTO9U4uzhPQtljcoRZkITdB8igKbrjxgxFdJ6mU1IuvFpE6eQ\
+\qAZ4M6U6jRVmzWZRScP0C0WXSPnlxrfJ1bEvhXNIepUmLsjjWKFuMbYcEjo2e4g85KA\
+\2bBsgfmqoUVE7M7KHrqUKdMZjkXd0nOaEg41gRmSUC3ASK2oqlWhV1H1KlrzDF01hBp\
+\L3yErDiT_Ng4Q6yrcE9rjAv2qSdigBwK3Jujeh50GFr5eKZR1570OlApp_Bs5v17CqJ\
+\8Q3VSUbKu0WT2HybcjOKpgnm0WM8Zn6IxeA9AOTfc8CRNwUMwZYWoLVSmvkBTYAAUSK\
+\EGmmRy6cCXZJ9zv580TOQ5Bm-bMSnydrY4ZOlaWthXDElEWMFK23zQyYHkPzG1JvIuf\
+\AUagNCQGQUy1_iWdpNOZ5DlDSJ1CIpWHASdrvnJ5gqUeYh-_1Bt7wVV9rknBQHQKe6c\
+\9rxgJhLq0erQ4BkyaDwWF6EDMUDJ9gLE2oDcnYJK6KuBsTjzZRIPWi5TANMQQWgZlgC\
+\mVeZQ_Zt6wB46mHKFxMzkQgIwPLVmVLt5dWJS1Cf8Bn13yYqc0R59cifsW61GTnmiqk\
+\LLKeU6Iu3eWo2OLhHXIUSLeGJWwYV2HzjNirrV12LdRzo9oqkb_EiLagseRL6s4vaPq\
+\BB9uIvQYuRDXRJxJUNSj2yNREPNDCICOAiJYRx1ZHCS_46kGKkDs04t4Z1SAdGXWAEw\
+\Ns4o-GWwjKyok6EYT1pa5mc6CEdp5N3A2h6kvxRPSZcD8EfKB3cWzQsbWkGbvoNXaxa\
+\HWkbEa0kZIDgKiRiInC-iVoRzqqXRBKFBMLG6QPJm61pK2VLxrJCjP9qw193OOyUKif\
+\QzgswOnYwDamsekYHOAmfL2b_kciRZl6EaVSlbnCYBkLVyiU0uTrcigrWLRtG1OJUkN\
+\iYCVF2AGx8TihI86WV3BZFCrVNjsyqucRhmOxxd6RqEZTge7i4bzWx4zAKzRZKJyovV\
+\1VtoX8Ct36hVtXVKsFn9vxqz6OdZtaWV12PG7CFCLGVnYKCONsX2s9YHo2AhxXRE74s\
+\hAUaD2APOKPXT0laA_BvgcssHJ3Jqsdy72JTImu24-mYpFLn8PIAk0Y8AGGnYmFNXdI\
+\z6ONvSxnH6T-oapAGJ8EYaTtsXDy25cJkaUyBanxiIW20CuoDVzu7jiPjwUuGLMUc27\
+\EpJAr2fGT3A5okzEdXN-Iiof3iwm5GfBUNRkLiD_kbIve4nOb_RkEVkRDY2i51fRKwk\
+\BxTptO3Po6rlZRKyr4SDgaNNwVljxc-Rcy7V9RDWkjqesoR_SkNy_e-lBev8DexEAHX\
+\crqhqifuLCa0fzn5GC6t-ai0my_tvMTKVsMBfW11SRfYKtw3vILELOLGJirsl1zGyZp\
+\wYHmHK9Fk0TPLnystG67flhWb0RM4awAyh4UZUK1QYWyEk-okmRtSmbJCCkoXFcRX5J\
+\BlElSMgWGaKGLt9AYA0fMoRNMStBXHU9dTJ0V2oLvITAfgS3K0aHEW7kI0shtPP6SPh\
+\XyYql-ijPQ3aPBBldkhfi21WiDBmhLA-yxUxcrVlZ2NkZtj34Qch0rzQoNLLVDpqLsm\
+\Z9yRNiXzEMxEaKmY5rXhngKhBcXuRP2p7SUZN5L6pEqaYncYWqUi4XAD1iYHxngDBdL\
+\kKyUhqWDcRZacAKLuK5NWjcNXce5RNDVMti5WfguGRNZ5Qu8xsK6X1Ez9k0lNKVTUnV\
+\SQtBbFbGYwIFNl3KYcgHEbMpSS5p6oYQhHl_8eqqIrWCvrC413ENMeFnHRsqrErnlZw\
+\SmSz4BDFA0GcuyNvVWt5_BUKx94IqY2ra_LQ-Lz8j5JDSzNxWJORBAA2S8o3m1teTEg\
+\KANewDdZTcvsVA0&quot;,&quot;d&quot;:&quot;WiAGIXAgz4HzCD33-d9wvue8JPxC-AIO-EEIN-__Gx9AI\
+\g_gB3Ih-AIHfc0MQf-AL4v7L7wdfAAYOhEL__jEP4idAXX_f_0AAmF7v9mAMpQfB8nM\
+\ED7pPh173wi90IA_KIIQ-D8IRf4T_hjCLyCD58PQd98w_A8MIwh9_wAB8QJBb___dk-\
+\Mmeh8EIwA73wwb4EXgfEUgP-8D_viEPwBg94H_hIPIfeED2wD_7wwBAIPdDB4fggH_3\
+\wAJ8YBbCEPxc6L_fhEIASd8Dnfh__mgi__4_eEH5Q7IEiv-_4PQ9EQBObAMBfl1_4fh\
+\GkgA_-fn_CAEBu_Frv-jDwJOeIL4_cB7g_5CH_xB-EPyC3_3RDEDgN7FgAgb70PAj_8\
+\XSB8DwvgAHwRc8D5wDEEPQEEL5CAHwXwhH8XNgKDggE0AGi_7coP_GUG_hFwAQCH73w\
+\cEMnh_EEZSB6QG_87_4PA7_2QfKEI--Dz3_-AIIvDDwfii2EZAB4EIyBCL-y_IHwQh-\
+\L_ygKIg-jKDoe_-IJgB-Dvu-CEPwA-AZf_-MPvCKIBRf8YHRE8L3vAAD3Ah8Eg-E6MP\
+\wiIH_U8OLZP-EEgAjCDvRkIMIPgBz3fC6QHA9IJCPE-EQQE6AgQ-__-wh90XvB6IQAE\
+\AL4Ri934Oh4MPyC30eejB_4g9D__vhGIXiE-MHwi-ARAhBsYQZ-HgO-6XwAkF04PbCA\
+\AxfGTXdmF4IvaP4Hx8CIfOBAL4eeGAXw_H33xdGAY-A-EJRbIEYv_GAX_B_3wxhAAHR\
+\e8ERjDDwJP_EDWwfCAwdi4Pv-k9_5fCD7XdhEEPwg-AffC7_3AcB4wQ_BwPu9F74d9J\
+\wX_eB_f-cIHnvgF0n_AB7_tf_z_wfBv3B_7_wO9ALxfCCUJgg_35BbCHfe_4EQiD3zQ\
+\_a78HthGXZeB9wAsg4EYBCCIBN_wH_SB_4PieH8HBcGLwfBTvnf--IAPe_3YA-8Dge_\
+\KE4CC0X_ygyL_h74P4ff9sOyB98AwBMIPxiMDAfjCEIvBF8HR-F8Pf9__3xc8HgPgEX\
+\3wfF7wvlED_RBB8P-CP8HS86DwRZ5_4vn9_vuCAHQg-IMQMACIPxD8PofkFwYPfB_wP\
+\kD3_wA__2_i7zgh_-YgfgD_5ScH8Ht_CPQP-AHo_DAL2gh8D__dCPngc78nQAAMHwhB\
+\7f-9_wYwjEHQCDHvwPgIMYiaEHgt8CLwc_ML_A9F0Qxl6AIyiGL3yB8APC-AEgQE93f\
+\g92EQCBH4XO-B8Ygd1sJv_GDv-8CT4_k__aAc8DwgkD_H_i9wAPhAEAfh4D4f-CAPxB\
+\AEY-9AAHjd_zXhjELpfdAToAn-cvwi8YYAfEUg_FH_v_gJ4Hw9AAQgCGHgej93wO-D8\
+\ohg-EXh_EMH-7GL4Q-4EAOi5sQ-hBkQAlHsBgg2P4x_IA397ED2xcAMWxA5sPBX9vvf\
+\ACX3heCDwR_AEQ-g6P4gBwHn-94AIBi8MXff4EHPCDwey8H_4x95_gBe-IPxaAEYxeG\
+\HgwgCHw99J3YNgJ83wDJ4ARjJ4Oh-18exez_wRgEAIBeAf3vjGDoffAMH_a6P_P9GP4\
+\Ph8EgwZGAofk5wfiB_3fAeMAGwi8MAOHD8HgfF8AehCDo_A4LYA_MHvyi_74BE70v_7\
+\AEIS_D_oAED0gPi-Mv-eCEJBhB3pC_94wMiB8ARF6AAOh4TwCB__RO-LDH1_h_05_8O\
+\19gT8-QaAPLq7xvz5gop5Qf--Of-JBQKDxP_8eXU-Qwl2Q_uzO7lAObM-evnKd7lQPc\
+\CFQfsLOb-4dI0-Q0SEhPs0hsBQxTh1uwRA-QS9QYBFv8KAwIU4er8HAAOHOALBvTnDv\
+\gK9-P3yiA48gcOCxYs2vAG9OgnGiTMEysU29r9-uIS8dX5--0E9P71_gI2IDUK7-HZF\
+\_UE3fL80uEK7vX_1BfbASAK6QPpAwP5B-nsQOcJ7QH_MgH2ycgrQSX1CVgn9QwAuvwi\
+\7BLdGR4f70DS-gAQ7-MQGygSJAYMAu3y8CUGDywPBSwl-xEXG_vYDv3PEQj8FgX60xP\
+\_9ifi1O34Dvv5CPvVEhDY-gYHEwTC7P8R6-HJENojDBMMGuks_cvoIQgP9_cA4wYWF_\
+\T3FwbX3hznHOgpFiL03-sF7uYi-g3g6vAT59z5GAET_BzpCN0GAwkHHtgTIPr55d0LE\
+\AwD7iME__khGQYYK93c0Cza9OEN2fHt8vM0_wT88ukP7Ov8AfU8GgjtFQPh8Qbu6gjv\
+\8_AISA8m6iz3_w00Aesb5O8HFQ4zAegODxIMBPcCHuzm-yfbBvvr5vP0A9fewOkRAuU\
+\HBssYFrkjERIZ9h3r8CPo3dso9gUK9ecJ8toQ2CEe2f3hEBLz7wASDwMbBvYCFPsl-w\
+\r49tvp9CgE-xQT8PUQGdviBxnY1xwWBdX-CAvxJu4MLgP07x7oKOzW8REIORUM-vsQE\
+\PLi9Qj94u_3CezpABPk1AwZBAXbKOcn4O76F-4W5w4uzPfqJw4qAfcm-vLVIu3FF_H4\
+\9N7CHvIJ6AzwAPkA-w_UCiz4FT4D5-IBAukSEAIR-vDr8wPpBsgKA_3_5v4LDxMX4fk\
+\bBw7wBvYNBAAC4_UU7Q7uKM3x_g0BD_3m5xn86wQH4e786O8hAfQR4_0DDg717N_0Fd\
+\73E-sBIAP1ABH99BcgAyfH_-vS7uLcB-3u5fjvIfAyERbtB_8g_SEu__zvNRzrAA798\
+\TLu9RLU-BP7DRbnC-kmxAcAQRDsFwvuGxf5A_QA3BTnAtXuFNv48ePawvi_GfHwGfHT\
+\NPL7--nj_Rzu3AnsCuoTJAX07Q_q-fH7BCcXHOzzHOcs-eDYE-A1J_H39t3-zPgUBx0\
+\I30oSMAUH9vMS1BAC9vob_vMRATHmBfv48R_ZAu7k39spBvUU5xX5ACwB-fv-Hu8JHQ\
+\DoJecN7eAzJuDuDhkTE_YT-dS7-gYaFCLg9fcO5RT-6h0WISJBAOtY5BkLsvoX4gThG\
+\TEEOPQQ-v_gA_sP9BYk_AsI_N8EGxUIHAny5A4J6k769_MB6-8Z5wb6BSkp8vn4FBQK\
+\9_XZ9-YUCP4AJA&quot;}
+</sourcecode>
+</section>
+
+<section anchor="jws"><name>jws</name>
+
+<sourcecode type="jws">eyJhbGciOiJGQUxDT041MTIifQ.OTA4NWQyYmVmNjkyODZhNmNiYjUxNjIzYzhmYTI1O\
+\DYyOTk0NWNkNTVjYTcwNWNjNGU2NjcwMDM5Njg5NGUwYw.9AQ6wQ1M_MmPTDw7hPx_Z\
+\905wyLaeoXIFfI_hQr97PwDG9uzKFKZTotDdde_4_zuBTc2u25bdkf9JCm2m6QVzYza\
+\O83MVOGzGLiqICdSm1WxOHP_7bT9w4fMGq2PcOzMaak9wNG6pFblUnciqruqaJcv9DX\
+\q00tZs6efS2d2LT3FSmkMzC7rSTypHF2bp3PsxJHox33Z3uVDTxxHTZt8hFW8DUJLBD\
+\Nt5p2IG2Kde50a2VIHhUnYnaSaZb9HHR2PQ4Myv5irbJfsoRjNJ5Mxe62sqGnKxOXjj\
+\q_BRfTtjKSp9V5ZGkccNjPTXIZZ9jCqGS-tzNoXzMDBYnmU4gqa11UFTfCOhVsSqeIl\
+\9NNVe6_8zZxaQUt5qE1cj76P4n-onBEkb_RTE7xuhJ3Re9lGW-dRRVOJAYXVJv_bkx2\
+\QrUOZNp97TajO0bODnETJwm7Mt1nzorVYfNBkbd5FkIPX872zJNJtyuTRNUcVCyT7mK\
+\MK7EQ1qA52yZR1HEnTg9OaffxQsTG1_3cjnM94_NG8IsvjwxKcTO0O626pvoZ2mnysr\
+\wYhZ0C8tMlPOUrMnSLDQcIpRGDMqV5YEltokXFdTdGrZ6Em4yXleIiZkFDzKPvDc8LO\
+\WpbBf_tcrrzuT3G_yhJFsTquL0z-bsjaKf45tjCKw5GhoOiSi1M6hDUsm7TLSjyyyxV\
+\1Iiakh2k67tN42MWBlpcdBrKavE_ZN1VZwpjnzNdBL0izesskTk7-UE3_hy6UyKbLeg\
+\BfdusKv83Er7lp_oVdYorMQVCNzl9GPVQdnd8SA17VpZgraUHu-aAcVKdlr4XaWLdO8\
+\FMPC1moVTny2SHKe-BK4xTPbdtpawprm1aYsWW4zaUhMdgZNtPQnGIy06bl8UUbJEJW\
+\O0olG2Uu3cnPfIYLgUXM_FYrUetHpp2G7NG3KrwBeumirL0D1YUnTEIsf2dRyMbBfGi\
+\9NFqziixaursfgXijDuq-q6PQqAv9h_TikSMbElHa9qi-a-VVbmsT0UisEldN6yk5OO\
+\tTFmsqcecBiVTdukZXR8yG8SJUDt23fIb0z_Idj5TnFLiRbYLjaWgNyz-aw_hxBNOMg\
+\cQ9ughpAMjIFNarTpPTLDv_n9JHUMJe_m1abZJy9tKFaxCIIExw3cvyaORIkN1a_r9S\
+\SIoVAjRkmATi06v10lxjy6jMlT--MN3J2RYGFuttORy5LG9WPR8fF1f768iVD40a80O\
+\QI7A_dd3bmFlMY5lpSW_dvW5pG4Vyc5kvvh0k59gYVoJJfJEjzpoZQUFtuzlFI3slVz\
+\a07WJo3SRopHMARrkOlwnLXD0e4iLJrx6XHav2bVT3vxqVTacIC4b461AUHQVhzcX3T\
+\uTzGTs6kHF4jrMFNDNbXOPVDvtoGriHtu-FNYVdOjSTHBcIhn0p-fzaAxKDIvVsSSim\
+\pXn9hJfdJTQ0_duWWXgtZaXibdpBikU3nk90puTUttVUJJuXSxK2TTpT-JIRwkcVpBo\
+\s37kK8myWo8Qo4b29hBs1RcClD1PjXfRvpEX7bfVuhaY9ZVu6cHmdRK_RKvwqfyMASX\
+\nMit_doSmbnBrpWelzdcZpyOg9s7xCIUVjZhCYegS5otA4ygmvxu69BBcem00aGGJ3h\
+\fnysq4Ep0uMzQgS6dafqdQFJwsPZmLGBocYPKgTHIRNWfZCzzrqNZ7-hYYhcNWp5AAA\
+\AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\
+\AAAAAAAAAAAAAZXlKaGJHY2lPaUpHUVV4RFQwNDFNVElpZlEuT1RBNE5XUXlZbVZtTm\
+\preU9EWmhObU5pWWpVeE5qSXpZemhtWVRJMU9EWXlPVGswTldOa05UVmpZVGN3TldOa\
+\k5HVTJOamN3TURNNU5qZzVOR1V3WXc
+</sourcecode>
+</section>
+</section>
+</section>
+</section>
+
+</middle>
+
+<back>
+<references><name>Normative References</name>
+<reference anchor="Falcon" target="https://falcon-sign.info/">
+  <front>
+    <title>Fast-Fourier Lattice-based Compact Signatures over&#xA;        NTRU</title>
+    <author fullname="Pierre-Alain Fouque" initials="P." surname="Fouque"></author>
+    <author fullname="Jeffrey Hoffstein" initials="J." surname="Hoffstein"></author>
+    <author fullname="Paul&#xA;        Kirchner" initials="P." surname="Kirchner"></author>
+    <author fullname="Vadim Lyubashevsky" initials="V." surname="Lyubashevsky"></author>
+    <author fullname="Thomas Pornin" initials="T." surname="Pornin"></author>
+    <author fullname="Thomas&#xA;        Prest" initials="T." surname="Prest"></author>
+    <author fullname="Thomas Ricosset" initials="T." surname="Ricosset"></author>
+    <author fullname="Gregor Seiler" initials="G." surname="Seiler"></author>
+    <author fullname="William Whyte" initials="W." surname="Whyte"></author>
+    <author fullname="Zhenfei Zhang" initials="Z." surname="Zhang"></author>
+    <date year="2017"></date>
+  </front>
+</reference>
+<xi:include href="https://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.2119.xml"/>
+<xi:include href="https://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.4648.xml"/>
+<xi:include href="https://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.7638.xml"/>
+<xi:include href="https://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.8702.xml"/>
+<xi:include href="https://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.8812.xml"/>
+</references>
+<references><name>Informative References</name>
+<xi:include href="https://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.6234.xml"/>
+</references>
+
+</back>
+
+</rfc>
