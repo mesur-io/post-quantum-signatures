@@ -990,13 +990,22 @@ Encryption Algorithms" registry:
         Lyon</organization> </author> <date year='2018'/> </front>
             </reference>
 
+# Acknowledgements
+
+[G. (Gabe) Cohen](maito:gabe@tbd.email) [D. (David) Balenson](mailto:balenson@isi.edu)
+
+We would like to especially thank Gabe Cohen for close attention to
+and contribution to test vectors, and David Balenson for careful
+review of approach.
+
 ## Test Vectors
 
 ### MLWE CRYDI5
 
 #### publicKeyJwk
 ```json
-{"kty":"MLWE","alg":"CRYDI5","x":"lgNFI62eq4YKxuvpMl2V9SVtGV5z_vQQZei\
+{"kty":"MLWE","alg":"CRYDI5",
+"x":"lgNFI62eq4YKxuvpMl2V9SVtGV5z_vQQZei\
 \iCziAVcFMuUUzjpbwrd7uKHRbtxNPWsLIlfYKmM5SM-OLeoDII-GNQYJfm3QRt9l33P\
 \AOyJpbeLidJg6e4UAIZJQx-KbKrIVqK6F42P8WmhDWxgc5xJZXUabUtMHV-irm9pMP8\
 \kjrlRFuIenHS_YYj3RrX9yeAZKmD6YJsROVMEprjR1B7uOQxJYX1WNNRD5AEiGL8TKF\
@@ -1053,7 +1062,8 @@ Encryption Algorithms" registry:
 
 #### privateKeyJwk
 ```json
-{"kty":"MLWE","alg":"CRYDI5","x":"lgNFI62eq4YKxuvpMl2V9SVtGV5z_vQQZei\
+{"kty":"MLWE","alg":"CRYDI5",
+"x":"lgNFI62eq4YKxuvpMl2V9SVtGV5z_vQQZei\
 \iCziAVcFMuUUzjpbwrd7uKHRbtxNPWsLIlfYKmM5SM-OLeoDII-GNQYJfm3QRt9l33P\
 \AOyJpbeLidJg6e4UAIZJQx-KbKrIVqK6F42P8WmhDWxgc5xJZXUabUtMHV-irm9pMP8\
 \kjrlRFuIenHS_YYj3RrX9yeAZKmD6YJsROVMEprjR1B7uOQxJYX1WNNRD5AEiGL8TKF\
