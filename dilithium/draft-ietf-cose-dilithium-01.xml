@@ -1,0 +1,1592 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- name="GENERATOR" content="github.com/mmarkdown/mmark Mmark Markdown Processor - mmark.miek.nl" -->
+<rfc version="3" ipr="trust200902" docName="draft-ietf-cose-dilithium-01" submissionType="IETF" category="std" xml:lang="en" xmlns:xi="http://www.w3.org/2001/XInclude" indexInclude="true" consensus="true">
+
+<front>
+<title abbrev="jose-cose-dilithium">JOSE and COSE Encoding for Dilithium</title><seriesInfo value="draft-ietf-cose-dilithium-01" stream="IETF" status="standard" name="Internet-Draft"></seriesInfo>
+<author initials="M." surname="Prorock" fullname="Michael Prorock"><organization>mesur.io</organization><address><postal><street></street>
+</postal><email>mprorock@mesur.io</email>
+</address></author><author initials="O." surname="Steele" fullname="Orie Steele"><organization>Transmute</organization><address><postal><street></street>
+</postal><email>orie@transmute.industries</email>
+</address></author><author initials="R." surname="Misoczki" fullname="Rafael Misoczki"><organization>Google</organization><address><postal><street></street>
+</postal><email>rafaelmisoczki@google.com</email>
+</address></author><author initials="M" surname="Osborne" fullname="Michael Osborne"><organization>IBM</organization><address><postal><street></street>
+</postal><email>osb@zurich.ibm.com</email>
+</address></author><author initials="C" surname="Cloostermans" fullname="Christine Cloostermans"><organization>NXP</organization><address><postal><street></street>
+</postal><email>christine.cloostermans@nxp.com</email>
+</address></author><date/>
+<area>Internet</area>
+<workgroup>COSE</workgroup>
+<keyword>JOSE</keyword>
+<keyword>COSE</keyword>
+<keyword>PQC</keyword>
+<keyword>DILITHIUM</keyword>
+
+<abstract>
+<t>This document describes JSON and CBOR serializations for CRYSTALS
+Dilithium, a Post-Quantum Cryptography (PQC) based suite.</t>
+<t>This document does not define any new cryptography, only seralizations
+of existing cryptographic systems.</t>
+<t>This document registers key types for JOSE and COSE, specifically <tt>MLWE</tt>.</t>
+<t>Key types in this document are specified by the cryptographic algorithm
+family in use by a particular algorithm as discussed in RFC7517.</t>
+<t>This document registers signature algorithms types for JOSE and COSE,
+specifically <tt>CRYDI3</tt> and others as required for use of various
+parameterizations of the post-quantum signature scheme CRYSTALS
+Dilithium.</t>
+<t>Note to RFC Editor: CRYSTALS Dilithium is described and noted as a part
+of the
+<eref target="https://csrc.nist.gov/Projects/post-quantum-cryptography/selected-algorithms-2022">2022 PQC Selected Digital Signature Algorithims</eref>
+As a result, this document should not be proceed to AUTH48 until NIST
+completes paramter tuning and selection as a part of the
+<eref target="https://csrc.nist.gov/projects/post-quantum-cryptography">PQC</eref>
+standardization process.</t>
+</abstract>
+
+</front>
+
+<middle>
+
+<section anchor="notational-conventions"><name>Notational Conventions</name>
+<t>The key words &quot;<bcp14>MUST</bcp14>&quot;, &quot;<bcp14>MUST NOT</bcp14>&quot;, &quot;<bcp14>REQUIRED</bcp14>&quot;, &quot;<bcp14>SHALL</bcp14>&quot;, &quot;<bcp14>SHALL NOT</bcp14>&quot;, &quot;<bcp14>SHOULD</bcp14>&quot;,
+&quot;<bcp14>SHOULD NOT</bcp14>&quot;, &quot;<bcp14>RECOMMENDED</bcp14>&quot;, &quot;<bcp14>MAY</bcp14>&quot;, and &quot;<bcp14>OPTIONAL</bcp14>&quot; in this
+document are to be interpreted as described in <xref target="RFC2119"></xref>.</t>
+</section>
+
+<section anchor="terminology"><name>Terminology</name>
+<t>The following terminology is used throughout this document:</t>
+<t>PK : The public key for the signature scheme.</t>
+<t>SK : The secret key for the signature scheme.</t>
+<t>signature : The digital signature output.</t>
+<t>message : The input to be signed by the signature scheme.</t>
+<t>sha256 : The SHA-256 hash function defined in <xref target="RFC6234"></xref>.</t>
+<t>shake256 : The SHAKE256 hash function defined in <xref target="RFC8702"></xref>.</t>
+</section>
+
+<section anchor="crystals-dilithium"><name>CRYSTALS-Dilithium</name>
+
+<section anchor="overview"><name>Overview</name>
+<t>This section of the document describes the lattice signature scheme
+CRYSTALS-Dilithium (CRYDI). The scheme is based on &quot;Fiat-Shamir with
+Aborts&quot;[Lyu09, Lyu12] utlizing a matrix of polynomials for key material,
+and a vector of polynomials for signatures. The parameter set is
+strategically chosen such that the signing algorithm is large enough to
+maintain zero-knowledge properties but small enough to prevent forgery
+of signatures. An example implementation and test vectors are provided.</t>
+<t>CRYSTALS-Dilithium is a post-quantum approach to digital signatures that
+is an algorithmic apprach that seeks to ensure key pair and signing
+properties that is a strong implementation meeting Existential
+Unforgeability under Chosen Message Attack (EUF-CMA) properties, while
+ensuring that the security levels reached meet security needs for
+resistance to both classical and quantum attacks. The algoritm itself is
+based on hard problems over module lattices, specifically Ring Learning
+with Errors (Ring-LWE). For all security levels the only operations
+required are variants of Keccak and number theoretic transforms (NTT)
+for the ring Zq[X]/(X256+1). This ensures that to increase or decrease
+the security level involves only the change of parameters rather than
+re-implementation of a related algorithm.</t>
+<t>While based on Ring-LWE, CRYSTALS-Dilithium has less algebraic structure
+than direct Ring-LWE implementations and more closely resembles the
+unstructured lattices used in Learning with Errors (LWE). This brings a
+theorectical protection against future algebraic attacks on Ring-LWE
+that may be developed. Given the use of module lattices, this family of
+approaches is often referred to as MLWE.</t>
+<t>CRYSTALS-Dilithium, brings several advantages over other approaches to
+signature suites:</t>
+
+<ul spacing="compact">
+<li>Post-quantum in nature - use of lattices and other approaches that
+should remain hard problems even when under attack utilizing quantum
+approaches</li>
+<li>Simple implementation while maintaining security - a danger in many
+possible approaches to cryptography is that it may be possible
+inadvertently introduce errors in code that lead to weakness or
+decreases in security level</li>
+<li>Signature and public key size - compared to other post-quantum
+approaches a reasonable key size has been achieved that also preserves
+desired security properties</li>
+<li>Conservative parameter space - parameterization is utilized for the
+purposes of defining the sizes of matrices in use, and thereby the
+number of polynomials described by the key material.</li>
+<li>Parameter set adjustment for greater security - increasing this matrix
+size increases the number of polynomials, and thereby the security
+level</li>
+<li>Performance and optimization - the approach makes use of well known
+transforms that can be highly optimized, especially with use of
+hardware optimizations without being so large that it cannot be
+deployed in embedded or IoT environments without some degree of
+optimization.</li>
+</ul>
+<t>The primary known disadvantage to CRYSTALS-Dilithium is the size of keys
+and signatures, especially as compared to classical approaches for
+digital signing.</t>
+</section>
+
+<section anchor="parameters"><name>Parameters</name>
+<t>Unlike certain other approaches such as Ed25519 that have a large set of
+parameters, CRYSTALS-Dilithium uses distinct numbers of paramters to
+increase or decrease the security level according to the required level
+for a particular scenario. Under CRYSTALS-Dilithium, the key parameter
+specification determines the size of the matrix and thereby the number
+of polynomials that describe the lattice. For use according to this
+specification we do not recommend a parameter set of less than 3, which
+should be sufficient to maintain 128 bits of security for all known
+classical and quantum attacks. Under a parameter set at NIST level 3, a
+6x5 matrix is utilized that thereby consists of 30 polynomials.</t>
+
+<section anchor="parameter-sets"><name>Parameter sets</name>
+<t>Parameter sets are identified by the corresponding NIST level per the
+table below</t>
+<table align="left">
+<thead>
+<tr>
+<th>NIST Level</th>
+<th>Matrix Size</th>
+<th>memory in bits</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>2</td>
+<td>4x4</td>
+<td>97.8</td>
+</tr>
+
+<tr>
+<td>3</td>
+<td>6x5</td>
+<td>138.7</td>
+</tr>
+
+<tr>
+<td>5</td>
+<td>8x7</td>
+<td>187.4</td>
+</tr>
+</tbody>
+</table></section>
+</section>
+
+<section anchor="core-operations"><name>Core Operations</name>
+<t>Core operations used by the signature scheme should be implemented
+according to the details in <xref target="CRYSTALS-Dilithium"></xref>. Core operations
+include key generation, sign, and verify.</t>
+</section>
+
+<section anchor="using-crydi-with-jose"><name>Using CRYDI with JOSE</name>
+<t>This sections is based on <eref target="https://datatracker.ietf.org/doc/html/rfc8812#section-3">CBOR Object Signing and Encryption (COSE) and
+JSON Object Signing and Encryption
+(JOSE)</eref></t>
+
+<section anchor="crydi-key-representations"><name>CRYDI Key Representations</name>
+<t>A new key type (kty) value &quot;MLWE&quot; is defined for public key algorithms that use
+base 64 encoded strings of the underlying binary material as private and public
+keys and that support cryptographic sponge functions. &quot;MLWE&quot; refers to for keys
+related to the family of algorithms that utilize Learning With Errors approaches
+to Post-quantum lattice module based cryptography It has the following
+parameters:</t>
+
+<ul>
+<li><t>The parameter &quot;kty&quot; MUST be &quot;MLWE&quot;.</t>
+</li>
+<li><t>The parameter &quot;alg&quot; MUST be specified, and its value MUST be one of
+the values specified in the table below</t>
+</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>alg</th>
+<th>Description</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>CRYDI5</td>
+<td>CRYSTALS-Dilithium paramter set 5</td>
+</tr>
+
+<tr>
+<td>CRYDI3</td>
+<td>CRYSTALS-Dilithium paramter set 3</td>
+</tr>
+
+<tr>
+<td>CRYDI2</td>
+<td>CRYSTALS-Dilithium paramter set 2</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><t>The parameter &quot;pset&quot; MAY be specfied to indicate the not only paramter
+set in use for the algorithm, but SHOULD also reflect the targeted
+NIST level for the algorithm in combination with the specified
+paramter set. For &quot;alg&quot; &quot;CRYDI&quot; one of the described parameter sets
+&quot;2&quot;, &quot;3&quot;, or &quot;5&quot; MUST be specified. Parameter set &quot;3&quot; or above SHOULD
+be used with &quot;CRYDI&quot; for any situation requiring at least 128bits of
+security against both quantum and classical attacks</t>
+</li>
+<li><t>The parameter &quot;x&quot; MUST be present and contain the public key encoded
+using the base64url <xref target="RFC4648"></xref> encoding.</t>
+</li>
+<li><t>The parameter &quot;d&quot; MUST be present for private keys and contain the
+private key encoded using the base64url encoding. This parameter MUST
+NOT be present for public keys.</t>
+</li>
+</ul>
+<t>Sizes of various key and signature material is as follows (for &quot;pset&quot;
+value &quot;2&quot;)</t>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Paramter Name</th>
+<th>Paramter Set</th>
+<th>Size</th>
+<th>base64url encoded size</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>Signature</td>
+<td>sig</td>
+<td>2</td>
+<td>3293</td>
+<td>4393</td>
+</tr>
+
+<tr>
+<td>Public Key</td>
+<td>x</td>
+<td>2</td>
+<td>1952</td>
+<td>2605</td>
+</tr>
+
+<tr>
+<td>Private Key</td>
+<td>d</td>
+<td>2</td>
+<td>4000</td>
+<td>5337</td>
+</tr>
+</tbody>
+</table><t>When calculating JWK Thumbprints <xref target="RFC7638"></xref>, the four public key fields
+are included in the hash input in lexicographic order: &quot;kty&quot;, &quot;alg&quot;, and
+&quot;x&quot;.</t>
+</section>
+
+<section anchor="crydi-algorithms"><name>CRYDI Algorithms</name>
+<t>In order to reduce the complexity of the key representation and
+signature representations we register a unique algorithm name per pset.
+This allows us to omit registering the <tt>pset</tt> term, and reduced the
+likelyhood that it will be misused. These <tt>alg</tt> values are used in both
+key representations and signatures.</t>
+<table>
+<thead>
+<tr>
+<th>kty</th>
+<th>alg</th>
+<th>Paramter Set</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>MLWE</td>
+<td>CRYDI5</td>
+<td>5</td>
+</tr>
+
+<tr>
+<td>MLWE</td>
+<td>CRYDI3</td>
+<td>3</td>
+</tr>
+
+<tr>
+<td>MLWE</td>
+<td>CRYDI2</td>
+<td>2</td>
+</tr>
+</tbody>
+</table>
+<section anchor="public-key"><name>Public Key</name>
+<t>Per section 5.1 of <xref target="CRYSTALS-Dilithium"></xref>:</t>
+<blockquote><t>The public key, containing p and t1, is stored as the concatenation of
+the bit-packed representations of p and t1 in this order. Therefore,
+it has a size of 32 + 288 kbytes.</t>
+</blockquote><t>The public key is represented as <tt>x</tt> and encoded using base64url
+encoding as described in <xref target="RFC7517"></xref>.</t>
+<t>Example public key using only required fields:</t>
+
+<sourcecode type="json">=============== NOTE: '\' line wrapping per RFC 8792 ================
+
+{
+  &quot;kty&quot;: &quot;MLWE&quot;,
+  &quot;alg&quot;: &quot;CRYDI3&quot;,
+  &quot;x&quot;: &quot;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\
+/8uzsSQk0AbuhxWFQpSiBP8OZ/U=&quot;
+}
+</sourcecode>
+<t>Example public key including optional fields:</t>
+
+<sourcecode type="json">=============== NOTE: '\' line wrapping per RFC 8792 ================
+
+{
+  &quot;kid&quot;: &quot;key-0&quot;,
+  &quot;kty&quot;: &quot;MLWE&quot;,
+  &quot;alg&quot;: &quot;CRYDI3&quot;,
+  &quot;key_ops&quot;: [&quot;verify&quot;],
+  &quot;x&quot;: &quot;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\
+/8uzsSQk0AbuhxWFQpSiBP8OZ/U=&quot;
+}
+</sourcecode>
+</section>
+
+<section anchor="private-key"><name>Private Key</name>
+<t>Per section 5.1 of <xref target="CRYSTALS-Dilithium"></xref>:</t>
+<blockquote><t>The secret key contains p,K,tr,s1,s2 and t0 and is also stored as a
+bit-packed representation of these quantities in the given order.
+Consequently, a secret key requires 64 + 48 + 32((k+l) * dlog (2n+ 1)e
++ 14k) bytes. For the weak, medium and high security level this is
+equal to 112 + 576k+ 128l bytes. With the very high security
+parameters one needs 112 + 544k + 96l = 3856 bytes.</t>
+</blockquote><t>The private key is represented as <tt>d</tt> and encoded using base64url
+encoding as described in <xref target="RFC7517"></xref>.</t>
+<t>Example private key using only required fields:</t>
+
+<sourcecode type="json">=============== NOTE: '\' line wrapping per RFC 8792 ================
+
+{
+  &quot;kty&quot;: &quot;MLWE&quot;,
+  &quot;alg&quot;: &quot;CRYDI3&quot;,
+  &quot;x&quot;: &quot;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\
+/8uzsSQk0AbuhxWFQpSiBP8OZ/U=&quot;,
+  &quot;d&quot;: &quot;z7u7GwhsjjnfHH3Nkrs2xvvw020Rcw5ymdlTnhRenjDUBgL6FklHURz5btM5\
+yrI5FQdWk+U2srVuSmfDV7EYG897mUFY35Z0WQ0mZ9XvIOKCh+GFFOk56b5FOFq6xnV8\
+UDQnFyY2JREUOHdiUjcUNxA1YxR3QiQ0BkE1AUBmFEOAUHZGBzQAU2dxVIgTQRV3U3g4\
+GGiISEYQhHRSWDIBQ2Z3UIIWdSV1EWhwBTYiWGI3VmJVI1UIU2REdUhHBoJ2gRhFUThy\
+BSQnhBIGI1AoMVB2MCNhUXQiNUGCKHgzUmQxU3dEgBhmQyIQgmFjdxY1dCJgGBSEB4Ij\
+CEJ0MBGIQWRRN3QjRmRSQWQIJgNjcjdnMlJhJIU1MlJRd1NmF4dwhHIIdEYYcAhEclBQ\
+JjESAiBwBQYzYlAIIocBcoZFcGVkA2SDMCVTBjgzCAAzNnQGYHI1VwJzYxQRckBIZBV4\
+VxZmZiVlYXgHFRNjdEFIYVOFIVdhcnIINEhhIURjg0cxJ0SCIWYUUVcHJzdDUTASciAW\
+UiJAglIoQkIwNjMlcwACZxcHZVJAh4EnNnWAZVVoBjNnNEcicTdyEEUHBVFjETETNjd0\
+YUFmFDVXNUcHFVJoE2AlVwFhMzc0dQckMYJUaBJ0JkUBdyd1AnZiJ3hYYkWAgyR1VziD\
+BERVh1NQAFIGWIhUZXCEQxIThyR1FIGGNTKAcwdRNBGDYEd2RVEwUDMzWAAhNQEEMYAS\
+hUSCgTJ3VIdXUlFBFxFkhVCCZEABJjQCAxFGNkhHQzM1YSSHNlEBEmJkgWZCVwZHRSVD\
+GDZzRCQiNhE3IghDhSFoBYCHNFVHMxZAZTSGAVMUQkhBKIFRQEVBB0cHNGEiJVVScQQh\
+hzQiBzKBYRY4Q0R2MVUldwVCIkQYEEgFYEREY2NERyFVdHJzdAZHBmhmdSCFIgh1IwGB\
+AxNzFjEoUWFCF4AhZRJSEROEEThxAGYBJTgUcUdFJBOFRmcVYnZUUFCAY1AnZEZBVThS\
+ECBQYBNGeAdzQ3KGhIE3ZiFxQoVCgQBjEFdFcIV0IAaFcgI0iAgAUVQAhEInQWECY1I4\
+E2U0MkAXQSZkdSRRc2I4BjEiSGd4hgQEEDcTRmhFd3MBMmY2gERxNwiISAVkFVETGCcI\
+gYhzRXByGBgzKGVXJUhoGEY1hgFmZWgmEWYWVoISd4Vlhid4VUMHgSZXhXUSaCgmJ3Eg\
+MQIzIDIThwRSARQhBFB2QQBjEgIoEHN1BhMCiIIBUlZWCHdBMyZFQoQ2UUJXJCFnZyFD\
+RTFUUTQoQmUjB0aHJXJHeDZlJGBCExATEUEDg3BTAChWImN0AWcFB3IUgBEARxVUREdX\
+QzhVBEBBF4UgcRhCg4gUcoRkdYCAIUQBRUJUYjFjEBYUhSBjIyV2cXBYckEiMic1N4ED\
+gDUGVSCHhCYURXcQB1ODg4hDJFJ3Jld2gyYnQYclRjE3VWcQNXJBYnOGhYFoU2dHATAw\
+OEeBUGQjJHcDgUJTRXBXJ3IAEjEXhXeEEmghIAAGdjUVBndnI2FCAVcyV4cxIyZ2dYE1\
+ZEiHcYJYaCcXQXJCaER1coIDRWJkcSNhEVF3JGOCQkYWYkcndRA1QTh0MFgzIyVocYJY\
+cwIAFRNiE1VAUECBI3MzQiZkUhR1cid1NSAXFXN0gUNnRCV0ISNmYnB3NIZyMIQWEVVz\
+ElEohnQyKBNoY1cCdmdjVYiGhVUlA0CHMTZIURBgR4aIJwJQJlIDMYhwNGNwiGcIBUdA\
+NXMBETUgICJyMkMIN1BAIAB4gEMDUwhndFJkQDEgRRMld4EzhRM0ZhGAYHMgZ4NhEEhn\
+U2I2VicBBXZUFUNoczcmBzBnUEBxUWcDg4RHUXZSOEZogABHRAISVEAzdoQhRmBgEWYE\
+Z4U1dgQ2gjgQUjMScgIIFQR3YFczhTYoB1IiVCYGBAVmVAFIdhRmZ1InhwdTRjJjNhVx\
+IzcWgjFlFCaChlIWUySIaDFwAWV3RAIxg2QWYgAYMUjP7wmwOwPp7Ukl3L1KalY/6dN4\
+dBr1AYS8JnkVq6pPeBfO7ccX95SrVfAO7EX7RVEYyhVR9QOQyEpLBUMcfcfnHCZWKM0o\
+OBF7BXiWMR9BQo4ybtpJGKQ+IZyCKUJVRhZ+uae182qYcBKFMdOOzXiO8kAa98eUy6SR\
+pPfKPD6D+xXgtJ0FWtYnp1Jy2aIG3HqMiTHoSdVIvccGkf94gpVWTMeJQsQpgq7dAJiJ\
+5JOMQjk7JIHcIzxb4T8sQHzA55MFfvM7Hus/8FUX7NfIN1JRmc2zHL/7kdfCFSwG67iW\
+U4ob2kTwdKzPvOL+d3e+AOE0PihJ4vVJAOjhWmO2fIFNvFhNqPh0MSiSkatPGbSVdqQ1\
+PsG6C+1YqMrTM7KFr4hTQM8a3+tAOsImMjXSSPDkVeuJFq1rw642SJJx8yZTXVe8g75D\
+ZTYghbeX5LLzaVkt9mZS7cW16Zy+C3MwnWDrGQ6hUDxYaYJp7SOGJHepcmVV214oD6nw\
+5QprgpGIxVcdXQUO0fhKwerYDkoOIj+uqk7NYDvOt8zANphYcE3v+6yVFyYh3eg7DYRJ\
+rIzIcbaG91ySv2iRRC+cWaymH6xuqaHRwZu/p962/u8/c3rITJzCoVc+ObnZ5oItZFBe\
+AYFhLBx7PvPdBULXyCqmtkOtnT/jnaCUVxtGeaIeQmmeM4yPq3d5uWBfOvIyuPmfBSKd\
+Y0NETGlsaoQuqFpOkCmQdMVZKh3UZ8AOjw22LlqaZlrUf0akb0fs7le2HT47KV9yOJHC\
+tec9tjHUeBVmma5O4AofGcVXLbkqKv+Soax9GooHVOv+uxa8iwjAdTZKtqwKnKDx4jaR\
++zotCsYi4BuB2JbkjnHG6NL7ubN+aNKnwnzZnMKQZIh2Q7vSRYKTM8j9OGLq7IP8q2NS\
+oc7iT//eAvb4oF6LaY7qebxQ6ROXCSRrrXgpo+pw3ltfuUCuGzAxD4+wMZU3dlXsivhJ\
+PnTEjI/V6GmkRlfZ9XnYfj8SILETWk03dMFJh3LmUwkbRV+C3mL2GzjgQVTkvP82KDBL\
+DAR9iKyPkJnMnK9Ix/StVyJbGAtGp4jHnp+PSjz9ja4qI9jVRjGgIUQhw0DnI0fnplUn\
+Qhz3F9MQXMPLSPvFw8M0xkUKsAcxQvxZGb5LkYByZ0ZrO/ipphwnE6zQuOva+8uTyBX/\
+B9VR24tUItvlhy7SS6JrULrvTA+D/ZCiqKRx61iF6pU3BoC8fgA9D/AifiQnPz0SI5kx\
+FJfDTz1LWMjUlQKBHFvRFLE9eFD0rnwAGx7Pgpyc/KrLqVmcmj/96TYtoedp/iW4asfY\
+C2vs+GVyxVoumIdFPHJpencWbE/niZnVDaJCih1iqgXzDsI8bENh2B9cutDWX+bsHZSC\
+jSQb9YkGN+MoNiJlXmQHSJDyfPhzWPibdS/lpS90ppPWIY+PpLOfzDSGFFWswQ4q5Phc\
+pLWHx5lw9KSye+T86p6kadnBBTLTyfn0dG7NpO9QKQObMN60MnybkVGx5nH9yLJlFlmV\
+0H+K0VZIKm4UzYV+RYfqqXYtMqTQxeQ1U7L7o0H+6viErxuKj5rS3i+r1rdfECAGgCoq\
+0mixATHISAHi2eSV5fk3r5xMkKSwwPIRuMt50+kklRPUoLohTj7G1CnL6O2xwBdQMTUx\
+4Jq5JBWnfB+U4D9n0si1DwikIhpaUyOoBeaWo4iFQiWVLwjeeQvY6zj66l7OXsPHjZXg\
+uCitsWfp5MYV3cLTkb80uCM/xhp4Y0Edobt6x3k1FD8vbh8g3YAG0Xe/U+Iz3klnpCt2\
+ROQ2lGQa0JMl4nbQr3tqTLoXv4szaErfP/Xw05Cnt9DsBzN5DNrmfF6EDcfVf/hn8v9a\
+wrg6Rfv8Jpys1YFpwLanhb3Wz+x1yaDsa54IdlFOFnyBxv8GppbFrMpVFx/nLAXGIocc\
+WjcRKs0tBJUW/IoXeKOMPUd1wHR4dqUCEXsoexHJiNe5sH+akr6UIDObF70hhupBoiY9\
+AzVXi5zXf2VdafyQrkGfKz4BEUkiqcaajHr1CF9ZJ+Mjdmfr3z0xyCmCAWir5ZLOBXDj\
+T7sYCV3QjCz4a2mGvee9IxC9kSLapCq90UMAxnTLjJGQM/dlpgjDsjsCZX5wKdsnMs79\
+60Z75BGDOC1dDINj4f5kHZmwwcmw/04mi/1RPBUABXse3Up3eJQOX2haZPqmY0+2PZTF\
+exku9pETHtKcfSdRe1oJLmlB34JSogRmNp1eBxakcIL09huiFVtGVZng/pC/ryoJ/T9q\
+9w4aV5H+4u2dHc29Vb77SasxCdRH0sDaLaPpesRXsrdJwjbizOgzRlIx+83oO7NuhE+C\
+kKfO7cZMrFm8r8g1MlzDiFrTf3RTusMtiW6CVlVuTROPZFngqaR5yeYPprpSELtQHSwz\
+U5AaY5Qd8tbky5ec+2/QkXO+cdyWhQUuBRpibwpRpD3x1yTgT4E91cwTFpvSLk54ZHf+\
+D3EsZf0PYMN6d4jVdh9iv+0tCebnfMqP65wY26YBopSLtCXXb1anUlRPlzPzRq99yKnt\
+FM7gK1XnBAZoZBBqCyZw9OHWmttIFWcml4Wd5BxF9uZh2Y8gtcN8UKWHv43tsNBa7j/T\
+ikIBSkIVI/6EQvyPW4YTdyz2V8RKHN5XcdpdWFaVhgSJMC4I6Bm0Lwenhkmal7Sd247q\
+uCtEow8qh+w7Jk4SxrmvJxd5sBnvz15OKEaHPeWNNJW00bWEDT+0ZzzD8vMN1/GkbbB3\
+s7UfcJXZbRu7HtQ+wHIblBKVstX3hMonra+k6wS9KPhcAaC3IjZ7ZApSedKk1sW1SuDg\
+l48YW2/cyS3LvmISQn9KPWK7yEpNQnV0vurn3ZFOGO0eDjSXUjI+xIrRia5GQ1yb31ma\
+nJnf2PdHcMmVr0wu4lMGno7a14nMRdnXkBU8bVOp8wF6Toz59hBJ3a/F+mP4/a19Ixra\
+wiVVeEPgoi9QQ9NcLgQEFCoskA+EpcLK0FxV2rYI9JFNF/nDxP5nmGtnkmlFaLo+pleH\
+CJYS0OTGKQr6X+Y65NOllx5nNwsnWkIUkCodoSt4Givdoe/S9JNIu8tW+jTBae2hNr9c\
+glErCNKDYe1+T+Ldyr9rfOKm9LKNyTBsodgF4KI/hFh9Iv/i55DTWtqjpN0eQnPTB3/6\
++7KzTfSE9il5UMcP3zKKC2mAQvtyYxF3k0m24ZTwPs2LAPJkr/xtPH3BnGE/UfUDmvDS\
+TBp9m049Nh9oDZvI4HKsY8auiyENk0ys67F9GTHhOYM0FgHyP5qk4/IR5YC3lnq7xx6i\
+owebEJAy63htMytq+xd3cJyZR0lWBUOqvSpd/A==&quot;
+}
+</sourcecode>
+<t>Example private key using optional fields:</t>
+
+<sourcecode type="json">=============== NOTE: '\' line wrapping per RFC 8792 ================
+
+{
+  &quot;kid&quot;: &quot;key-0&quot;,
+  &quot;kty&quot;: &quot;MLWE&quot;,
+  &quot;alg&quot;: &quot;CRYDI3&quot;,
+  &quot;key_ops&quot;: [&quot;sign&quot;],
+  &quot;x&quot;: &quot;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\
+/8uzsSQk0AbuhxWFQpSiBP8OZ/U=&quot;,
+  &quot;d&quot;: &quot;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\
+owebEJAy63htMytq+xd3cJyZR0lWBUOqvSpd/A==&quot;
+}
+</sourcecode>
+</section>
+</section>
+
+<section anchor="crydi-signature-representation"><name>CRYDI Signature Representation</name>
+<t>For the purpose of using the CRYSTALS-Dilithium Signature Algorithm
+(CRYDI) for signing data using &quot;JSON Web Signature (JWS)&quot; <xref target="RFC7515"></xref>,
+algorithm &quot;CRYDI&quot; is defined here, to be applied as the value of the
+&quot;alg&quot; parameter.</t>
+<t>The following key subtypes are defined here for use with CRYDI:</t>
+<table>
+<thead>
+<tr>
+<th>&quot;paramter&quot;</th>
+<th>CRYDI Paramter Set</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>5</td>
+<td>CRYDI5</td>
+</tr>
+
+<tr>
+<td>3</td>
+<td>CRYDI3</td>
+</tr>
+
+<tr>
+<td>2</td>
+<td>CRYDI2</td>
+</tr>
+</tbody>
+</table><t>The key type used with these keys is &quot;MLWE&quot; and the algorithm used for
+signing is &quot;CRYDI&quot;. These subtypes MUST NOT be used for key agreement.</t>
+<t>The CRYDI variant used is determined by the subtype of the key (CRYDI3
+for &quot;pset 3&quot; and CRYDI2 for &quot;pset 2&quot;).</t>
+<t>Implementations need to check that the key type is &quot;MLWE&quot; for JOSE and
+that the pset of the key is a valid subtype when creating a signature.</t>
+<t>The CRYDI digital signature is generated as follows:</t>
+
+<ol>
+<li><t>Generate a digital signature of the JWS Signing Input using CRYDI
+with the desired private key, as described in <eref target="#name-sign">Section
+3.2</eref>. The signature bit string is the concatenation of a
+bit packed representation of z and encodings of h and c in this
+order.</t>
+</li>
+<li><t>The resulting octet sequence is the JWS Signature.</t>
+</li>
+</ol>
+<t>When using a JWK for this algorithm, the following checks are made:</t>
+
+<ul>
+<li><t>The &quot;kty&quot; field MUST be present, and it MUST be &quot;MLWE&quot; for JOSE.</t>
+</li>
+<li><t>The &quot;alg&quot; field MUST be present, and it MUST represent the algorith
+and parameter set.</t>
+</li>
+<li><t>If the &quot;key_ops&quot; field is present, it MUST include &quot;sign&quot; when
+creating an CRYDI signature.</t>
+</li>
+<li><t>If the &quot;key_ops&quot; field is present, it MUST include &quot;verify&quot; when
+verifying an CRYDI signature.</t>
+</li>
+<li><t>If the JWK &quot;use&quot; field is present, its value MUST be &quot;sig&quot;.</t>
+</li>
+</ul>
+<t>Example signature using only required fields, represented in compact
+form:</t>
+
+<sourcecode type="json">eyJhbGciOiJQUzM4NCIsImtpZCI6ImJpbGJvLmJhZ2dpbnNAaG9iYml0b24uZX
+hhbXBsZSJ9
+.
+SXTigJlzIGEgZGFuZ2Vyb3VzIGJ1c2luZXNzLCBGcm9kbywgZ29pbmcgb3V0IH
+lvdXIgZG9vci4gWW91IHN0ZXAgb250byB0aGUgcm9hZCwgYW5kIGlmIHlvdSBk
+b24ndCBrZWVwIHlvdXIgZmVldCwgdGhlcmXigJlzIG5vIGtub3dpbmcgd2hlcm
+UgeW91IG1pZ2h0IGJlIHN3ZXB0IG9mZiB0by4
+.
+cu22eBqkYDKgIlTpzDXGvaFfz6WGoz7fUDcfT0kkOy42miAh2qyBzk1xEsnk2I
+pN6-tPid6VrklHkqsGqDqHCdP6O8TTB5dDDItllVo6_1OLPpcbUrhiUSMxbbXU
+vdvWXzg-UD8biiReQFlfz28zGWVsdiNAUf8ZnyPEgVFn442ZdNqiVJRmBqrYRX
+e8P_ijQ7p8Vdz0TTrxUeT3lm8d9shnr2lfJT8ImUjvAA2Xez2Mlp8cBE5awDzT
+0qI0n6uiP1aCN_2_jLAeQTlqRHtfa64QQSUmFAAjVKPbByi7xho0uTOcbH510a
+6GYmJUAfmWjwZ6oD4ifKo8DYM-X72Eaw
+</sourcecode>
+<t>The same example decoded for readability:</t>
+
+<sourcecode type="json">=============== NOTE: '\\' line wrapping per RFC 8792 ===============
+
+{
+  &quot;header&quot;: { &quot;alg&quot;: &quot;CRYDI3&quot;, &quot;kid&quot;: &quot;did:example:123#key-0&quot; },
+  &quot;payload&quot;: &quot;It's a dangerous business, Frodo, going out your door.\
+\ You step onto the road, and if you don't keep your feet, there's\
+\ no knowing where you might be swept off to.&quot;,
+  &quot;signature&quot;: &quot;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&quot;
+}
+</sourcecode>
+</section>
+</section>
+
+<section anchor="using-crydi-with-cose"><name>Using CRYDI with COSE</name>
+<t>The approach taken here matches the work done to support secp256k1 in
+JOSE and COSE in <xref target="RFC8812"></xref>.</t>
+<t>The following tables map terms between JOSE and COSE for signatures.</t>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Value</th>
+<th>Description</th>
+<th>Recommended</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>CRYDI5</td>
+<td>TBD</td>
+<td>CRYSTALS-Dilithium with parameter set 5</td>
+<td>No</td>
+</tr>
+
+<tr>
+<td>CRYDI3</td>
+<td>TBD</td>
+<td>CRYSTALS-Dilithium with parameter set 3</td>
+<td>No</td>
+</tr>
+
+<tr>
+<td>CRYDI2</td>
+<td>TBD</td>
+<td>CRYSTALS-Dilithium with parameter set 2</td>
+<td>No</td>
+</tr>
+</tbody>
+</table><t>The following tables map terms between JOSE and COSE for key types.</t>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Value</th>
+<th>Description</th>
+<th>Recommended</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>MLWE</td>
+<td>TBD</td>
+<td>kty for Learning with Errors based Signatures</td>
+<td>No</td>
+</tr>
+</tbody>
+</table></section>
+</section>
+
+<section anchor="security-considerations"><name>Security Considerations</name>
+<t>The following considerations SHOULD apply to all parmeter sets described
+in this specification, unless otherwise noted.</t>
+<t>Care should be taken to ensure &quot;kty&quot; and intended use match, the
+algorithms described in this document share many properties with other
+cryptographic approaches from related families that are used for
+purposes other than digital signatures.</t>
+
+<section anchor="validating-public-keys"><name>Validating public keys</name>
+<t>All algorithms in that operate on public keys require first validating
+those keys. For the sign, verify and proof schemes, the use of
+KeyValidate is REQUIRED.</t>
+</section>
+
+<section anchor="side-channel-attacks"><name>Side channel attacks</name>
+<t>Implementations of the signing algorithm SHOULD protect the secret key
+from side-channel attacks. Multiple best practices exist to protect
+against side-channel attacks. Any implementation of the the
+CRYSTALS-Dilithium signing algorithms SHOULD utilize the following best
+practices at a minimum:</t>
+
+<ul spacing="compact">
+<li>Constant timing - the implementation should ensure that constant time
+is utilized in operations</li>
+<li>Sequence and memory access persistance - the implemention SHOULD
+execute the exact same sequence of instructions (at a machine level)
+with the exact same memory access independent of which polynomial is
+being operated on.</li>
+<li>Uniform sampling - uniform sampling is the default in
+CRYSTALS-Dilithium to prevent information leakage, however care should
+be given in implementations to preserve the property of uniform
+sampling in implementation.</li>
+<li>Secrecy of S1 - utmost care must be given to protection of S1 and to
+prevent information or power leakage. As is the case with most
+proposed lattice based approaches to date, fogery and other attacks
+may succeed, for example, with Dilithium through <eref target="https://eprint.iacr.org/2018/821.pdf">leakage of
+S1</eref> through side channel
+mechanisms.</li>
+</ul>
+</section>
+
+<section anchor="randomness-considerations"><name>Randomness considerations</name>
+<t>It is recommended that the all nonces are from a trusted source of
+randomness.</t>
+</section>
+</section>
+
+<section anchor="iana-considerations"><name>IANA Considerations</name>
+<t>The following has NOT YET been added to the &quot;JSON Web Key Types&quot;
+registry:</t>
+
+<ul spacing="compact">
+<li>Name: &quot;MLWE&quot;</li>
+<li>Description: MLWE family post-quantum signature algorithm key pairs</li>
+<li>JOSE Implementation Requirements: Optional</li>
+<li>Change Controller: IESG</li>
+<li>Specification Document(s): Section 3.1 of this document (TBD)</li>
+</ul>
+<t>The following has NOT YET been added to the &quot;JSON Web Key Parameters&quot;
+registry:</t>
+
+<ul spacing="compact">
+<li>Parameter Name: &quot;pset&quot;</li>
+<li>Parameter Description: The parameter set of the crypto system</li>
+<li>Parameter Information Class: Public</li>
+<li>Used with &quot;kty&quot; Value(s): &quot;MLWE&quot;</li>
+<li>Change Controller: IESG</li>
+<li>Specification Document(s): Section 2 of this document (TBD)</li>
+</ul>
+<t>The following has NOT YET been added to the &quot;JSON Web Key Parameters&quot;
+registry:</t>
+
+<ul spacing="compact">
+<li>Parameter Name: &quot;d&quot;</li>
+<li>Parameter Description: The private key</li>
+<li>Parameter Information Class: Private</li>
+<li>Used with &quot;kty&quot; Value(s): &quot;MLWE&quot;</li>
+<li>Change Controller: IESG</li>
+<li>Specification Document(s): Section 2 of RFC 8037</li>
+</ul>
+<t>The following has NOT YET been added to the &quot;JSON Web Key Parameters&quot;
+registry:</t>
+
+<ul spacing="compact">
+<li>Parameter Name: &quot;x&quot;</li>
+<li>Parameter Description: The public key</li>
+<li>Parameter Information Class: Public</li>
+<li>Used with &quot;kty&quot; Value(s): &quot;MLWE&quot;</li>
+<li>Change Controller: IESG</li>
+<li>Specification Document(s): Section 2 of RFC 8037</li>
+</ul>
+<t>The following has NOT YET been added to the &quot;JSON Web Signature and
+Encryption Algorithms&quot; registry:</t>
+
+<ul spacing="compact">
+<li>Algorithm Name: &quot;CRYDI2&quot;</li>
+<li>Algorithm Description: CRYDI2 signature algorithms</li>
+<li>Algorithm Usage Location(s): &quot;alg&quot;</li>
+<li>JOSE Implementation Requirements: Optional</li>
+<li>Change Controller: IESG</li>
+<li>Specification Document(s): Section 3.1 of this document (TBD)</li>
+<li>Algorithm Analysis Documents(s): (TBD)</li>
+</ul>
+<t>The following has NOT YET been added to the &quot;JSON Web Signature and
+Encryption Algorithms&quot; registry:</t>
+
+<ul spacing="compact">
+<li>Algorithm Name: &quot;CRYDI3&quot;</li>
+<li>Algorithm Description: CRYDI3 signature algorithms</li>
+<li>Algorithm Usage Location(s): &quot;alg&quot;</li>
+<li>JOSE Implementation Requirements: Optional</li>
+<li>Change Controller: IESG</li>
+<li>Specification Document(s): Section 3.1 of this document (TBD)</li>
+<li>Algorithm Analysis Documents(s): (TBD)</li>
+</ul>
+<t>The following has NOT YET been added to the &quot;JSON Web Signature and
+Encryption Algorithms&quot; registry:</t>
+
+<ul spacing="compact">
+<li>Algorithm Name: &quot;CRYDI5&quot;</li>
+<li>Algorithm Description: CRYDI5 signature algorithms</li>
+<li>Algorithm Usage Location(s): &quot;alg&quot;</li>
+<li>JOSE Implementation Requirements: Optional</li>
+<li>Change Controller: IESG</li>
+<li>Specification Document(s): Section 3.1 of this document (TBD)</li>
+<li>Algorithm Analysis Documents(s): (TBD)</li>
+</ul>
+</section>
+
+<section anchor="appendix"><name>Appendix</name>
+
+<section anchor="general-references"><name>General References</name>
+
+<ul spacing="compact">
+<li>JSON Web Signature (JWS) - <eref target="https://tools.ietf.org/html/rfc7515">RFC7515</eref></li>
+<li>JSON Web Encryption (JWE) - <eref target="https://tools.ietf.org/html/rfc7516">RFC7516</eref></li>
+<li>JSON Web Key (JWK) - <eref target="https://tools.ietf.org/html/rfc7517">RFC7517</eref></li>
+<li>JSON Web Algorithms (JWA) - <eref target="https://tools.ietf.org/html/rfc7518">RFC7518</eref></li>
+<li>JSON Web Token (JWT) - <eref target="https://tools.ietf.org/html/rfc7519">RFC7519</eref></li>
+<li>JSON Web Key Thumbprint - <eref target="https://tools.ietf.org/html/rfc7638">RFC7638</eref></li>
+<li>JWS Unencoded Payload Option - <eref target="https://tools.ietf.org/html/rfc7797">RFC7797</eref></li>
+<li>CFRG Elliptic Curve ECDH and Signatures - <eref target="https://tools.ietf.org/html/rfc8037">RFC8037</eref></li>
+<li>CRYSTALS-Dilithium - <eref target="https://www.pq-crystals.org/dilithium/data/dilithium-specification-round3-20210208.pdf">Dilithium</eref></li>
+</ul>
+</section>
+
+<section anchor="appendix-a-acknowledgements"><name>Appendix A.  Acknowledgements</name>
+<t>We would like to especially thank Gabe Cohen for close attention to
+and contribution to test vectors, and David Balenson for careful
+review of approach. We would also like to thank Michael B. Jones
+for guidance in authoring.</t>
+</section>
+
+<section anchor="appendix-b-document-history"><name>Appendix B.  Document History</name>
+<t>-01</t>
+
+<ul spacing="compact">
+<li>Added Acknowledgements</li>
+<li>Added Document History</li>
+<li>Changed key type to MLWE</li>
+<li>Updated test vectors</li>
+</ul>
+<t>-00</t>
+
+<ul spacing="compact">
+<li>Created draft-ietf-cose-dilithium-00 from
+draft-ietf-cose-post-quantum-signatures-01 following working group
+feedback</li>
+</ul>
+</section>
+
+<section anchor="appendix-c-test-vectors"><name>Appendix C.  Test Vectors</name>
+
+<section anchor="mlwe-crydi5"><name>MLWE CRYDI5</name>
+
+<section anchor="publickeyjwk"><name>publicKeyJwk</name>
+
+<sourcecode type="json">========== NOTE: '\' line wrapping per RFC 8792 ==========
+{
+  &quot;kty&quot;: &quot;MLWE&quot;,
+  &quot;alg&quot;: &quot;CRYDI5&quot;,
+  &quot;x&quot;: &quot;TUlJS05EQU5CZ3NyQmdFRUFRS0NDd2NJQndPQ0NpRUFpM1lBMWZnZGZ3YXJM\
+UmlmbTB2MEowZlI3TjdMWDZhdmtDU3pIa3kzVUtwOEFpRmhDSWJIbHFwSHAxUXNESGls\
+VXhydDhtd1FhQTFUR1FvanBvbmlKa3ZWaFZTZDFMRUhXeXpPOUVPclFFSXo4S2xVUEpF\
+ZUgzWTJCVCtpQ245Z2J1ZGFudFIyYUd6WHY4RFBxb1hXbXRaMFZxV3loUnE2MVFVcmJy\
+ZjZPU2ZqMkxOQklBaHRPR3JmVkltRisrN2x6NGUyM2hiQzZCcUFiYU8zZDV4dzdhaUlS\
+c1l2Y0tHaHpOOE83dU9xRUxJajViWnJrakgzenJ4bWx4Q2pUVHhHSGlkMy8zNTNXWW5p\
+S25FUzJ0Njd1K0Vob3FiaG1nUWdQNFI4cmNpSWMzZFY4THF1S3huZTJ4NHd0bno3cW12\
+KzhtdmFQbXVMOHJTUEpTbFpCbHd5V2laMGF5VUV0djVxS0hERGxtYnpscUZIeENOdUxV\
+MnRKamd5ZUVSTWNUU0htaFVONk9mZGlPTkdIektFOC9ZTTBjUC9OTS9zaEUwdFE4Rk9w\
+RUV6UjhwWE5aamhSWEI5SFdBMTRNNjFMTUZ3VWZ1czYweHNDOFhzQit0NEd6ZU1iNWVy\
+L0dIejZBOTJoQjd1RzlmYzdxZTViSjJJWnJ2U3h1Sjh3alFCRDdBaTYxTDRpS1JGeTZK\
+VzRsdXB6VWlXTldGSjU5Q1dORHdLbUM3ZTlyN1NROUV4dzNUNFIvVDFEcnVzbThUNEt1\
+cTJOOGdGSFJDUmpLanhha0NnRy9DZXphRVV1SVRqS293M3RMQ01QalZSRUNRRTIxV0Er\
+UXBic2RpZm1tY1dlVFpEQ2JOb3hyYnJhMGpud1RuVVd3WS94a1FyN2NMV2RabU1JNGtn\
+NFpOaFNndlFrMUdqczlrcHozekpBbG5KSDNnckt2U1hqSENvSDgyZ29ubnl5OWtkVWdh\
+Qk9vbHRCOWd6eXZCOVZ2NUM2LzJJOTdaYWZFUWU3NVV4eU9Hejh4WHc4L1BGdDA0eHFu\
+WGVmSmZSTUhDSEQ2WU9OdVp4L3FraWMwUkNCMTJkeVlYQTZ4TWRKVGtDRzhNTzBwQ2N6\
+SnBvdm02Tk5GTTZETGVFd3B0QUxycWhtUjdQUkR3ZGVSVSsrLzVtUGlkRkpaZUlpTWxU\
+NXpBN0JJUW1tbDBnNmwvdVhsMG9lN2xkaFlCSnE5Rnc2dDB0azBubWUvUlhSb3dEdVZG\
+cUpscnJiZHNEZFdRQXUwL3JZVHNnTGhLck1uMHFUOHBNYUNLNkZpQXdNR3BGT0VsVkFx\
+VXVGRTQyejZvcmJzZmNVcDJqdy9ESi83MVRDeW9yWVBxakN1Yno0alFKSWZWMTIyWWpo\
+aHpUNWNXTVo4Mm0wdnpkanMxaFFhU3BmUHlTekhjbmQ3NyszT3JKbzNJck81NlBHQzJB\
+WEl3OUNhVFExd3F6bC9PZ0xHQmdQWDNHZHZxRHNKRzdqR05rN1BoaHRvMDEzRTB5WldZ\
+WUFWUXZ0RHQveUN5NUdXMzNXTm85Znc3TkVFaTJUbGdDMHRNVjJEcDhvNmRGY0gwZTRY\
+Q0VoVUxpam1EdEkrYzJrYVd6Ui9qTDZjVHlaMXZEWGhpOEpHUmNaZVIzRGpvN2xpcjln\
+OTFTN3ZvTGJMT0R4Q21FNjl0UGVvc1dIbDZYYjJtWXk3M2dicWo0SFFCMEZ1Rjc4QnBL\
+YUVlN3dieGhuelg1Ry9EYmZTOEt3eXBJUzl0UkFvd0JzWjFVSTRsMHJCYmNBdDRQTjVx\
+RUJ0cFZLeTVYTE0xTVZNL2RLY0RiOVgrQU8wZ3hqdmQyNCt2bVNOeFBSSUh3WkU2UTMr\
+WXh4dE85eCtrMkxibWNtdFJjRDkyWDAweUc5cmhJSVRIQnE2cWVjUi90WE85S3dobVJj\
+dWM2aXZ0UWlYNUV6MkhtN3c5cDRZWVd1aGNEZ3M3VlBZUDdnLy9SM042V0FiL0pnMHhp\
+TVpsVXpqTTI5YW1VQXdrNWpVYTF0UUtrdHlMMm51bTRrL1poOEcrWXF6QklDMjhvQ2JU\
+VzhJTU93OGJSTEc4WnZ2N1dsUDk3cTgvVFJlYzVPQ3I4N1dHMTJ5K0J6ckxIZlg4TTBX\
+ZnVvWkh6cFI4U2VaWXNtWit0dk5EWi9OUjV5R0VWQ24xR21tQU1QcmI0R05XTDFJWkp2\
+VGovR0dtT1Y2L3U3NGNlSHlGQXdvdi8yaE5LWkRwYmJiS09KeXpWallQWjBHa1VYRlZW\
+Tng0c0tPTTVKRkpUeFdCSTEvQ3JCcGVRWlp5NnBIYjZkOWlXbmRKN0VDek5zVDVqMWFv\
+NUpCS2t1Z2d5ZDduTTk4OEZRVDVpWnJzYytkby9HNmRsVHZ5NXYrUzZYRkhYSWV4YzJV\
+dEhnY2lzTmhGYmRicDRhSXNSNU9ielppRzQyS1JVMTFrZUJEbW1VeFdOMkV0MXpMKzlP\
+b3hzeTJDczNMVUhBYkVKRmREWmZSVmR5TnhSZFV1YklkODNyY0pMTmN2aGxidnZCWjll\
+K2VSZXNyeS90WmNGYVBWVHZWZkRrWkJmMGF5b2pSbm50WUhEVTR5c0xHUUxZSXczdlhC\
+aERHbzVKdGdWY3ZJT21TTHJKbENlVUNCOWJpQkhwYjZxSlZQSzRodURncVlWYUtISDJJ\
+S3VTZkRPSFg1R0FhcmVLaGlBWnBHelZYVS9GMlIybjQzK2MxOURCWTF1WWZaU0pQdkt1\
+Zk8vWFY4YXFsazh0ZVVraWprWkpiUW1maEVnLzRieDFpVDlKdGMwMlFQN2x2bThnRnpj\
+L3l5U2RmaGsxUE8yWXdSNWdHdVh6bHh4TWJLalpaZnRqempaVzQ4aFZpdVhRekRIdjA4\
+UlBBc0dPTkM0RTE5aWdkWUoxNGJpaHJncDlVRmJMRXJiMlFES3Y0SllLa25PVHM3L2p1\
+cVQwNndEakpOSGc1empQVlFNUW9lbEJ3L2xGdnozZDl2MHJqYTUzeFUrTUhTZGs2WVRx\
+c2JHd1F5RGlnVktZaVYyRnYyV3RKbVdvVE1WeDdMUHc3VFlVWFl2Rk5od1U5WHVvUTlJ\
+MmZocHo3a0xCWHlLSDByVEt5bytzaVh6SGZyN3BTNFFoUEdPUjUvS0l0d1Y0UTBXaVhh\
+bm1TUE0ySTZZdWJIT3lyd0tnRGlnbWhpc2lRY0JJb3JYcXVoVXVpZllDZjdPWEFTRGxj\
+M0U4UERmOW8zdkpCWm9MT0tFREg1cEo0YW90NnB2cmtIaEx3dnIwWVNORVdnM1RWOHVV\
+NmcySHFBNThzL1BCNFR1RnhUOWVzRUFIZFpRK0U1RE9DWk1yQjk4Y2ZXTDNjN3JtdTZR\
+SkVUdkxxclhLTWdoMEJrSzBhZ2pVbU5ramtBbVJBNUdhcG5EK2VYRXNwL3pOcWhZZExm\
+bGRFWCtvWWZ1ODJzVGFpZzc1alpYam4zd09BeUpFVEN2T21YY21UZlRVUUJxQ0JhaHNC\
+RlZCZlpPdExqQS84ZjFqUWhlSitUMjJ2RlY2R3VPTFZXMXQrSnMyVjgrWVh3V01uVFZP\
+ZVRsbXRqeE05VWZLME5laU10YlU5dlhqTkFBU0xpTXNBK2Faa1ZVa3NkM1FNZVNhTmdj\
+ZXR6QzhvZ2FZczc5aVZvNTN2RmxzY0NZaXo2alB4OG9PcGxHY0ZIUGIwald6V01FMWJL\
+a2hiNlc2eklRS0JZNkNzcHhHcmhOSHhZdWFsY1ZjQWI4M2s1alRwM0Y5YnVGbjkyazRG\
+enFIcnJIVFV1ZGVvMmhUUCtuOHVPVm1DbzRlVWcvbkpDQ2hyTVNoNnQzczZScHpIY1A5\
+VmJBYlFxdERJc3lGb2RYZnQvK25tdUhxNVh5ejZJY1ByNjFhNjhtQVBoYXF5RkdmakFu\
+VGNJSlhzakFvUmIzN0xhdXJYU0h2QWNLcHJxNElQZmZRdGNKYlVzWHRKbXhVbklJL1N0\
+VGxMdDlrUkwrejJyUitFV210QldSYmdMbVE1VG4wVWk2eDhGTk5nVTA1eUpFL29YMmdJ\
+VEMwL2xLVCtEakh1eTNLcHRiYmVYaHpLWGhOclRteEdRbmhkT3ZpSVIvRS9zczNzTlZV\
+WWIzUzBMQWk1anRrOGtGSEhnZUlJUlhKY3NST0Y2OVJjdERzZXNLckFQajFOU2E5SjRT\
+MWhKSzU4bEhndmV6MFA0Q0g3bkdOUGE5RER2eVRtUmRzZVVYNkJhMEMvdzFobFFSendM\
+R0JNTXNSMlkzZ0NzMjlrMERsVG1wWkhnNDdKMnZTK1hEMS9WVGZYMGE3YnEwQitlc2Z1\
+ektValRhMjdITHVkZEorVG5XdDZvVTBsOFVaZ3Z3R0I4anlYT3ZIcElwODZJREhiNHFo\
+OTRqUmQxY3hNWVFwUkorZ1IwR210TmpZTFNKSlgzc1l3bFh0dEJ1cnRlZWRtdmwvNzI2\
+amZoaDFKSjUxNXkyOVdiU2xUY2oyMFNEb3V0OStNVlB0MldGVnNuOVIva1ZJRlY1bnVN\
+cjJRUG50dHFzNkVITXppdFY5NUcvVEJ4cWgwcXBKT0ZXM3BYNExaYnl0QkhtODBNcVlw\
+Q3N5aXhMaUVnRGlCaXBNd1BvaHZFZmRqeWY&quot;,
+  &quot;use&quot;: &quot;sig&quot;
+}
+
+</sourcecode>
+</section>
+
+<section anchor="privatekeyjwk"><name>privateKeyJwk</name>
+
+<sourcecode type="json">========== NOTE: '\' line wrapping per RFC 8792 ==========
+{
+  &quot;kty&quot;: &quot;MLWE&quot;,
+  &quot;alg&quot;: &quot;CRYDI5&quot;,
+  &quot;x&quot;: &quot;TUlJS05EQU5CZ3NyQmdFRUFRS0NDd2NJQndPQ0NpRUFpM1lBMWZnZGZ3YXJM\
+UmlmbTB2MEowZlI3TjdMWDZhdmtDU3pIa3kzVUtwOEFpRmhDSWJIbHFwSHAxUXNESGls\
+VXhydDhtd1FhQTFUR1FvanBvbmlKa3ZWaFZTZDFMRUhXeXpPOUVPclFFSXo4S2xVUEpF\
+ZUgzWTJCVCtpQ245Z2J1ZGFudFIyYUd6WHY4RFBxb1hXbXRaMFZxV3loUnE2MVFVcmJy\
+ZjZPU2ZqMkxOQklBaHRPR3JmVkltRisrN2x6NGUyM2hiQzZCcUFiYU8zZDV4dzdhaUlS\
+c1l2Y0tHaHpOOE83dU9xRUxJajViWnJrakgzenJ4bWx4Q2pUVHhHSGlkMy8zNTNXWW5p\
+S25FUzJ0Njd1K0Vob3FiaG1nUWdQNFI4cmNpSWMzZFY4THF1S3huZTJ4NHd0bno3cW12\
+KzhtdmFQbXVMOHJTUEpTbFpCbHd5V2laMGF5VUV0djVxS0hERGxtYnpscUZIeENOdUxV\
+MnRKamd5ZUVSTWNUU0htaFVONk9mZGlPTkdIektFOC9ZTTBjUC9OTS9zaEUwdFE4Rk9w\
+RUV6UjhwWE5aamhSWEI5SFdBMTRNNjFMTUZ3VWZ1czYweHNDOFhzQit0NEd6ZU1iNWVy\
+L0dIejZBOTJoQjd1RzlmYzdxZTViSjJJWnJ2U3h1Sjh3alFCRDdBaTYxTDRpS1JGeTZK\
+VzRsdXB6VWlXTldGSjU5Q1dORHdLbUM3ZTlyN1NROUV4dzNUNFIvVDFEcnVzbThUNEt1\
+cTJOOGdGSFJDUmpLanhha0NnRy9DZXphRVV1SVRqS293M3RMQ01QalZSRUNRRTIxV0Er\
+UXBic2RpZm1tY1dlVFpEQ2JOb3hyYnJhMGpud1RuVVd3WS94a1FyN2NMV2RabU1JNGtn\
+NFpOaFNndlFrMUdqczlrcHozekpBbG5KSDNnckt2U1hqSENvSDgyZ29ubnl5OWtkVWdh\
+Qk9vbHRCOWd6eXZCOVZ2NUM2LzJJOTdaYWZFUWU3NVV4eU9Hejh4WHc4L1BGdDA0eHFu\
+WGVmSmZSTUhDSEQ2WU9OdVp4L3FraWMwUkNCMTJkeVlYQTZ4TWRKVGtDRzhNTzBwQ2N6\
+SnBvdm02Tk5GTTZETGVFd3B0QUxycWhtUjdQUkR3ZGVSVSsrLzVtUGlkRkpaZUlpTWxU\
+NXpBN0JJUW1tbDBnNmwvdVhsMG9lN2xkaFlCSnE5Rnc2dDB0azBubWUvUlhSb3dEdVZG\
+cUpscnJiZHNEZFdRQXUwL3JZVHNnTGhLck1uMHFUOHBNYUNLNkZpQXdNR3BGT0VsVkFx\
+VXVGRTQyejZvcmJzZmNVcDJqdy9ESi83MVRDeW9yWVBxakN1Yno0alFKSWZWMTIyWWpo\
+aHpUNWNXTVo4Mm0wdnpkanMxaFFhU3BmUHlTekhjbmQ3NyszT3JKbzNJck81NlBHQzJB\
+WEl3OUNhVFExd3F6bC9PZ0xHQmdQWDNHZHZxRHNKRzdqR05rN1BoaHRvMDEzRTB5WldZ\
+WUFWUXZ0RHQveUN5NUdXMzNXTm85Znc3TkVFaTJUbGdDMHRNVjJEcDhvNmRGY0gwZTRY\
+Q0VoVUxpam1EdEkrYzJrYVd6Ui9qTDZjVHlaMXZEWGhpOEpHUmNaZVIzRGpvN2xpcjln\
+OTFTN3ZvTGJMT0R4Q21FNjl0UGVvc1dIbDZYYjJtWXk3M2dicWo0SFFCMEZ1Rjc4QnBL\
+YUVlN3dieGhuelg1Ry9EYmZTOEt3eXBJUzl0UkFvd0JzWjFVSTRsMHJCYmNBdDRQTjVx\
+RUJ0cFZLeTVYTE0xTVZNL2RLY0RiOVgrQU8wZ3hqdmQyNCt2bVNOeFBSSUh3WkU2UTMr\
+WXh4dE85eCtrMkxibWNtdFJjRDkyWDAweUc5cmhJSVRIQnE2cWVjUi90WE85S3dobVJj\
+dWM2aXZ0UWlYNUV6MkhtN3c5cDRZWVd1aGNEZ3M3VlBZUDdnLy9SM042V0FiL0pnMHhp\
+TVpsVXpqTTI5YW1VQXdrNWpVYTF0UUtrdHlMMm51bTRrL1poOEcrWXF6QklDMjhvQ2JU\
+VzhJTU93OGJSTEc4WnZ2N1dsUDk3cTgvVFJlYzVPQ3I4N1dHMTJ5K0J6ckxIZlg4TTBX\
+ZnVvWkh6cFI4U2VaWXNtWit0dk5EWi9OUjV5R0VWQ24xR21tQU1QcmI0R05XTDFJWkp2\
+VGovR0dtT1Y2L3U3NGNlSHlGQXdvdi8yaE5LWkRwYmJiS09KeXpWallQWjBHa1VYRlZW\
+Tng0c0tPTTVKRkpUeFdCSTEvQ3JCcGVRWlp5NnBIYjZkOWlXbmRKN0VDek5zVDVqMWFv\
+NUpCS2t1Z2d5ZDduTTk4OEZRVDVpWnJzYytkby9HNmRsVHZ5NXYrUzZYRkhYSWV4YzJV\
+dEhnY2lzTmhGYmRicDRhSXNSNU9ielppRzQyS1JVMTFrZUJEbW1VeFdOMkV0MXpMKzlP\
+b3hzeTJDczNMVUhBYkVKRmREWmZSVmR5TnhSZFV1YklkODNyY0pMTmN2aGxidnZCWjll\
+K2VSZXNyeS90WmNGYVBWVHZWZkRrWkJmMGF5b2pSbm50WUhEVTR5c0xHUUxZSXczdlhC\
+aERHbzVKdGdWY3ZJT21TTHJKbENlVUNCOWJpQkhwYjZxSlZQSzRodURncVlWYUtISDJJ\
+S3VTZkRPSFg1R0FhcmVLaGlBWnBHelZYVS9GMlIybjQzK2MxOURCWTF1WWZaU0pQdkt1\
+Zk8vWFY4YXFsazh0ZVVraWprWkpiUW1maEVnLzRieDFpVDlKdGMwMlFQN2x2bThnRnpj\
+L3l5U2RmaGsxUE8yWXdSNWdHdVh6bHh4TWJLalpaZnRqempaVzQ4aFZpdVhRekRIdjA4\
+UlBBc0dPTkM0RTE5aWdkWUoxNGJpaHJncDlVRmJMRXJiMlFES3Y0SllLa25PVHM3L2p1\
+cVQwNndEakpOSGc1empQVlFNUW9lbEJ3L2xGdnozZDl2MHJqYTUzeFUrTUhTZGs2WVRx\
+c2JHd1F5RGlnVktZaVYyRnYyV3RKbVdvVE1WeDdMUHc3VFlVWFl2Rk5od1U5WHVvUTlJ\
+MmZocHo3a0xCWHlLSDByVEt5bytzaVh6SGZyN3BTNFFoUEdPUjUvS0l0d1Y0UTBXaVhh\
+bm1TUE0ySTZZdWJIT3lyd0tnRGlnbWhpc2lRY0JJb3JYcXVoVXVpZllDZjdPWEFTRGxj\
+M0U4UERmOW8zdkpCWm9MT0tFREg1cEo0YW90NnB2cmtIaEx3dnIwWVNORVdnM1RWOHVV\
+NmcySHFBNThzL1BCNFR1RnhUOWVzRUFIZFpRK0U1RE9DWk1yQjk4Y2ZXTDNjN3JtdTZR\
+SkVUdkxxclhLTWdoMEJrSzBhZ2pVbU5ramtBbVJBNUdhcG5EK2VYRXNwL3pOcWhZZExm\
+bGRFWCtvWWZ1ODJzVGFpZzc1alpYam4zd09BeUpFVEN2T21YY21UZlRVUUJxQ0JhaHNC\
+RlZCZlpPdExqQS84ZjFqUWhlSitUMjJ2RlY2R3VPTFZXMXQrSnMyVjgrWVh3V01uVFZP\
+ZVRsbXRqeE05VWZLME5laU10YlU5dlhqTkFBU0xpTXNBK2Faa1ZVa3NkM1FNZVNhTmdj\
+ZXR6QzhvZ2FZczc5aVZvNTN2RmxzY0NZaXo2alB4OG9PcGxHY0ZIUGIwald6V01FMWJL\
+a2hiNlc2eklRS0JZNkNzcHhHcmhOSHhZdWFsY1ZjQWI4M2s1alRwM0Y5YnVGbjkyazRG\
+enFIcnJIVFV1ZGVvMmhUUCtuOHVPVm1DbzRlVWcvbkpDQ2hyTVNoNnQzczZScHpIY1A5\
+VmJBYlFxdERJc3lGb2RYZnQvK25tdUhxNVh5ejZJY1ByNjFhNjhtQVBoYXF5RkdmakFu\
+VGNJSlhzakFvUmIzN0xhdXJYU0h2QWNLcHJxNElQZmZRdGNKYlVzWHRKbXhVbklJL1N0\
+VGxMdDlrUkwrejJyUitFV210QldSYmdMbVE1VG4wVWk2eDhGTk5nVTA1eUpFL29YMmdJ\
+VEMwL2xLVCtEakh1eTNLcHRiYmVYaHpLWGhOclRteEdRbmhkT3ZpSVIvRS9zczNzTlZV\
+WWIzUzBMQWk1anRrOGtGSEhnZUlJUlhKY3NST0Y2OVJjdERzZXNLckFQajFOU2E5SjRT\
+MWhKSzU4bEhndmV6MFA0Q0g3bkdOUGE5RER2eVRtUmRzZVVYNkJhMEMvdzFobFFSendM\
+R0JNTXNSMlkzZ0NzMjlrMERsVG1wWkhnNDdKMnZTK1hEMS9WVGZYMGE3YnEwQitlc2Z1\
+ektValRhMjdITHVkZEorVG5XdDZvVTBsOFVaZ3Z3R0I4anlYT3ZIcElwODZJREhiNHFo\
+OTRqUmQxY3hNWVFwUkorZ1IwR210TmpZTFNKSlgzc1l3bFh0dEJ1cnRlZWRtdmwvNzI2\
+amZoaDFKSjUxNXkyOVdiU2xUY2oyMFNEb3V0OStNVlB0MldGVnNuOVIva1ZJRlY1bnVN\
+cjJRUG50dHFzNkVITXppdFY5NUcvVEJ4cWgwcXBKT0ZXM3BYNExaYnl0QkhtODBNcVlw\
+Q3N5aXhMaUVnRGlCaXBNd1BvaHZFZmRqeWY&quot;,
+  &quot;d&quot;: &quot;TUlJZE9nSUJBREFOQmdzckJnRUVBUUtDQ3djSUJ3U0NIU1FFZ2gwZ2kzWUEx\
+ZmdkZndhckxSaWZtMHYwSjBmUjdON0xYNmF2a0NTekhreTNVS3BZNWw0N3NXYzB3QXdn\
+bm91KzE1cEdaVE5PbDVkVkpJNm5IMnBJMm02QmFMcjhzNTR6a0ZFNEhxNXZUWnRSUnk3\
+Tjd3MGFzMXY5dTFGcVpqSlhxQTFtQ1RVSjJTQUlsTVFneEFSQUVVVVJBeUlPWUFRUWlE\
+UWh5Y0JBbXhBaWtaU0pZQ2h0Q3hNeDQ2UVJHelF0bWlSRkdDQWxnQ1pTMFlSRlJEWnR5\
+RUFRSXdZdEFoRXhDNEZJWWhCdTBqS0tURVNRVUlSQlJLWkp3NkFoRkVOUzVEU0dXd1NP\
+V3lBUm1KUms1TWh3UUJKQlNNUUVHTUFnR1lPTjRwSkIyY1JOaENZdVFJQkVnb2FBeWtJ\
+QVdySnNnY2dFd1NReDJqUkZBa2R3SUtSRUJLZ0JuQ1FRMGtZbHlCSUlXN1NFQXdlRTVK\
+SnhXeklKU0VoSkpDTndBU0p0aVVoS0VoY3k0c2doSVFjcVNyQVIzQkF5SUFWdDJVU0Vn\
+aUJnUVVCUXlxQW95YUlCbzZaRkdDa3QyRWlSMlpDQkFhbEFETE1wSktHSVlaS1FCQlFw\
+SURrRVc1aFFBaEZOSkJRb3BFaEZKQ0VKR1pKaDJaQmhTTWFORXlORm1RYU1GSVlBRXJN\
+QW1pQXNJa0NLQ2tRcUZCV0FFeE1sR0lod3hFSnNrMGdHQ1VNeDBMSXd5NGd0SXlVU1FL\
+Sm9EQVJncERZUjBVUWlJekptSWhWUmhEYUdnQkJoQkxFRklzZFFVWUJKekRSa0VnZEZR\
+TWlCSURTSXlUZ0ZRcEpvV2lBcHk4QkJFRVF5a2tKSkdibHhGRUl4UzVBcFVRUmlJZ0lv\
+ZzdoQXlFQkVnS0FGVkVZUzNJQkVXNUFJMkRRdHlZUU5JZ1psSElTSnl4WkV5b2dNSWNW\
+Qkl4TkUwQWFPR0FDQUVpUU9IREVsSERRbElZSlJHS0VBNDBncVREWngyaVp1aTZCSlV4\
+SXRqTFJGR1VBSUk0SWhHd1ZNNFlBRlN4YUNVUVJLMjRTUW1nQUZDd0dPR1RjQWhJUkUw\
+OFFBQ0xkZ0lrTW9HaVNGb0NZQlN6QXVaQWh0Q0FVTWdLSXhXQ0lHSUVLTkNZV0JFTFlO\
+d2pSUVNFWXVDSmNCMFVSdFFjQU41Q0l0d3dDR3loWnA0RUNHMllSSkVpaUJJa1VSWVFK\
+UVRBSnBVOEpoQ0NZeVVUWnBGQmttQTBVS0ZNbUVBcWtNQ01KZzRKQWs0RFJtb0NDSUFB\
+a0ZCQWtDQ3htSkcwY20ya0p3V3dKR1dRS0NrWVFJNEVZdW1qaVFRZ1l1cEVZdWlFSXFB\
+RFlwQWpkSkpFQndDaVJLNUNDSWdFSU9Vd1JrR2tTTkVMRXNTN2dBVVFDTzBLZ3dveVp0\
+R3FZQVlVWUZFYmRoRkRFTmdBYU1FMFZFSERTTWs1Umtrb1lwM0tRTlpKQ0l6S1pOR1Ra\
+TlFhSVF4SllzSWdORTJxaEVXS1J3R3JFSkFnWVJreGFBV0VoeUdaWUJWRVFKQkJRU0ZD\
+U0JKRU5PZ2NTTURDVkVJYWhGQ3NjTm5CQWt6S1l4Q0FkUVc2QUVXQ2hwbkxRaFk0U0Yy\
+QUF1b0toQWlMWnhYTFNOQ1Rrc3BFQlEyREJCWWpnUnhKaUZDN1lobVNTSkFrUUpFWWtR\
+SWlRbVM2Wk1Da2hOVVlSSnpBUmlETUVwRktZbDI2Um96QUNGMURTSVJBUlJZUmdtM0RR\
+ZzBnSUFJcU5JaEVKc0NKZ05BOE5nMU1KcDRUYVNFWmRNa0lhUXhKQVFRS1FCRElkRmlD\
+QXlVckFBR2dRUUU0RXhTWlJKaElKbERCQXduQUJ0VExoTkE3Skp5UlJrMUJRSURMUXdF\
+TWh3RXdaTkRMSWhBaVp1V2dTTkloSnVFQ1lBRExsQllVSkFJeWNRZ0lndFNZUXNDU2h5\
+bkxJb3lDQUpDaklGRVVoeUhLWVF5RFpNSXJSRkFSQWwxQUFNWXNKTW13Z0lHRUJCR2pC\
+RVcwSnVpY2dBb0NaSm1FaU1DN0VoUkVZaEVoaEdXUWlBd0tnZ0FZQk5XNWdzd3hoZzBR\
+SUdJS2dBR1RWaDJrYUpDQWlSa0FLTnlhYUlaQkNOQ0FKZ0RNaUFJeEVTeUpJc1N6UUdH\
+cVVwMFJKUkNBWndFN0J4VWdnaEJFUmxvalF3bWlBTkRJVk40b0FrQXhLTUEwbVNnSVls\
+b2pJTkk3a2d3YkNSNExKd0NMVnhrZ0l3SktoQlhCaEdvYkJzRExJd0F5TW9FVVpHZ3lp\
+S0JBWnhvcllsZ0JCUUlqSUUxQUJPM0RpTkNnTUlveEl3QkVCQTJaWnBrWUlSMHFLUVdn\
+WndHcU1rSWFkZ0NKTW93QWFRd0NhUWlZWmdBekVPR3hJcW1LQXRuRUFRSVlkSnl6QlJH\
+REl4RUJJTUFFbVJXWVFCU2dBQW9FSU5BeEtJSWdGZ3pNZ0ZCQUFvd1NRZzJiUUpTaEJo\
+bXhadEdETUpHemRCV0laSURMZ0lCTWN4V1FSRkdFZ2dtb1lNb2hJeFc0WUZVU1pHbXdK\
+d21NaE5rNlpFeUpoc3dUUW8weklLQ2dBQnhFYUdDRUpObWJBUW01WVJBZ0lwekNhSVlh\
+Q0FHa1dNQW9raEpCV0JXQmdpR3hSUWtCZ2dVMFJLQ0JFbXhLUmdaQ2FBV2hKeUpKRXBJ\
+d2tSTVZyaUZ0ZktsL3RoV3IrWnNKeVhEVm5YWmFDc2RENFNsakNha2prNjh2aTA0OGxV\
+bkNqZ0Z3ZVFXTHJQcy9QMW0rYkpPb21aYU5NVUkzeE5XV3RaQ2VpWTZGSE9waU1pbE43\
+ZDhmT0J2M2diQnp5RUF3SmsxUnFTZDhMNi9GZ01CWXY4RzBHRXNmSEFYYmJNKzhvMDJ2\
+cE9OSHM4UTVxTy80NXc3cjlDRytFUUNmejc0Y2h3eXdDcEtod2NhT29sOUJJN3NIeWJQ\
+Rmh4VjJpWnpKL3VzWi80YW4way9qL0xKOGRXR0lCZTduUW9iV3Y2VHptQXMrcVA2Vm1D\
+eTA0ZU1vaFl0aWFDU0UrK2J0V1dPcTVHUXlBMzVBc0FzaXhadkpiYmZ0NndFYzM0SXZi\
+WXY2dWxNS0RUeWdRc2xCcTdiY2l0OTFoTUJsbGdiYVFRMjFnb3pXZnZOZmd2ZW5PYnhs\
+YVFkcXlQT2E4ZWZtSGdZdWhIV1lMNjlIcFdBUHMwNGdrUFNxNWRtdmJqcEpiaTJIdWVo\
+MGpqcFBncDZrKy9TclJTV3djQS9YMlZGcXgxYm1UanZVL2szSStlWkt1Vzd0SlREc1FE\
+ZWhYeWV4SFMwRFBWODh4THdXVzZVclRHVG9zSzY1T2JBRWpPS2VjcFIyVVEvZ2dzSFZR\
+OEhFYjdjVStLUjlPdnpic3VXdytTeTNRazZUYVU2UDUyRlpra0NOcnZ5N0gxMVN3dXJ0\
+Nm5EU1dXNk1lS1RMN2FCblJ2NWNpZ3o5QmlBSXRNSE1na1JTaWsxb2ZCV0laQWlIYjR3\
+KzIwTFppRzI3Z0ZOaHF3a2ZhRVBWNktqM1FVNmFBUUlvb1JqVkFWNmR5V1BjcjhKYTIw\
+NW9WNExrMXhyY2pKTWZZM0ZGYWhzaTF0aU1BWkxqdGIxaHQvSzkzeFdLR2tMY1VVamlH\
+RFQ5UjlaYlJpZUo2Nm9DZ0NHNlhiZklFOEh1R0JFUDBYWkozeHl1YmJreTlBazIzN0Fu\
+OVpFeTNCZDNSRnp0VklrVXVJYk0zSUIxUGdWL1RTZ1I3Z2phRUlFVEVnNG8yZnI5eHo4\
+d21wSlN5SnlBTklpQlVyMVNLeFRxK3kwQmsrZlhHL1RDZm5JWXJuTFlINmtFYktvcU1G\
+ZmkxM0tocWduQkVZZE41MDNsZXJ4eVM4dDlPanZNU2swWmpEWGlnVzB0Z1ZIMjBlYW9Y\
+L20xMm1TT2J2OGVXcXhxeXBJYjNXMUI0STVVMVlpMmpJczA1Q3FOMmlvMFVXeERkZjRp\
+YU1Rb2pOY3RrV0JTaEtEdWNIK1lkZHNINU8zSkJVUkFuOU01WEM5M2FqMWJPTEV3OWw2\
+UXBNYk9ZQTRxa3JIT0llWlEwUHpVKzVyZ2JycENCUU9GbDRZRCs5d1YwM1ZFOWgwZERm\
+TSs0eDRjNG52dy9GUkgxeko5WStrRGtWOU1MSTUyd3dPcnBGU0xGV0tUekhNMzE2bmti\
+elZSUm1vbksySkhLUG5kS0szMG42dmhKa0tmaFZwKys1WFRqck5laTVYWVJjZzVYUm5o\
+bmtmRDZ6OFBQZndhems2U3AzN1phTmxZT052Ky9QYTNrcHlUcWpncGplNVBrKzdaNmlG\
+K2RIREZuV2NzRlhnUmRSVmRsZDdyL2duRjhoN2NscEUwSmY0ZXF4WFlNa1Y5VDFXdzFp\
+eHZhT013bXNaN3NZa01qUkIwdFRudkhFL3duVGFUdjBKdW9WTzdUZHpUNFlhSUI5MlA1\
+bHI2VjZjMnRORFZvUW1zM1lyNXExeTg1azJKekJFTDh3L05MYkZrN2M3TlF3VlQ4QlJz\
+QkZMZDk2RU0xUWhjYVc1T3JHc25oWWtQU3VpV1l0OHg1NURWMmJHYllsU1NYcW5RaVY3\
+R0hid09OL0I3eW5wT1B1VVlpeXZ1a3krbjdpNS9lZ2QzRDhRMlkrTEJFNW5oSkRMUkdz\
+Y3J3cUNhbHNFdDNPR01TTzZZSHhBcjdxMDk0QnE3NUozQ0FVYWgxclNYNlpDdGNZeEhm\
+R1VITk9IQll6UTgydGR3bHlMQllIRW5wVjFlTWtaZnBIV0oraGp3NFZjK09uK1dMU2RL\
+bHpjRjU5czdubGx5QWowYzNlcnlINGxONHdqeUlvSURGR0Z4Z0JGckFoS2pORnpDQ01I\
+VjJDMkhuaEoveXNRb2ZJSFgyM2l6cVljT0tUNzl2TlZzS0dBeFhVd00wRUM2ckJ0a0JM\
+U2laMU9KUXRhaE9kdWM5OHpja21LOXlDaXZiRjlEN01CWG9UZ1E5M05VV1lNdmdxcHVU\
+L2dVOHJGdWhjWk1uL1d4aVF2ck9WMmRtUi85cVhXdmZYM1pyaHg2dlhqY25BVXFObGFE\
+RUJsTCtZdVlrVHNZRkIyekRXdjZNS095SGFHaUZ5SEdCTTFTUk5JWVVrQ1dkU01Nbzlz\
+c1oveHNGVUxlYkVCM0g3UWlZZUN5dE10dDFkR29mTzQ3MnFpT0hqR0xMbC9kVXU0Z0lh\
+d0VRM2RLOU9xTWtKS3RNVnRIYVNFVlBmMWcvaDdHUzNVaHkrZXdXNHNCUGx4Mk1oaGtr\
+VU5YOGJsOTRGblpLd0RaZCsyYXJ3aVpwYmI1dzlFUWxUb2pXaXV2bFF1anNJMHF1eDBu\
+SzcvNjRqbkNxNDR0eVRCWFVFTlhuaVVqREFWZ21kMXdxWEUvam9WbnVHd3pYRWU3K2JB\
+UDVraWlNWUtQZVYvcEZDNnlqc0JYdFpZdittUjNVdUk5ZmYzQ0g3WUJheXE4VkhMVTVU\
+RzN4VjlOWmM3V1A4enJuaGdYODV5WmRDdkhucUdZbXVMQ1RqTmN4c3lnNG1IOFIxUnZp\
+SmlJQVZvT3hCQXFyblRrUkZDTEJwOHVFcEZRMlpNSkYrMTlyY0t4Y2N5eTFDc09MUTZL\
+bEh3RWV0WUtMVnlqTHR6ZGgrWW9BTU1kbHdmcE5QdHdubmVSeFdENWU2VGozeEptbHM0\
+SWs5Z2h3dzcvZDh6QkcrdDhJbWJqeEs1czBYeXNsdzlyaGdieTAzSkZ1Y1RENm9jS3pR\
+Y21ldDk3TUt1MUlHdTlQTkd3VjVXa3VBRTBibzJoWmxJY25UVWhkVzhmWHJQRDF0QnJK\
+VUJNbG1EUlR1K2gvZmhwZVpCS2dDVlFJUnd0UXlhMjFQYUIvckhicEpjS09QYmd1akRa\
+Qzk3NEpFQ09xbDk1SUFpamJGL0swSFBmTGlQT3B0SE94dHplZVhONjJGNnNGKzA3Q1RF\
+KzVaRFNpMDRSSGdNVk1ZUitFTjRUQzlyeTBZMUhha1ROSWN1WXgvcWN0ejJSNFdzdTRU\
+MmxuZFQ0aCt4N3c4djk3bTVBU2o1a1RGR1laYXo0ZmVQWit1OW1MUW9IT3Nkcnd5ZGxX\
+V0U2UzFQYVNuUGRSY2NMN3RkNTloU3huMlN3K3I0VVZtVC9JK1dSZmw3ZUlTZzhpelJN\
+MkZEdkVyNit5ci9SMU9weXpGWmYvYlNwUlNsTnhTR3ltZGIrRTB2YTFSSWl3bFJkS0F1\
+U0lZUDM4dzNLN1huRVZYb1l5NlZRRFI3ZVdSUHlLcWp5S3NrU2IzeWptb0RXMlJmbTJk\
+M3RyWXphZG9sVjB3QTRBajJKd1h6QXk3aWFmRVQxdnN6TFZsdVJuNEE1VmdLZEdGanlR\
+a1NDZTBrclFBN1AxeCtrWDNTeFZKZXVpemFrSFR5SXM2N3d6czVYM3pWWXp6bDZjVXZK\
+TmFwQUxScGFlMWtvdmY0WEptS1VPTjBjZTNXcDZObjZlMWxyODJjcTZ2QWVVY2xsR0h3\
+M2gvUVg3R2dQbVhxTXZGUG14OVpTenNjVzIrL0daY2puTXAxQnV5L3VxeTlib0h1T1l3\
+ZlFzM2UycVVRVVlEL0hkak9DTHZUVlpiU3g1R05ESm5IL3RldVF3NHpVOUhaWS9Qa0U4\
+YWR4cW4rOG1zbDBXd05uK2NIYXVBUmhraG1uSlBWTmJUUFNROHRYeXlJSmhIS3ZwK3Bh\
+blZFQ2RBd3dnUWRlZXVqdDluR3FweUJGb3drNmttSmtnazBXSHRJK0F3YlFoVFc1OG1u\
+VU1WVTJtOUZRdEozZzBqL1RYajE3SFNuR0M0Um93UnlqNzVWTmEza3hKQmJqdkRGeEJs\
+R1lQVHY4dDllWS9Ja3g2aWlnR1YrV2hqMXN6Yy9HUnovVnNLRVJzN3dCQlQwNmxaSlc3\
+aE9XZFBBOHRlOXZSZUp2ajRmYm5LaFM5dlRkNTZ0YnJRT3UweFBJTUtjQmp2OUNMZGtn\
+bGpIY1ZGLzg1RlpYckhEdzFITEhVMHBmT3RwQWtGb29qdkZ1SlhCaExkVTRzVCtkcmlj\
+b01YYTV0enQ1MWF0cWRVSkgxN1N6bFFaVk1uOTRpYmdkbUVDcmVINis2YjJBdkRlcXYz\
+a2wyRXV5TnZWNXZKTlllK2JRamxyZGpBV2xsc2NEK2kxckxPWlVNanE0RS9MUXg5bkJi\
+cEY1Vjg2cGhSN0c0WExua0xBUEJYSkwybXdERnBmY0M2SmNWbGFvQzBESHRVTXNQRmY4\
+WFNYeGJyUE1peTdjeGVjTnQ4MmtqaVVPcFphQmdTU1VuMisyTU1MdWhlRjVpUFM4MTQ1\
+b3V6UUxBS1ByV2VXTXROdlJhcUpTODZWRHJpWjkweVNaVWtBZDNQNTdZZnl0WUM1dEJS\
+eGpNK0JqTXRXYmliekF2M3MyejRnb3FVYjZhaFJaRko0dUpBUXNFS2JRcTNJQnZ0Z21E\
+M2hDRGxYS0dOY3hsQ2xPZ1pUUGpDUENoQzVkelZGTk1LSnRCRzRHNkU5T0Rha0tsRGx4\
+WjNWRDlncVlmV3VFdUpzVEJPSE1FRXlwOVJydmQrNWpTcC9pcnlPLzZJZ1NQQmZzcnJj\
+ZWhFRmtIeEgxYWNGMzU0NjdTU0NCRHA1elFMdVZXSngrKzhmTEdGMXk4UU01cWxzVEhL\
+aU9vSWV5blZGSm9aS1BPZ253ZFV5SW1udGNrMDZYZThOTThQYjdXb2c1SmtXcXBQODJ4\
+T0VCK2tsS2V6Uk4rUXdSdENHaE9nZVc4RzZhZWQzbmhoYnRUNk1TQ1NIclN2bmtCUFRY\
+NXlET2tFbERYenJZRjUzQmorczJjTjNmOU81WjRaR1pHMFBXS0hxb1VUSDhiZkNTbXRn\
+emJDUkNGUUJPbWNidStLVGhRQ2NEdWdHUlhNb00vVjZSem54SFdVNHcvcXZuYy9hTXd1\
+aExNaXZ5TDhCeDQrK3pIaHovQ2dzNjVMY0x1dXVsYmZSYzBoTmtrcnRIWSs4L2U0YUVQ\
+SWx1cERHY2ppNGdyaTFBQ1FzelBVb2p3cXhsNnhRRUpPTGgxT2xQQzZCYnZ4WE5RRTRj\
+YUlHdGJZRnl6ZHlrdUZBQjJYYUdBeFN1V0hHeC9EZFBTejBQaDlsR3ZJdjNmdmlVVlgx\
+cVQ1WldTSVF5VTJLdDI4UGFraXgrTVNqY1MrUHM0bkY5blA3Ujg3bVI3TnpDV0k3eDBY\
+OWZVSTVEUHRsT2xpOVJZcEtHNUtpcjRncmNaTWNsN2xkVVpKOG9DWkpJem1LdXpkVm1x\
+UDA4N2VIQnQyWGU1c0hXMFdGVzJseEY0K04yRVJ3eDBVb1BLdTBiN204Mkl2KzFJclVB\
+a2hsVElmNnJKMjdNMEJUUjNhQ1BmSmpmQ2pKRG84a0YyQ1daU25EMUI4WmY1TXlDYWFm\
+UGQ2Z3gvZVR6TzhCY0VlcTBlV1pwK25KYjFWbjluYmJlUEVMSS83ekdnY1FnZkV6M2lQ\
+eW41OXpiamtIT3MxZnQxMXNsTnpHWCtMOE9jeXpRRHQ0dFhtSmhNVDExNG9TbFFvSXRW\
+d2FhSWpSMHFRakVhZ2ZBSEh6SHRtb3kvTCtudVpQZTI0dG5nV1B1RG0wdnFkanRqMmtX\
+Y0ZSb3QyQU5YNEhYOEdxeTBZbjV0TDlDZEgwZXpleTErbXI1QWtzeDVNdDFDcWZBSWhZ\
+UWlHeDVhcVI2ZFVMQXg0cFZNYTdmSnNFR2dOVXhrS0k2YUo0aVpMMVlWVW5kU3hCMXNz\
+enZSRHEwQkNNL0NwVkR5UkhoOTJOZ1Uvb2dwL1lHN25XcDdVZG1oczE3L0F6NnFGMXBy\
+V2RGYWxzb1VhdXRVRksyNjMramtuNDlpelFTQUliVGhxMzFTSmhmdnU1YytIdHQ0V3d1\
+Z2FnRzJqdDNlY2NPMm9pRWJHTDNDaG9jemZEdTdqcWhDeUkrVzJhNUl4OTg2OFpwY1Fv\
+MDA4Umg0bmQvOStkMW1KNGlweEV0cmV1N3ZoSWFLbTRab0VJRCtFZkszSWlITjNWZkM2\
+cmlzWjN0c2VNTFo4KzZwci92SnIyajVyaS9LMGp5VXBXUVpjTWxvbWRHc2xCTGIrYWlo\
+d3c1Wm04NWFoUjhRamJpMU5yU1k0TW5oRVRIRTBoNW9WRGVqbjNZampSaDh5aFBQMkRO\
+SEQvelRQN0lSTkxVUEJUcVJCTTBmS1Z6V1k0VVZ3ZlIxZ05lRE90U3pCY0ZIN3JPdE1i\
+QXZGN0FmcmVCczNqRytYcS94aDgrZ1Bkb1FlN2h2WDNPNm51V3lkaUdhNzBzYmlmTUkw\
+QVErd0l1dFMrSWlrUmN1aVZ1SmJxYzFJbGpWaFNlZlFsalE4Q3BndTN2YSswa1BSTWNO\
+MCtFZjA5UTY3ckp2RStDcnF0amZJQlIwUWtZeW84V3BBb0J2d25zMmhGTGlFNHlxTU43\
+U3dqRDQxVVJBa0JOdFZnUGtLVzdIWW41cG5GbmsyUXdtemFNYTI2MnRJNThFNTFGc0dQ\
+OFpFSyszQzFuV1pqQ09KSU9HVFlVb0wwSk5SbzdQWktjOTh5UUpaeVI5NEt5cjBsNHh3\
+cUIvTm9LSjU4c3ZaSFZJR2dUcUpiUWZZTThyd2ZWYitRdXY5aVBlMldueEVIdStWTWNq\
+aHMvTVY4UFB6eGJkT01hcDEzbnlYMFRCd2h3K21EamJtY2Y2cEluTkVRZ2RkbmNtRndP\
+c1RIU1U1QWh2RER0S1FuTXlhYUw1dWpUUlRPZ3kzaE1LYlFDNjZvWmtlejBROEhYa1ZQ\
+dnYrWmo0blJTV1hpSWpKVStjd093U0VKcHBkSU9wZjdsNWRLSHU1WFlXQVNhdlJjT3Jk\
+TFpOSjVudjBWMGFNQTdsUmFpWmE2MjNiQTNWa0FMdFA2MkU3SUM0U3F6SjlLay9LVEdn\
+aXVoWWdNREJxUlRoSlZRS2xMaFJPTnMrcUsyN0gzRktkbzhQd3lmKzlVd3NxSzJENm93\
+cm04K0kwQ1NIMWRkdG1JNFljMCtYRmpHZk5wdEw4M1k3TllVR2txWHo4a3N4M0ozZSsv\
+dHpxeWFOeUt6dWVqeGd0Z0Z5TVBRbWswTmNLczVmem9DeGdZRDE5eG5iNmc3Q1J1NHhq\
+Wk96NFliYU5OZHhOTW1WbUdBRlVMN1E3Zjhnc3VSbHQ5MWphUFg4T3pSQkl0azVZQXRM\
+VEZkZzZmS09uUlhCOUh1RndoSVZDNG81ZzdTUG5OcEdsczBmNHkrbkU4bWRidzE0WXZD\
+UmtYR1hrZHc0Nk81WXEvWVBkVXU3NkMyeXpnOFFwaE92YlQzcUxGaDVlbDI5cG1NdTk0\
+RzZvK0IwQWRCYmhlL0FhU21oSHU4RzhZWjgxK1J2dzIzMHZDc01xU0V2YlVRS01BYkdk\
+VkNPSmRLd1czQUxlRHplYWhBYmFWU3N1Vnl6TlRGVFAzU25BMi9WL2dEdElNWTczZHVQ\
+cjVramNUMFNCOEdST2tOL21NY2JUdmNmcE5pMjVuSnJVWEEvZGw5Tk1odmE0U0NFeHdh\
+dXFubkVmN1Z6dlNzSVprWExuT29yN1VJbCtSTTloNXU4UGFlR0dGcm9YQTRMTzFUMkQr\
+NFAvMGR6ZWxnRy95WU5NWWpHWlZNNHpOdldwbEFNSk9ZMUd0YlVDcExjaTlwN3B1SlAy\
+WWZCdm1Lc3dTQXR2S0FtMDF2Q0REc1BHMFN4dkdiNysxcFQvZTZ2UDAwWG5PVGdxL08x\
+aHRkc3ZnYzZ5eDMxL0RORm43cUdSODZVZkVubVdMSm1mcmJ6UTJmelVlY2hoRlFwOVJw\
+cGdERDYyK0JqVmk5U0dTYjA0L3hocGpsZXY3dStISGg4aFFNS0wvOW9UU21RNlcyMnlq\
+aWNzMVkyRDJkQnBGRnhWVlRjZUxDampPU1JTVThWZ1NOZndxd2FYa0dXY3VxUjIrbmZZ\
+bHAzU2V4QXN6YkUrWTlXcU9TUVNwTG9JTW5lNXpQZlBCVUUrWW1hN0hQbmFQeHVuWlU3\
+OHViL2t1bHhSMXlIc1hObExSNEhJckRZUlczVzZlR2lMRWVUbTgyWWh1TmlrVk5kWkhn\
+UTVwbE1WamRoTGRjeS92VHFNYk10Z3JOeTFCd0d4Q1JYUTJYMFZYY2pjVVhWTG15SGZO\
+NjNDU3pYTDRaVzc3d1dmWHZua1hySzh2N1dYQldqMVU3MVh3NUdRWDlHc3FJMFo1N1dC\
+dzFPTXJDeGtDMkNNTjcxd1lReHFPU2JZRlhMeURwa2k2eVpRbmxBZ2ZXNGdSNlcrcWlW\
+VHl1SWJnNEttRldpaHg5aUNya253emgxK1JnR3EzaW9ZZ0dhUnMxVjFQeGRrZHArTi9u\
+TmZRd1dOYm1IMlVpVDd5cm56djExZkdxcFpQTFhsSklvNUdTVzBKbjRSSVArRzhkWWsv\
+U2JYTk5rRCs1YjV2SUJjM1A4c2tuWDRaTlR6dG1NRWVZQnJsODVjY1RHeW8yV1g3WTg0\
+MlZ1UElWWXJsME13eDc5UEVUd0xCampRdUJOZllvSFdDZGVHNG9hNEtmVkJXeXhLMjlr\
+QXlyK0NXQ3BKems3Ty80N3FrOU9zQTR5VFI0T2M0ejFVREVLSHBRY1A1UmI4OTNmYjlL\
+NDJ1ZDhWUGpCMG5aT21FNnJHeHNFTWc0b0ZTbUlsZGhiOWxyU1pscUV6RmNleXo4TzAy\
+RkYyTHhUWWNGUFY3cUVQU05uNGFjKzVDd1Y4aWg5SzB5c3FQcklsOHgzNis2VXVFSVR4\
+amtlZnlpTGNGZUVORm9sMnA1a2p6TmlPbUxteHpzcThDb0E0b0pvWXJJa0hBU0tLMTZy\
+b1ZMb24yQW4remx3RWc1WE54UER3My9hTjd5UVdhQ3ppaEF4K2FTZUdxTGVxYjY1QjRT\
+OEw2OUdFalJGb04wMWZMbE9vTmg2Z09mTFB6d2VFN2hjVS9YckJBQjNXVVBoT1F6Z21U\
+S3dmZkhIMWk5M082NXJ1a0NSRTd5NnExeWpJSWRBWkN0R29JMUpqWkk1QUprUU9SbXFa\
+dy9ubHhMS2Y4emFvV0hTMzVYUkYvcUdIN3ZOckUyb29PK1kyVjQ1OThEZ01pUkV3cnpw\
+bDNKazMwMUVBYWdnV29iQVJWUVgyVHJTNHdQL0g5WTBJWGlmazl0cnhWZWhyamkxVnRi\
+ZmliTmxmUG1GOEZqSjAxVG5rNVpyWThUUFZIeXREWG9qTFcxUGIxNHpRQUVpNGpMQVBt\
+bVpGVkpMSGQwREhrbWpZSEhyY3d2S0lHbUxPL1lsYU9kN3haYkhBbUlzK296OGZLRHFa\
+Um5CUnoyOUkxczFqQk5XeXBJVytsdXN5RUNnV09ncktjUnE0VFI4V0xtcFhGWEFHL041\
+T1kwNmR4Zlc3aFovZHBPQmM2aDY2eDAxTG5YcU5vVXovcC9MamxaZ3FPSGxJUDV5UWdv\
+YXpFb2VyZDdPa2FjeDNEL1ZXd0cwS3JReUxNaGFIVjM3Zi9wNXJoNnVWOHMraUhENit0\
+V3V2SmdENFdxc2hSbjR3SjAzQ0NWN0l3S0VXOSt5MnJxMTBoN3dIQ3FhNnVDRDMzMExY\
+Q1cxTEY3U1pzVkp5Q1AwclU1UzdmWkVTL3M5cTBmaEZwclFWa1c0QzVrT1U1OUZJdXNm\
+QlRUWUZOT2NpUlA2RjlvQ0V3dFA1U2svZzR4N3N0eXFiVzIzbDRjeWw0VGEwNXNSa0o0\
+WFRyNGlFZnhQN0xON0RWVkdHOTB0Q3dJdVk3WlBKQlJ4NEhpQ0VWeVhMRVRoZXZVWExR\
+N0hyQ3F3RDQ5VFVtdlNlRXRZU1N1ZkpSNEwzczlEK0FoKzV4alQydlF3NzhrNWtYYkhs\
+RitnV3RBdjhOWVpVRWM4Q3hnVERMRWRtTjRBck52Wk5BNVU1cVdSNE9PeWRyMHZsdzlm\
+MVUzMTlHdTI2dEFmbnJIN3N5bEkwMnR1eHk3blhTZms1MXJlcUZOSmZGR1lMOEJnZkk4\
+bHpyeDZTS2ZPaUF4MitLb2ZlSTBYZFhNVEdFS1VTZm9FZEJwclRZMkMwaVNWOTdHTUpW\
+N2JRYnE3WG5uWnI1Zis5dW8zNFlkU1NlZGVjdHZWbTBwVTNJOXRFZzZMcmZmakZUN2Rs\
+aFZiSi9VZjVGU0JWZVo3aks5a0Q1N2Jhck9oQnpNNHJWZmVSdjB3Y2FvZEtxU1RoVnQ2\
+VitDMlc4clFSNXZOREttS1FyTW9zUzRoSUE0Z1lxVE1ENklieEgzWThudz09&quot;,
+  &quot;use&quot;: &quot;sig&quot;
+}
+</sourcecode>
+</section>
+
+<section anchor="jws"><name>jws</name>
+
+<sourcecode type="jws">========== NOTE: '\' line wrapping per RFC 8792 ==========
+eyJhbGciOiAiQ1JZREk1IiwgImt0eSI6ICJNTFdFIiwgInR5cCI6ICJKV1QifQ.eyJtZ\
+XNzYWdlIjogImhlbGxvIHdvcmxkIn0.wgc3fMVj3d_w4NLvAtmQQ3fnxk3y5fW8fg-mC\
+ctxj8L2SUUbfWlPNPj6ycUW-bQMl-vVA7ibTqPIQQEu_VpX-PVNmQL9fJxfiIOgtOpgy\
+t03ZmAHOzQ5fDmNSodEK18k6DHdDLpb4maW9tzFnvQ9lP6jgVOVmDGTIXCP-uPo6G1-z\
+5zGeWldPN6cM3lcOUKuUgKrIva4mzj1H5QZAnfgAu03rDP08rZKFedGrMpwfYUiaYEgO\
+w5y-3cgaQLxVb0-INUVktS11cRQXKoX-PBVDJz-BuZPMcjnRLU924rO11P4_PNfbCbQX\
+A71f5_kzwbkAGpa-hzjfHhyEmXyBCjHmhvOjUthdKiL_6zmBb3Wx5_ta9ef9ckGzXKxz\
+LPkc521Gc688xhbly1eYwiafDz70gPs5nyz48E70wIxTtJ6joGnbcDr6tKOQwO6-XReP\
+FiE2FkeOP6b2XHAPPQUzBLu_Uocqra-uGPr49C-6_JtiAvv0VrlfJHRm01Q81LchubWX\
+cdtPSku59Z7SwjCVVg63yMC831d4dq_lQ36bUXruRY2wZpqreXvfmIgWWTKVXryAn9Zc\
+Q1GguU7UMjCkpxhaunSCgsGtQNXvAGwK12KRzTt9-bzOY5iOwbnDBMjFyk0-TpxJ4Y4L\
+bVMUgJk9L6RpIRUu3fYG2bA9Hn65OhvyEXm0o-lxezq27_vPbg2X0RjPQpcaiKxewifE\
+dwhPGMS4-X95HX0os8kw5D5sm9RCFOH2vBjE4LBVom49yletdjuxp5igDB6h1dDyHfsO\
+3ruqT6hiGqzamAyHCAqxdQDGBUKCdgEcWcGqYHoVokPXS94r-Qoue_pCa9ONBTuqzMIr\
+WOBEacM4K0LAHcCOMhLRKm8Ut6SNhFLY_XS7aC1bgCIl6wYFuFCG3xeac9Av3vOZWkF8\
+nsdvKNX_yJ3o0lC3ZQakRrtpgw4VPROngOVqxj5v3vHFO3TtiJZFljgUffhdRmBfSmOw\
+ThaJw0If-WKLlybVDK07xQJbrF2QQGk8G7R8LydQPTcb8kL2P0qrhobjtEc2aN5as-C8\
+12BtFlXVdBMBFC5LAJOeYKtLGf1SWFhTWhdtrd4DqtkOTadKP1yWWMPXkiGYPlSlbZE-\
+27jI1TOjr-l_V7acwS1AErpQhSk4s8y-mmqWEqFiHA4FUNVsVSp2-whlttEkx8eAKqrH\
+JiDAepuisKq-v1OdT5NZLmy2Zt7q6kN08qwisV24dyU9klk_PWZZPWCQRwhpEJJHEHFp\
+Pj7AktUE6k7zY11AKbYQauwkr_fqP4QfPbkyUPvE66Uw5CVdeFTqk7-c27kX0NXNqw0P\
+il0qxP7kWoyyQbl8QGt28og9ZHeCKsRwBbOFzYHBaFFiSwvS64jKH_gE3gFl6HUDesDq\
+kzAVuYyldmQrA0mT1l16jTT3pQOGYXAi2O_ibpvZIGPi-a8S-SPP93xNdq17qmrpdKHz\
+3d5lCa3hcOB_rp4dXW6F3oUbE8cQSfiIflYfUEe6ctZ4jYpSN1JTeMdDlEN_KWB1U_RL\
+Gs5EWKhWafQVQnytEVT3rkrVKl2iTo0oKB5JmKGrtHBH2LMeWfD7vlxlf2KCSkrSAF--\
+YJF3mgATa7ecpwAZcRpyuPCkIucSQJDAwdqqkYTn0PqQsjcCxOcTupR2EC1d3G2cC103\
+VKnZVPu9jHag8DLZt2DftFt2-o_pEQw3r19ZNWaFsZNKt8plWQKB4sDVzfu0jA6seRu4\
+nkwZdTDePFGUN8lHTmC2UabKMVKLvKdDQDliNQTOSRFzahucuFQT1JiEabC73Y-kR5N_\
+CR_i-V_OZ0S0QsERQflGVE_0K03SE741Xvv_FE7I6k2jrPttwLYFzqSUiST3_SlaSnXk\
+zNXew37VrNrRdK2gHgnpPOV7ohtAFP3TYzS9ZRVTn3g2pzTag0cohIVBrEtE7ExmTBgR\
+oRZVT549NbVXNUsm72S_3LDq4bcFwk1XT4XozKx-KYhxK-AsXcQP2hyLh2xQnpgAeq83\
+qWiiUxteKZBx9qa0qlBeIP-eVsiNo40Qf_Xi_pQ_4Br5CWMo_OAw3kcgQ-ZatqCoPE5R\
+PZRz8970QWJ9cOteo542T2DhPEWqGpI8IMGwEUvFoZcTKvuu8H7s9rVSHIx9xpB8Dh3P\
+YgldVz4O7Vi7Pe2cOC1Vlcxz9OWJ0B_LB_M-4qLGBu57lgCr755rJ0TyA3MRY55_GESR\
+mi8P561loYHhwmtTZlM-2sAFFPLorccQV1NxGTmcX_uNk4ySrNWy8mlxMZX03TRGAcCd\
+CesicBkOsNkagn1ek3DCRjrs1BmBv7JejT1-OiZOu-7x8YgCHMUafg2-pW6K6WUVYjiq\
+5W0mGeUaJ4z0HLZJyJKRlJcle4OESto7VpjLT-BZecx17pQ3BwFOm1tkULoRy7pS_Kxz\
+7OSeFjgTsuTExSQTdKTHrnLgMBb23xcxYmINsachG0cbaW4zYMosUU60ZjA0sBoUwVSf\
+HEa96vmqCFXyIEbwRwUWAzHGST9MS9aDb50_wJGChK6S7kY3vT1Ud_c0bO1FPPK7AcZn\
+giqZawc7uATHYM1il4Z4xqGjEAmfZdu7eIFda2mwPQa2bwC9KlPFqFC0MK2O_7PohGJR\
+2HqEUhA2hsYwMZLrWsvuOpgQq_oJ5ZhALrnmHFVV2lqBCBH8M_jr35HLoJJYzIZj0yvf\
+Qk6x2k2BzBGPGifbv6RoI2UbdVIVod87CH_oXz14w8fxMP5QtTphcaYMRJR-t8ssGDAg\
+K8wX_U1u6BviCEDz0MokfoxjqsvZ7g6iMOu3Obb7fBALuBfhzvHq9hk7-Zf7FYcMuuvs\
+pRawKpIv4iMPw-_iVg8CkGxUfkRYA16l-GMLW9pvYSD7JUDnzSQR8JWunLlQqnR5Ei8o\
+2HWspDnHsjtgAfoiRvb4I2TWGrp5bPw4MavS02m3eFb-Awr7RZtbGpGhZkzXoRjuEHKC\
+G8GDXANHPOwQp2m5q_a_Rlao0H49z4P28qI2n1s4L-8VzxB_xUiu8x6z7h-NHOdcfzSy\
+sXtynSjWmAOwXDEa-ZloeY3XTb-b4ICyj3mMvyumzYkdknNnYfl06SzThk_7Rgme3e-y\
+-T-SVG8WYXl0x93B-6cTOCnT0WMpbnUNhsvdVIAhH7jq-wW22GbKWX1jqCmElbstbyIQ\
+-SuEFhDqjLPzRdm188iYKuYI_GNdqvOMfnCg6Pt6536PlaBfDHxJFTgkUBgF5foGWqx8\
+KQ4DdvcgOgY08u1Od6sEKacvuOzLgi6_H88ZqOKEs_oN6kq8k750dDMtvVx9XHr2yXQV\
+Eq7Hf1_LGLl0T5xJdSE1TtUqrBEME1mQGUMwVJnC6JXIG90Wp1sWx8OEOso-qftNHhKY\
+zfyxFZKP-X6V8IRol5dL4-vNeON2Gn1Sfh_63nwRRyTLaLbSmeb_Zyy8cPNHZvPKQ5Dl\
+nKniZ1bZ9ol2mdZTP0CbOa9kc8ha7eg8Xx75Ld6QMbXpAKCEtDOv8JScFLHxl5b__xSq\
+Wh1rdHYZVm_jBR8O5_S05DwPOLFruciMqtbaMsGUzWOqr6HCXc5GWho1naadMzRvDZLp\
+Y9NySYCPReKdozTU8ScNP94g4IpuoGZK2hHM6de4LXJkDrdKRNcROpHjMNfXgfqP-xTk\
+G_C8FE7svIvBzhjPbIbSd0JTlNr7G2U_gEwUB7_6fZu3dAGUzp6N173Wk958AYtlgZce\
+Z1ooNosxTdg4-1dp27l39pqE6WqPOdlCV6lFVMD1o4Y9FDTLBh8KlC07ClNPVj4sDMPZ\
+wTjaZAPO86bu4s5pH7fPngwoYnUVVolGGOd78RcrtKhRqMPE2VZXdZ1g3bIm7CrHTTVu\
+-uxQWtf0osgHGpC7z06-Hf1x_5fHShdo3uyejyWAHOb2l_xftKJtFZPBxfT2Xf4moDTH\
+AIoRlyAkN4jRLyqJRinPCUUvFGqyv4OzXybjlY1ODwtGbQaaKIySW9CDrWGPOfAZYvQ8\
+54m1O9l4m7TcN-sjks6XFafAgoPM_zyoTWUIeShHq-7EjP0pvVq46uuK8LHyGzs6XzUf\
+r88FcXUelfWzkGm3VA8LhyxQTaEBHiermsGCSbmlg00aCC-aG1yOpXArTJaPdt3rLe_f\
+ggGqONHydl6-PHsPp27eFWJusTy6qUsDPXq4z99PeHzA_7f9cMHrKsO5gQwmZd20z7Bq\
+Qe_Yyfujw8os9mbRJNLdBR4sPu6z1VGgf-FNfwyeF-rAlRfo3-fCSD1FkHI8G5izadS5\
+0dkxeeYLxzgXgZBZ31YM-t7z6CCQfLHml2novA80apLu4OT1gbNTz0xH4fKdizcDujqy\
+z1Vlhzy2CMMfsQWh6ZaNlvlxUvnwzD2nY2UEiq5NiDYUP_n59dvlAsrHdWgqM-Bb8pls\
+LelyVRb-r8m5nxYwmscdAIuOP5itQARllGszIivDXkOYrLcxL-sEEllsnUvVUnfcrmUR\
+8W_6hUzoqhcbR6jfaIaHK1HBM0GdRHN4UAHO7g_GNxVaVfs4hj8efsouzf9VvXLyh9ry\
+9gsqZEg7K2B7cL3Pjo4X6-WBYwFQJl6BDSPtux0l3Im3rQv3hSe3BjYcjlfQjsIAJR2F\
+Nw3F2RiQnVGjBBPXJTObQbHiuIlgT2jmuhWvXFRg0304L97kb-tcQ3NbVQpHnCx3IjqB\
+VmoMxIZ6nj1-P_3_AWSPU_o8w6yIIiCIAoozmbMGVefDEm0Z8n9pjCRb5XG6HNNvXRXr\
+pREvosRCjC1wIu4RDY95MeITSwBOVwEdHWRM2JNF9t0io6mr9kG2C5RS5W7WEzljus-9\
+n77J3GLcRblAqQzGzRKSLsG7aNXs3jqhDM58oJHhV0HAJGW-uVe8THtX9qRVogkeHFSW\
+zOIG4KUGEqV3LcAJBYYIZ1ik5XCPf1kixwwRpUZgMKBsZlfSyZ9j9Sn2XU5MhIWW4ZGd\
+7tNVLP__Kef4i50VwByW4DOjbcGEbdElctqjaqZgbNAemC-ewqwmPDnjORICf7hA3jtS\
+J9rZ0m-PVuRahM08ZN55rrSOoiKT70wnqp2LrwMH0KkEuo-CGeaRiGIbEaeAcDIcqRny\
+-W6Pw04ya9i-UpO6SqcsP1tF78Z5JAZQrsb2NZ1jcmX03OLx_iaQaV3YojEIb0-77bil\
+0dpDoM1ygcK2tnt1IFYg296yuaTqhG0ad1figkWOEkZblEWOflkE8DH3eHmJ4x_yZUjY\
+AMNCpwL7lFYH1iTvywg7HdlufQdG3P-NeXipEcVacYK6WYrUQJWkRAK1Zt0ZfdnTc-Sj\
+dFEdi2lD_27HARCp46ixQJH8BgDmfJlLZbmZ3sspEP6oDBXpQwRZIAqZDlP3lMi1-dqV\
+PXw2cHzzOz8e0zAEOYtD96SWfvqtbeq7-halTy-dnkheSar3t9r9yS7Vd84vy-NXknpj\
+AERn-jpG7k6Gu7HnSLKI7Tga1Rm9WWkXYnSjaxF0LiiCHCxCYczOP3tSJid3kQ78PUGb\
+uy3iGlBvSaBIuUnVgQCmHPcUv8eT99IvTynJKqQwZ9GmU0YfE61Wx8fnj00-l87yexo_\
+BJkGS-zMzlO29Vxm0tfFK3_YW2fxDwtuo0W6zCPwnLAMdMOgtdegvRRcxcoMy6s-csTD\
+SkbH7OlEXR5zMqnrkSTVoyfNRFK-REMNH-HlDGprK3KDWLBazWFPEUomceuwutFssCtE\
+CbG-7VYEaFMznmH2cu9ASfRUcCwSmyXR40vULcl4CcfhxRx668j76r_-f2CLIyBy_xBI\
+P_4RDZy6SDvQDfu3ogVt4HJRZKu_dGaJ6vdhGFMZQ8qK6sYZa5Lb2meIMpn_MY8dPUPA\
+K8q-Z_2u8j-TazsFIF--_jcNzv1VasyeDgY2mKEHUtUYA0YGynnexMWsfLUz-5hOnEH0\
+qHvPwduWYg43seI9-0AYU3IolkhaRnQaEG0t8J80VHe6TK8H77TAH9DWNiGc4A92Yj_U\
+IntpHyB0ccWilwFCdtToCxhZQmMfnokDhimuZZz9xmSQNXRL8c8PEJoGWnm6oCaKTpMT\
+X2Gi5aYsr7Y2-Lr_iJKWHp-lw0QGDY9QZyl5v0YMzRhc4yQq7O8K0BWXJjAHiIqam2dp\
+7G78AOs9vk3kZy-6_H_AAAAAAAAEBYgKjA6PkU
+</sourcecode>
+</section>
+</section>
+</section>
+</section>
+
+</middle>
+
+<back>
+<references><name>Normative References</name>
+<reference anchor="CRYSTALS-Dilithium" target="https://doi.org/10.13154/tches.v2018.i1.238-268">
+  <front>
+    <title>CRYSTALS-Dilithium: A Lattice-Based Digital Signature&#xA;        Scheme</title>
+    <author fullname="Leo Ducas" initials="L." surname="Ducas">
+      <organization>CWI</organization>
+    </author>
+    <author fullname="Eike&#xA;        Kiltz" initials="E." surname="Kiltz">
+      <organization>Ruhr Universitat Bochum</organization>
+    </author>
+    <author fullname="Tancrede Lepoint" initials="T." surname="Lepoint">
+      <organization>SRI&#xA;        International</organization>
+    </author>
+    <author fullname="Vadim Lyubashevsky" initials="V." surname="Lyubashevsky">
+      <organization>IBM Research - Zurich</organization>
+    </author>
+    <author fullname="Peter&#xA;            Schwabe" initials="P." surname="Schwabe">
+      <organization>Radboud University</organization>
+    </author>
+    <author fullname="Gregor Seiler" initials="G." surname="Seiler">
+      <organization>IBM Research -&#xA;            Zurich</organization>
+    </author>
+    <author fullname="Damien Stehle" initials="D." surname="Stehle">
+      <organization>ENS de&#xA;        Lyon</organization>
+    </author>
+    <date year="2018"></date>
+  </front>
+</reference>
+<xi:include href="https://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.2119.xml"/>
+<xi:include href="https://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.4648.xml"/>
+<xi:include href="https://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.7515.xml"/>
+<xi:include href="https://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.7517.xml"/>
+<xi:include href="https://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.7638.xml"/>
+<xi:include href="https://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.8702.xml"/>
+<xi:include href="https://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.8812.xml"/>
+</references>
+<references><name>Informative References</name>
+<xi:include href="https://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.6234.xml"/>
+</references>
+
+</back>
+
+</rfc>
