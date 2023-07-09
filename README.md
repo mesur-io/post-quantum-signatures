@@ -40,6 +40,9 @@ The GitHub interface supports creating pull requests using the Edit (✏) button
 
 ### Meetings and Collaboration
 
+NB: Now that core drafting is complete these meetings have been discontinued until
+further meetings are required
+
 Participants to this work item are invited to a weekly meeting to discuss
 [Pull Requests](https://github.com/mesur-io/post-quantum-signatures/pulls?q=is%3Apr+is%3Aopen+sort%3Aupdated-asc),
 [Issues](https://github.com/mesur-io/post-quantum-signatures/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-asc),
@@ -52,7 +55,18 @@ Or dial: (US) +1 863-703-4902 PIN: 924 526 334#
 
 More phone numbers are available for international callers [here](https://tel.meet/bqb-omio-dtx?pin=6212109710970)
 
-## Setup
+## Key files and directories
+
+Top level markdown files are the current editor versions.  At time of this writing there is one draft for each of 
+
+- CRYSTALS Dilithium
+- Falcon
+- SPHINCS+
+
+There is a corresponding folder for assets generated from each editor copy such as txt versions in RFC format
+for submission to data tracker.
+
+## Original Setup
 
 Command line usage requires that you have the necessary software installed. Please review
 [the detailed instructions](https://github.com/martinthomson/i-d-template/blob/main/doc/SETUP.md) or follow the quick-start instructions below.
