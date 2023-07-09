@@ -1,10 +1,16 @@
 version: "3.9"
 services:
-  
-  dilithium-pqcrypto:
-    image: dilithium-pqcrypto
+  # dilithium-pqcrypto-js:
+  #   image: dilithium-pqcrypto
+  #   build:
+  #     context: ./suites/dilithium-pqcrypto/js
+  #     dockerfile: Dockerfile
+  #   volumes:
+  #     - ./data:/data
+  dilithium-pqcrypto-go:
+    image: dilithium-pqcrypto-go
     build:
-      context: ./suites/dilithium-pqcrypto
+      context: ./suites/dilithium-pqcrypto/go
       dockerfile: Dockerfile
     volumes:
       - ./data:/data

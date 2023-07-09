@@ -9,8 +9,10 @@
   "author": "Orie Steele",
   "license": "ISC",
   "dependencies": {
+    "@transmute/dilithium-key-pair": "^0.7.5",
     "base64url": "^3.0.1",
-    "dilithium-crystals": "^1.0.3",
+    "dilithium-crystals": "^1.0.4",
+    "transmute": "^0.3.0",
     "yargs": "^17.4.1"
   }
 }
