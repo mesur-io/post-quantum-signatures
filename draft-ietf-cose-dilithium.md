@@ -945,6 +945,8 @@ Encryption Algorithms" registry:
 
 # Appendix
 
+## General References
+
 - JSON Web Signature (JWS) - [RFC7515][spec-jws]
 - JSON Web Encryption (JWE) - [RFC7516][spec-jwe]
 - JSON Web Key (JWK) - [RFC7517][spec-jwk]
@@ -990,13 +992,26 @@ Encryption Algorithms" registry:
         Lyon</organization> </author> <date year='2018'/> </front>
             </reference>
 
-# Acknowledgements
-
-[G. (Gabe) Cohen](maito:gabe@tbd.email) [D. (David) Balenson](mailto:balenson@isi.edu)
+## Appendix A.  Acknowledgements
 
 We would like to especially thank Gabe Cohen for close attention to
 and contribution to test vectors, and David Balenson for careful
 review of approach.
+
+## Appendix B.  Document History
+
+-01
+
+* Added Acknowledgements
+* Added Document History
+* Changed key type to MLWE
+* Updated test vectors
+
+-00
+
+* Created draft-ietf-cose-dilithium-00 from
+  draft-ietf-cose-post-quantum-signatures-00 following working group
+  feedback
 
 ## Test Vectors
 
