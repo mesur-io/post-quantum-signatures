@@ -432,6 +432,8 @@ Encryption Algorithms" registry:
 
 # Appendix
 
+## General References
+
 - JSON Web Signature (JWS) - [RFC7515][spec-jws]
 - JSON Web Encryption (JWE) - [RFC7516][spec-jwe]
 - JSON Web Key (JWK) - [RFC7517][spec-jwk]
@@ -463,8 +465,27 @@ Encryption Algorithms" registry:
          (NL)</organization> </author> <date year='2017'/> </front>
         </reference>
 
+## Appendix A.  Acknowledgements
 
-## Test Vectors
+We would like to especially thank David Balenson for careful
+review of approaches taken in this document. We would also
+like to thank Michael B. Jones for guidance in authoring.
+
+## Appendix B.  Document History
+
+-01
+
+* Added Acknowledgements
+* Added Document History
+* Updated test vectors
+
+-00
+
+* Created draft-ietf-cose-sphincs-plus-00 from
+  draft-ietf-cose-post-quantum-signatures-01 following working group
+  feedback
+
+## Appendix C.  Test Vectors
 
 ### HASH SPHINCS+256s
 

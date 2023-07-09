@@ -374,6 +374,8 @@ Encryption Algorithms" registry:
 
 # Appendix
 
+## General References
+
 - JSON Web Signature (JWS) - [RFC7515][spec-jws]
 - JSON Web Encryption (JWE) - [RFC7516][spec-jwe]
 - JSON Web Key (JWK) - [RFC7517][spec-jwk]
@@ -422,7 +424,27 @@ Encryption Algorithms" registry:
         fullname='Zhenfei Zhang'> </author> <date year='2017'/> </front>
         </reference>
 
-## Test Vectors
+## Appendix A.  Acknowledgements
+
+We would like to especially thank David Balenson for careful
+review of approaches taken in this document. We would also
+like to thank Michael B. Jones for guidance in authoring.
+
+## Appendix B.  Document History
+
+-01
+
+* Added Acknowledgements
+* Added Document History
+* Updated test vectors
+
+-00
+
+* Created draft-ietf-cose-falcon-00 from
+  draft-ietf-cose-post-quantum-signatures-01 following working group
+  feedback
+
+## Appendix C.  Test Vectors
 
 ### NTRU FALCON512
 

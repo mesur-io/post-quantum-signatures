@@ -996,7 +996,8 @@ Encryption Algorithms" registry:
 
 We would like to especially thank Gabe Cohen for close attention to
 and contribution to test vectors, and David Balenson for careful
-review of approach.
+review of approach. We would also like to thank Michael B. Jones 
+for guidance in authoring.
 
 ## Appendix B.  Document History
 
@@ -1010,10 +1011,10 @@ review of approach.
 -00
 
 * Created draft-ietf-cose-dilithium-00 from
-  draft-ietf-cose-post-quantum-signatures-00 following working group
+  draft-ietf-cose-post-quantum-signatures-01 following working group
   feedback
 
-## Test Vectors
+## Appendix C.  Test Vectors
 
 ### MLWE CRYDI5
 
