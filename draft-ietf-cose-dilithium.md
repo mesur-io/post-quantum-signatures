@@ -76,11 +76,12 @@ specifically `CRYDI3` and others as required for use of various
 parameterizations of the post-quantum signature scheme CRYSTALS 
 Dilithium.
 
-CRYSTALS Dilithium is described and noted as a part of the
+Note to RFC Editor: CRYSTALS Dilithium is described and noted as a part
+of the
 [2022 PQC Selected Digital Signature Algorithims](https://csrc.nist.gov/Projects/post-quantum-cryptography/selected-algorithms-2022)
-As a result, this document should not be finalized until NIST completes paramter
-tuning and selection as a part of the
-[PQC](https://csrc.nist.gov/projects/post-quantum-cryptography) 
+As a result, this document should not be proceed to AUTH48 until NIST
+completes paramter tuning and selection as a part of the
+[PQC](https://csrc.nist.gov/projects/post-quantum-cryptography)
 standardization process.
 
 {mainmatter}
