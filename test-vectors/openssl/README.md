@@ -1,11 +1,11 @@
 # Using OpenSSL with OQS to generate keys and test vectors
 
-# Installation of Open Quantum Safe
+## Installation of Open Quantum Safe
 
 We recommend installing oqs as a provider module for openssl as described
 [here](https://github.com/open-quantum-safe/oqs-provider/blob/main/README.md)
 
-# Generation of keys
+## Generation of keys
 
 Keys can be generated using the included script:
 
@@ -20,7 +20,7 @@ to get a list of available openssl algorithms use this command:
 openssl list -signature-algorithms
 ```
 
-## Example with FALCON512
+### Example with FALCON512
 
 For example, generating a jwk set for falcon512 is performed as follows:
 
@@ -135,3 +135,16 @@ R2FWb1lhbnZrV1M1UC9CRjdER3hEUmtxdm1SbERyVXdoUjY",
 }
 ```
 
+## Signing Data (and verifying)
+
+A helper script `sign_jws` has been included that can be used as following:
+
+```bash
+sign_jws.sh falcon512 falcon512_jwk.json
+```
+
+and you get a nifty jwt
+
+```bash
+eyJhbGciOiAiRkFMQ09ONTEyIiwgImt0eSI6ICJOVFJVIiwgInR5cCI6ICJKV1QifQ.eyJtZXNzYWdlIjogImhlbGxvIHdvcmxkIn0.OfsYG7sdSy2rsww2Np5ZwWxpr6hZrNHLusvsFtb8KcK2mrC5BRYQw1Z_pao6qWJj46wkiBlqgcFtqCNFj0L0DmMcuqx6DMjOcp9GEfqadmfIgivqlkOY9WSfS71K7GIw4T8Z1av5U_dlKjYWKwZqzK75nznsspTnDqRbTETK3OMIjicJ2-3VwjU0HGQXYyiJZo_OPOc__yyyJU7BfdlLMneUj9KZqQDdkloLBmeprdY5wihsFcvlAUJ52IYzf-nmaAs1wzOoanjUJVyNFN4KAX58OpF47MrNnsLOmAQuAlrn6Uo0Jh7YoqySUhtOKv8oY2rHU2Rb4JYqcYQdVA0qTibErkitJvqYAzdTeJBOVgtmVHDCRIbeF4SfL-TpZfsJadNDYUx2G9uGyqadwlyNS7tVjZIhGo807mfHfUi4btjCYZTd1zA0SFZFltFCZivD7pxuCw-Ykf85ayy9sFu_W_UgTRC038I82YfbwdnbPH99Rx5ZGP1ySNGeuUuf3YxLT0PQDFLhW_jTZhDZCwh1Yj3UcQiDDLsYpdDYq1ipeB1KLm6mxaBqRRqjV2xcgpTyVaQNXin_aPHwJqoOlUy45E2sY482TS97mN64zee0uPM7FFIpVK3Pfx18i9lpuRS9RKEdVu0MKT4ZJKMHwEqZCEQFJfhrPvEdjblK93tj1xYs8auvLE2VUZo-nbEckuS7sdeDN9BS7Bf4-0EbQx-ML78mw5Clix2o49udTF-PU6xOkM83ZEFI5q4oV3LeF29Xs_Z1kl5uWKf2FnwKtz0hVTPKfZ9iPso6ukO3-OQ87EGFyHaf5zdXgXLwxFEwQh-WE3XmfboyVfL4yUkXvRUmNfpniJfXbMA8SD0mZp8ysA
+```
