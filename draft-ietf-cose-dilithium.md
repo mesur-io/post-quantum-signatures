@@ -66,7 +66,7 @@ Dilithium, a Post-Quantum Cryptography (PQC) based suite.
 This document does not define any new cryptography, only seralizations
 of existing cryptographic systems.
 
-This document registers key types for JOSE and COSE, specifically `LWE`.
+This document registers key types for JOSE and COSE, specifically `MLWE`.
 
 Key types in this document are specified by the cryptographic algorithm
 family in use by a particular algorithm as discussed in RFC7517.
@@ -136,7 +136,8 @@ While based on Ring-LWE, CRYSTALS-Dilithium has less algebraic structure
 than direct Ring-LWE implementations and more closely resembles the
 unstructured lattices used in Learning with Errors (LWE). This brings a
 theorectical protection against future algebraic attacks on Ring-LWE
-that may be developed.
+that may be developed. Given the use of module lattices, this family of
+approaches is often referred to as MLWE.
 
 CRYSTALS-Dilithium, brings several advantages over other approaches to
 signature suites:
@@ -207,14 +208,14 @@ JSON Object Signing and Encryption
 
 ### CRYDI Key Representations
 
-A new key type (kty) value "LWE" (for keys related to the family of
-algorithms that utilize Learning With Errors approaches to Post-quantum
-lattice based cryptography) is defined for public key algorithms that
-use base 64 encoded strings of the underlying binary material as private
-and public keys and that support cryptographic sponge functions. It has
-the following parameters:
+A new key type (kty) value "MLWE" is defined for public key algorithms that use
+base 64 encoded strings of the underlying binary material as private and public
+keys and that support cryptographic sponge functions. "MLWE" refers to for keys
+related to the family of algorithms that utilize Learning With Errors approaches
+to Post-quantum lattice module based cryptography It has the following
+parameters:
 
-- The parameter "kty" MUST be "LWE".
+- The parameter "kty" MUST be "MLWE".
 
 - The parameter "alg" MUST be specified, and its value MUST be one of
   the values specified in the table below
@@ -264,9 +265,9 @@ key representations and signatures.
 
 | kty         | alg           | Paramter Set |
 | ----------- | ------------- | ------------ |
-| LWE         | CRYDI5        | 5            |
-| LWE         | CRYDI3        | 3            |
-| LWE         | CRYDI2        | 2            |
+| MLWE        | CRYDI5        | 5            |
+| MLWE        | CRYDI3        | 3            |
+| MLWE        | CRYDI2        | 2            |
 
 #### Public Key
 
@@ -285,7 +286,7 @@ Example public key using only required fields:
 =============== NOTE: '\' line wrapping per RFC 8792 ================
 
 {
-  "kty": "LWE",
+  "kty": "MLWE",
   "alg": "CRYDI3",
   "x": "z7u7GwhsjjnfHH3Nkrs2xvvw020Rcw5ymdlTnhRenjDdrOO+nfXRVUZVy9q1\
 5zDn77zTgrIskM3WX8bqslc+B1fq12iA/wxD2jc1d6j+YjKCtkGH26OR7vc0YC2ZiMzW\
@@ -336,7 +337,7 @@ Example public key including optional fields:
 
 {
   "kid": "key-0",
-  "kty": "LWE",
+  "kty": "MLWE",
   "alg": "CRYDI3",
   "key_ops": ["verify"],
   "x": "z7u7GwhsjjnfHH3Nkrs2xvvw020Rcw5ymdlTnhRenjDdrOO+nfXRVUZVy9q1\
@@ -401,7 +402,7 @@ Example private key using only required fields:
 =============== NOTE: '\' line wrapping per RFC 8792 ================
 
 {
-  "kty": "LWE",
+  "kty": "MLWE",
   "alg": "CRYDI3",
   "x": "z7u7GwhsjjnfHH3Nkrs2xvvw020Rcw5ymdlTnhRenjDdrOO+nfXRVUZVy9q1\
 5zDn77zTgrIskM3WX8bqslc+B1fq12iA/wxD2jc1d6j+YjKCtkGH26OR7vc0YC2ZiMzW\
@@ -531,7 +532,7 @@ Example private key using optional fields:
 
 {
   "kid": "key-0",
-  "kty": "LWE",
+  "kty": "MLWE",
   "alg": "CRYDI3",
   "key_ops": ["sign"],
   "x": "z7u7GwhsjjnfHH3Nkrs2xvvw020Rcw5ymdlTnhRenjDdrOO+nfXRVUZVy9q1\
@@ -670,13 +671,13 @@ The following key subtypes are defined here for use with CRYDI:
 | 3          | CRYDI3             |
 | 2          | CRYDI2             |
 
-The key type used with these keys is "LWE" and the algorithm used for
+The key type used with these keys is "MLWE" and the algorithm used for
 signing is "CRYDI". These subtypes MUST NOT be used for key agreement.
 
 The CRYDI variant used is determined by the subtype of the key (CRYDI3
 for "pset 3" and CRYDI2 for "pset 2").
 
-Implementations need to check that the key type is "LWE" for JOSE and
+Implementations need to check that the key type is "MLWE" for JOSE and
 that the pset of the key is a valid subtype when creating a signature.
 
 The CRYDI digital signature is generated as follows:
@@ -691,7 +692,7 @@ The CRYDI digital signature is generated as follows:
 
 When using a JWK for this algorithm, the following checks are made:
 
-- The "kty" field MUST be present, and it MUST be "LWE" for JOSE.
+- The "kty" field MUST be present, and it MUST be "MLWE" for JOSE.
 
 - The "alg" field MUST be present, and it MUST represent the algorith
   and parameter set.
@@ -820,7 +821,7 @@ The following tables map terms between JOSE and COSE for key types.
 
 | Name   | Value | Description                                   | Recommended |
 | ------ | ----- | --------------------------------------------- | ----------- |
-| LWE    | TBD   | kty for Learning with Errors based Signatures | No          |
+| MLWE   | TBD   | kty for Learning with Errors based Signatures | No          |
 
 # Security Considerations
 
@@ -873,8 +874,8 @@ randomness.
 The following has NOT YET been added to the "JSON Web Key Types"
 registry:
 
-- Name: "LWE"
-- Description: LWE family post-quantum signature algorithm key pairs
+- Name: "MLWE"
+- Description: MLWE family post-quantum signature algorithm key pairs
 - JOSE Implementation Requirements: Optional
 - Change Controller: IESG
 - Specification Document(s): Section 3.1 of this document (TBD)
@@ -885,7 +886,7 @@ registry:
 - Parameter Name: "pset"
 - Parameter Description: The parameter set of the crypto system
 - Parameter Information Class: Public
-- Used with "kty" Value(s): "LWE"
+- Used with "kty" Value(s): "MLWE"
 - Change Controller: IESG
 - Specification Document(s): Section 2 of this document (TBD)
 
@@ -895,7 +896,7 @@ registry:
 - Parameter Name: "d"
 - Parameter Description: The private key
 - Parameter Information Class: Private
-- Used with "kty" Value(s): "LWE"
+- Used with "kty" Value(s): "MLWE"
 - Change Controller: IESG
 - Specification Document(s): Section 2 of RFC 8037
 
@@ -905,7 +906,7 @@ registry:
 - Parameter Name: "x"
 - Parameter Description: The public key
 - Parameter Information Class: Public
-- Used with "kty" Value(s): "LWE"
+- Used with "kty" Value(s): "MLWE"
 - Change Controller: IESG
 - Specification Document(s): Section 2 of RFC 8037
 
@@ -991,11 +992,11 @@ Encryption Algorithms" registry:
 
 ## Test Vectors
 
-### LWE CRYDI5
+### MLWE CRYDI5
 
 #### publicKeyJwk
 ```json
-{"kty":"LWE","alg":"CRYDI5","x":"lgNFI62eq4YKxuvpMl2V9SVtGV5z_vQQZei\
+{"kty":"MLWE","alg":"CRYDI5","x":"lgNFI62eq4YKxuvpMl2V9SVtGV5z_vQQZei\
 \iCziAVcFMuUUzjpbwrd7uKHRbtxNPWsLIlfYKmM5SM-OLeoDII-GNQYJfm3QRt9l33P\
 \AOyJpbeLidJg6e4UAIZJQx-KbKrIVqK6F42P8WmhDWxgc5xJZXUabUtMHV-irm9pMP8\
 \kjrlRFuIenHS_YYj3RrX9yeAZKmD6YJsROVMEprjR1B7uOQxJYX1WNNRD5AEiGL8TKF\
@@ -1052,7 +1053,7 @@ Encryption Algorithms" registry:
 
 #### privateKeyJwk
 ```json
-{"kty":"LWE","alg":"CRYDI5","x":"lgNFI62eq4YKxuvpMl2V9SVtGV5z_vQQZei\
+{"kty":"MLWE","alg":"CRYDI5","x":"lgNFI62eq4YKxuvpMl2V9SVtGV5z_vQQZei\
 \iCziAVcFMuUUzjpbwrd7uKHRbtxNPWsLIlfYKmM5SM-OLeoDII-GNQYJfm3QRt9l33P\
 \AOyJpbeLidJg6e4UAIZJQx-KbKrIVqK6F42P8WmhDWxgc5xJZXUabUtMHV-irm9pMP8\
 \kjrlRFuIenHS_YYj3RrX9yeAZKmD6YJsROVMEprjR1B7uOQxJYX1WNNRD5AEiGL8TKF\

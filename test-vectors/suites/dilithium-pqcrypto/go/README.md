@@ -13,6 +13,8 @@ To generate the test vectors, run the following command from this directory:
 go run . generate --input ../../../data/dilithium-pqcrypto/input.json --output ../../../data/dilithium-pqcrypto/out.json
 ```
 
+NB: `kty` SHOULD be `MLWE` and `LWE` may need to be replaced with `MLWE`
+
 ### Docker
 
 First build the docker image.
