@@ -18,16 +18,16 @@ If you see an incomplete row, and wish to contribute to check the open issues, a
 
 | family    | kty     | alg          | vectors     | spec                                                    |
 |-----------|---------|--------------|-------------|---------------------------------------------------------|
-| Dilithium | LWE     | CRYDI5       | in-progress | https://pq-crystals.org/dilithium/                      |
-| Dilithium | LWE     | CRYDI3       | in-progress | https://pq-crystals.org/dilithium/                      |
-| Dilithium | LWE     | CRYDI2       | in-progress | https://pq-crystals.org/dilithium/                      |
-| Falcon    | NTRU    | FALCON1024   | in-progress | https://falcon-sign.info/                               |
+| Dilithium | MLWE    | CRYDI5       | complete    | https://pq-crystals.org/dilithium/                      |
+| Dilithium | MLWE    | CRYDI3       | in-progress | https://pq-crystals.org/dilithium/                      |
+| Dilithium | MLWE    | CRYDI2       | in-progress | https://pq-crystals.org/dilithium/                      |
+| Falcon    | NTRU    | FALCON1024   | complete    | https://falcon-sign.info/                               |
 | Falcon    | NTRU    | FALCON512    | in-progress | https://falcon-sign.info/                               |
 | SPHINCS+  | HASH    | SPHINCS+128s | planned     | https://sphincs.org/                                    |
 | SPHINCS+  | HASH    | SPHINCS+128f | planned     | https://sphincs.org/                                    |
 | SPHINCS+  | HASH    | SPHINCS+192s | planned     | https://sphincs.org/                                    |
 | SPHINCS+  | HASH    | SPHINCS+192f | planned     | https://sphincs.org/                                    |
-| SPHINCS+  | HASH    | SPHINCS+256s | in-progress | https://sphincs.org/                                    |
+| SPHINCS+  | HASH    | SPHINCS+256s | complete    | https://sphincs.org/                                    |
 | SPHINCS+  | HASH    | SPHINCS+256f | planned     | https://sphincs.org/                                    |
 
 ## Contributing
@@ -37,6 +37,9 @@ See the
 
 Contributions can be made by creating pull requests.
 The GitHub interface supports creating pull requests using the Edit (✏) button.
+
+If you are unfamiliar with cryptography or, especially with PQC, we rcommend reviewing
+[PQ for Engineers](https://github.com/paulehoffman/post-quantum-for-engineers/blob/main/pqc-for-engineers.md)
 
 ### Meetings and Collaboration
 
