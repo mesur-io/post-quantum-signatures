@@ -2,11 +2,4 @@ This directory is to support generated test vectors.
 
 ### Get Started
 
-Build all the test vector generators.
-
-#### Generate
-
-```
-./generate.sh
-```
-
+at this time the scripts in the openssl directory should be referenced for key gen, sign, and verify operations.
